@@ -2,8 +2,6 @@ name: Run AI YouTube Shorts Generator
 
 on:
   workflow_dispatch:
-  # schedule:
-  #   - cron: '0 0 * * *' # Optional: Agar rozana chalana ho
 
 jobs:
   build-and-run:
@@ -16,8 +14,8 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-              python-version: '3.10'
-              cache: 'pip'
+          python-version: '3.10'
+          cache: 'pip'
 
       - name: Install FFmpeg
         run: |
@@ -32,6 +30,7 @@ jobs:
       - name: Run Main Script
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
         run: |
           python main.py
