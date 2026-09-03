@@ -13,19 +13,22 @@ class AudioEngine:
 
     async def generate_audio(self, text, output_filename, retries=3):
         """
-        Generates realistic male Hindi voiceover with slight pace and depth adjustment.
+        Generates Hindi male voiceover at the voice's natural rate/pitch.
+
+        Previously this applied rate="+8%", pitch="-2Hz" to sound more
+        "authoritative" — in practice, pitch-shifting a neural TTS voice
+        away from its trained baseline is exactly what makes it sound more
+        artificial/robotic, not less. Edge-TTS voices are tuned to sound
+        most natural at their default settings, so we leave them alone.
+        If you want a punchier delivery, phrase it in the script text
+        itself (short sentences, dramatic pauses via "...", "!") rather
+        than forcing the pitch/rate.
         """
         output_path = os.path.join(self.output_dir, output_filename)
         
         for attempt in range(retries):
             try:
-                # rate="+8%" for snappy short pacing, pitch="-2Hz" for a deeper, authoritative narrator tone
-                communicate = edge_tts.Communicate(
-                    text, 
-                    self.voice, 
-                    rate="+8%", 
-                    pitch="-2Hz"
-                )
+                communicate = edge_tts.Communicate(text, self.voice)
                 await communicate.save(output_path)
                 return output_path
             
