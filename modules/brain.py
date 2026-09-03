@@ -19,8 +19,7 @@ class ContentBrain:
         """
         prompts = "Give me 1 specific, viral, and engaging topic for a Short Documentary. It should be a 'Engaging Did you know' fact or a 'Fun/intriguing Engaging News'. return ONLY the topic name."
         client = _get_client()
-        # Yahan fix kar diya hai (genai.GenerativeModel hata diya hai)
-        response = client.models.generate_content(model='gemini-1.5-flash', contents=prompts)
+        response = client.models.generate_content(model='gemini-2.0-flash', contents=prompts)
         topic = response.text.strip()
         print(f"🎯 Selected Topic: {topic}")
         return topic
@@ -70,8 +69,7 @@ class ContentBrain:
     """
 
         client = _get_client()
-        # Yahan bhi model name directly string pass ho raha hai
-        response = client.models.generate_content(model='gemini-1.5-flash', contents=prompt)
+        response = client.models.generate_content(model='gemini-2.0-flash', contents=prompt)
         
         # Clean the response to ensure it's valid JSON (sometimes AI adds markdown)
         clean_text = response.text.replace('```json', '').replace('```', '').strip()
