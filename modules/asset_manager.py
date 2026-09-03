@@ -1,7 +1,38 @@
 import os
 import requests
 import random
+import re
 from dotenv import load_dotenv
+
+# Character -> extra stock-safe visual keywords. Pexels has no licensed
+# Marvel footage (nor should it), so we can't fetch the actual character —
+# but we CAN bias the search toward generic footage that visually reads as
+# "that kind of character" so the clip stops being random when a specific
+# name is mentioned in the scene.
+CHARACTER_KEYWORDS = {
+    "doom": ["metal mask armor", "gothic villain cape", "dark medieval armor"],
+    "victor von doom": ["metal mask armor", "gothic villain cape"],
+    "iron man": ["futuristic metal suit", "red gold armor closeup", "robotic hand glow"],
+    "tony stark": ["futuristic metal suit", "high tech lab"],
+    "spider-man": ["web silhouette city", "red mask closeup", "climbing building night"],
+    "spiderman": ["web silhouette city", "red mask closeup"],
+    "peter parker": ["young man city rooftop", "web silhouette city"],
+    "doctor strange": ["red cloak mystic", "glowing magic circle", "sorcerer hands energy"],
+    "strange": ["red cloak mystic", "glowing magic circle"],
+    "multiverse": ["portal energy swirl", "fractured glass dimension", "parallel universe abstract"],
+    "avengers": ["team silhouette city", "epic battle skyline"],
+}
+
+
+def _detect_character_terms(*texts):
+    """Scan scene text/topic for known character names and return extra keywords."""
+    combined = " ".join(t.lower() for t in texts if t)
+    extra = []
+    for name, keywords in CHARACTER_KEYWORDS.items():
+        if name in combined:
+            extra.extend(keywords)
+    return extra
+
 
 class AssetManager:
     def __init__(self):
@@ -18,10 +49,14 @@ class AssetManager:
         self.assets_dir = os.path.join(os.getcwd(), "assets", "video_clips")
         os.makedirs(self.assets_dir, exist_ok=True)
 
-    def search_video(self, query, duration_min=4):
+    def search_video(self, query, duration_min=4, prefer_relevance=True):
         """
         Searches Pexels for a portrait video matching the query.
         Returns the download URL or None.
+
+        prefer_relevance=True picks Pexels' top-ranked result among the
+        duration-valid candidates instead of a random one, so the clip
+        actually matches the query instead of being a coin flip.
         """
         print(f"   🔍 Searching Pexels for: '{query}'...")
         
@@ -45,17 +80,22 @@ class AssetManager:
                 if " " in query:
                     simple_query = query.split()[-1] # Try last word (usually the noun)
                     print(f"      ⚠️ No results. Retrying with '{simple_query}'...")
-                    return self.search_video(simple_query)
+                    return self.search_video(simple_query, duration_min, prefer_relevance)
                 return None
             
-            # Filter logic: Prefer videos that aren't too short (at least 4 seconds)
+            # Filter logic: Prefer videos that aren't too short (at least 4 seconds).
+            # Keep Pexels' original relevance order (don't re-sort by anything else).
             valid_videos = [v for v in data['videos'] if v['duration'] >= duration_min]
             
             if not valid_videos:
                 valid_videos = data['videos'] # Fallback to whatever exists
-                
-            # Randomize selection
-            selected_video = random.choice(valid_videos)
+
+            if prefer_relevance:
+                # Pexels returns results ordered by relevance to the query —
+                # take the best match instead of a random one.
+                selected_video = valid_videos[0]
+            else:
+                selected_video = random.choice(valid_videos)
             
             # Get best quality video file link
             video_files = selected_video['video_files']
@@ -89,9 +129,11 @@ class AssetManager:
             print(f"      ❌ Error downloading {filename}: {e}")
             return None
 
-    def get_videos(self, script_data):
+    def get_videos(self, script_data, topic=""):
         """
-        NEW LOGIC: Downloads TWO videos per scene (A and B).
+        Downloads TWO videos per scene (A and B), biasing the search query
+        toward whichever MCU character is actually being discussed in that
+        scene (falls back to the overall topic if a scene doesn't name one).
         Returns a list of tuples: [(path_a, path_b), (path_a, path_b), ...]
         """
         print("🎥 Starting Double-Feature Video Download...")
@@ -99,11 +141,19 @@ class AssetManager:
 
         for scene in script_data:
             scene_id = scene['id']
-            
-            # 1. Get Search Terms
-            # Fallback to 'keywords' if visual_1/2 don't exist (compatibility mode)
+            scene_text = scene.get('text', '')
+
+            # 1. Get base search terms from the script
             query_a = scene.get('visual_1', scene.get('keywords', 'abstract'))
-            query_b = scene.get('visual_2', query_a) # Use A if B is missing
+            query_b = scene.get('visual_2', query_a)
+
+            # 1b. Bias toward whichever character this scene actually names,
+            # so "Doom" scenes don't end up with random Spider-Man footage
+            # and vice versa.
+            character_terms = _detect_character_terms(scene_text, topic)
+            if character_terms:
+                query_a = f"{query_a} {character_terms[0]}"
+                query_b = f"{query_b} {character_terms[min(1, len(character_terms)-1)]}"
             
             # 2. Search & Download Clip A
             url_a = self.search_video(query_a)
