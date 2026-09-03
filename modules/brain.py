@@ -1,5 +1,7 @@
 import os
 import json
+import time
+import random
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
@@ -7,6 +9,36 @@ from dotenv import load_dotenv
 load_dotenv()
 
 MODEL_NAME = "gemini-2.5-flash"
+
+# Errors worth retrying: transient overload / rate-limit / server hiccups.
+_RETRYABLE_MARKERS = ("503", "UNAVAILABLE", "429", "RESOURCE_EXHAUSTED", "500", "INTERNAL")
+
+
+def _is_retryable(exc: Exception) -> bool:
+    msg = str(exc)
+    return any(marker in msg for marker in _RETRYABLE_MARKERS)
+
+
+def _call_with_retry(fn, *, max_attempts=5, base_delay=2.0, max_delay=30.0):
+    """
+    Calls fn() with exponential backoff + jitter on transient Gemini errors
+    (503 UNAVAILABLE, 429 RESOURCE_EXHAUSTED, 500 INTERNAL). Re-raises
+    immediately on non-retryable errors, and re-raises the last error once
+    max_attempts is exhausted.
+    """
+    last_exc = None
+    for attempt in range(1, max_attempts + 1):
+        try:
+            return fn()
+        except Exception as e:
+            last_exc = e
+            if not _is_retryable(e) or attempt == max_attempts:
+                raise
+            delay = min(max_delay, base_delay * (2 ** (attempt - 1))) + random.uniform(0, 1)
+            print(f"⏳ Gemini call failed (attempt {attempt}/{max_attempts}): {e}")
+            print(f"   Retrying in {delay:.1f}s...")
+            time.sleep(delay)
+    raise last_exc
 
 def _get_client():
     api_key = os.getenv("GEMINI_API_KEY")
@@ -39,7 +71,9 @@ class ContentBrain:
         client = _get_client()
 
         try:
-            response = client.models.generate_content(model=MODEL_NAME, contents=prompt)
+            response = _call_with_retry(
+                lambda: client.models.generate_content(model=MODEL_NAME, contents=prompt)
+            )
         except Exception as e:
             raise RuntimeError(f"Gemini API call failed while getting MCU topic: {e}") from e
 
@@ -84,12 +118,14 @@ class ContentBrain:
         client = _get_client()
 
         try:
-            response = client.models.generate_content(
-                model=MODEL_NAME,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json"
-                ),
+            response = _call_with_retry(
+                lambda: client.models.generate_content(
+                    model=MODEL_NAME,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json"
+                    ),
+                )
             )
         except Exception as e:
             raise RuntimeError(f"Gemini API call failed while generating script: {e}") from e
@@ -133,10 +169,12 @@ class ContentBrain:
     """
         client = _get_client()
         try:
-            response = client.models.generate_content(
-                model=MODEL_NAME,
-                contents=prompt,
-                config=types.GenerateContentConfig(response_mime_type="application/json"),
+            response = _call_with_retry(
+                lambda: client.models.generate_content(
+                    model=MODEL_NAME,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(response_mime_type="application/json"),
+                )
             )
             raw_text = _extract_text(response)
             if not raw_text:
