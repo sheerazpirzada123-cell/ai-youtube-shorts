@@ -72,7 +72,7 @@ class ContentBrain:
         """
         print(f"📝 Writing script for: {topic}...")
         prompt = f"""
-    You are the lead scriptwriter for a high-retention "Edutainment" YouTube Shorts channel.
+    You are the lead scriptwriter for a high-retention Hindi "Edutainment" YouTube Shorts channel.
     Topic: {topic}
 
     ### GOAL:
@@ -80,22 +80,31 @@ class ContentBrain:
     To keep retention high, we need TWO different stock videos for every single scene.
 
     ### 1. SCRIPT REQUIREMENTS (The Voiceover):
-    - **Perspective:** Strictly **3rd Person** ("Scientists found...", "The ocean hides...").
+    - **Language:** The "text" field MUST be written in natural, spoken HINDI using
+      Devanagari script (हिंदी). This is the voiceover that will be read aloud by a
+      Hindi text-to-speech voice, so it must sound like natural spoken Hindi, not a
+      literal word-for-word translation from English.
+    - **Perspective:** Strictly **3rd Person** ("वैज्ञानिकों ने पाया...", "समंदर के अंदर...").
     - **Tone:** Engaging, fast-paced, logical. No fluff.
     - **Structure:** 8-9 Scenes total.
     - **Flow:** Hook -> Context -> Mechanism (How it works) -> Twist -> Outro.
+    - Numbers, years, and proper nouns can stay in Hindi or Latin numerals, whichever
+      sounds more natural when spoken aloud.
 
     ### 2. VISUAL REQUIREMENTS (Dual Visuals):
-    - For EVERY scene, provide TWO distinct search terms:
-      - **visual_1:** Matches the *start* of the sentence.
-      - **visual_2:** Matches the *end* of the sentence or provides a reaction/context.
-    - **Strictly Literal:** If the text is "The economy crashed," do NOT search "sad man". Search "Stock market red chart".
+    - The "visual_1" and "visual_2" fields MUST stay in ENGLISH, even though "text" is
+      in Hindi — these are stock-footage search terms (Pexels), which only return good
+      results for English keywords.
+    - For EVERY scene, provide TWO distinct English search terms:
+      - **visual_1:** Matches the *start* of the sentence's meaning.
+      - **visual_2:** Matches the *end* of the sentence's meaning or provides a reaction/context.
+    - **Strictly Literal:** If the scene is about the economy crashing, do NOT search "sad man". Search "Stock market red chart".
 
     Respond with a JSON array only, matching this shape:
     [
         {{
             "id": 1,
-            "text": "In 1995, fourteen wolves were released into Yellowstone Park, and they changed the rivers.",
+            "text": "1995 में, यलोस्टोन पार्क में चौदह भेड़िये छोड़े गए, और उन्होंने वहां की नदियों तक को बदल डाला।",
             "visual_1": "wolves running snow aerial",
             "visual_2": "river flowing forest drone",
             "mood": "intriguing"
@@ -143,15 +152,19 @@ class ContentBrain:
         """
         full_text = " ".join(scene.get("text", "") for scene in script_data)
         prompt = f"""
-    You are writing YouTube Shorts metadata for a short documentary video.
+    You are writing YouTube Shorts metadata for a Hindi short documentary video.
     Topic: {topic}
-    Script (for context only): {full_text}
+    Script (for context only, in Hindi): {full_text}
+
+    Write the "title" and "description" in natural, spoken HINDI (Devanagari script),
+    since the video's audience and voiceover are Hindi. Keep "tags" in English, since
+    YouTube search tags perform better in English/Roman script.
 
     Return ONLY a JSON object with this exact shape, no markdown fences:
     {{
-        "title": "Under 90 characters, punchy, curiosity-driven, no clickbait lies",
-        "description": "2-4 sentences summarizing the video, then 5-8 relevant hashtags on a new line",
-        "tags": ["short", "list", "of", "8-12", "single-or-two-word", "keywords"]
+        "title": "Under 90 characters, punchy, curiosity-driven Hindi title, no clickbait lies",
+        "description": "2-4 Hindi sentences summarizing the video, then 5-8 relevant hashtags on a new line",
+        "tags": ["short", "list", "of", "8-12", "single-or-two-word", "english", "keywords"]
     }}
     """
         client = _get_client()
