@@ -1,7 +1,9 @@
 name: Run AI YouTube Shorts Generator
 
 on:
-  workflow_dispatch: # Isse aap GitHub ki website se manually button daba kar run kar sakenge
+  workflow_dispatch:
+  # schedule:
+  #   - cron: '0 0 * * *' # Optional: Agar rozana chalana ho
 
 jobs:
   build-and-run:
@@ -14,7 +16,8 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+              python-version: '3.10'
+              cache: 'pip'
 
       - name: Install FFmpeg
         run: |
@@ -30,6 +33,5 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
-          GEMINI_MODEL: gemini-1.5-flash
         run: |
           python main.py
