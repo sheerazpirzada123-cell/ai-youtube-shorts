@@ -6,6 +6,7 @@ on:
 jobs:
   build-and-run:
     runs-on: ubuntu-latest
+    timeout-minutes: 30  # prevents a stuck run from burning Actions minutes
 
     steps:
       - name: Checkout Repository
@@ -34,3 +35,17 @@ jobs:
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
         run: |
           python main.py
+
+      # Without this step the finished video is deleted the moment the
+      # runner is torn down. This uploads it so you can download it from
+      # the workflow run's "Artifacts" section.
+      - name: Upload Generated Video
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-short
+          path: |
+            output/*.mp4
+            assets/final/*.mp4
+          if-no-files-found: warn
+          retention-days: 7
