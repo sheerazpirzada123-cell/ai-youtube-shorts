@@ -19,7 +19,7 @@ class ContentBrain:
         """
         prompts = "Give me 1 specific, viral, and engaging topic for a Short Documentary. It should be a 'Engaging Did you know' fact or a 'Fun/intriguing Engaging News'. return ONLY the topic name."
         client = _get_client()
-        response = client.models.generate_content(model = genai.GenerativeModel('gemini-1.5-flash'), contents=prompts)
+        response = client.models.generate_content(model='gemini-1.5-flash', contents=prompts)
         topic = response.text.strip()
         print(f"🎯 Selected Topic: {topic}")
         return topic
