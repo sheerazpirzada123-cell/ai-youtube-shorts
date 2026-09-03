@@ -1,10 +1,15 @@
 import asyncio
+import os
+import shutil
+from dotenv import load_dotenv
 from modules.brain import ContentBrain
 from modules.asset_manager import AssetManager
 from modules.audio import AudioEngine
 from modules.composer import Composer
-import os
-import shutil
+
+# Load environment variables from .env file (for local testing)
+load_dotenv()
+
 def clean_cache():
     """
     Safely deletes temporary files.
@@ -27,7 +32,7 @@ def clean_cache():
         # SAFETY CHECK 2: Double check we are inside our project "assets" folder
         # This prevents the script from ever touching C:\ or System32
         if "assets" not in folder:
-            print(f"   🚨 SECURITY ALERT: Skipping {folder} because it looks unsafe!")
+            print(f"    🚨 SECURITY ALERT: Skipping {folder} because it looks unsafe!")
             continue
 
         # Loop through files inside the folder
@@ -41,7 +46,7 @@ def clean_cache():
                 elif os.path.isdir(file_path):
                     shutil.rmtree(file_path) # Delete subfolders if any
             except Exception as e:
-                print(f"   ❌ Failed to delete {file_path}. Reason: {e}")
+                print(f"    ❌ Failed to delete {file_path}. Reason: {e}")
     
     print("✨ Workspace clean!")
 
