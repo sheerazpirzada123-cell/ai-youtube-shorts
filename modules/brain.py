@@ -6,11 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# NOTE: gemini-1.5-flash has been retired by Google (all Gemini 1.5 models
-# now return 404). Use a currently supported model instead. Swap this if
-# Google deprecates it later — check https://ai.google.dev/gemini-api/docs/models
 MODEL_NAME = "gemini-2.5-flash"
-
 
 def _get_client():
     api_key = os.getenv("GEMINI_API_KEY")
@@ -20,94 +16,67 @@ def _get_client():
         )
     return genai.Client(api_key=api_key)
 
-
 def _extract_text(response):
-    """
-    Safely pull text out of a Gemini response. Returns None if the model
-    returned nothing usable (e.g. blocked by safety filters, empty candidates).
-    """
     text = getattr(response, "text", None)
     if text:
         return text.strip()
-
-    # Fallback: check candidates directly (covers cases where .text is empty
-    # because of safety blocks / finish_reason issues)
     candidates = getattr(response, "candidates", None)
     if candidates:
         finish_reason = getattr(candidates[0], "finish_reason", None)
         print(f"⚠️ Empty response text. finish_reason={finish_reason}")
     return None
 
-
 class ContentBrain:
     def get_trending_topic(self):
         """
-        In a full build, this would scrape Google Trends or Twitter.
-        For now, we ask Gemini to pick a viral niche topic.
+        Generates a viral MCU theory, rumor, or dark fact topic.
         """
         prompt = (
-            "Give me 1 specific, viral, and engaging topic for a Short Documentary. "
-            "It should be a 'Engaging Did you know' fact or a 'Fun/intriguing Engaging News'. "
-            "Return ONLY the topic name, with no quotes, labels, or extra commentary."
+            "Give me 1 viral, mind-blowing topic for a Short Video focused strictly on Marvel Cinematic Universe (MCU) theories, rumors, or facts. "
+            "Focus on upcoming films like Avengers: Doomsday, or characters like Victor von Doom, Iron Man, Spider-Man, or Doctor Strange. "
+            "Return ONLY the topic name without quotes or commentary."
         )
         client = _get_client()
 
         try:
             response = client.models.generate_content(model=MODEL_NAME, contents=prompt)
         except Exception as e:
-            raise RuntimeError(f"Gemini API call failed while getting topic: {e}") from e
+            raise RuntimeError(f"Gemini API call failed while getting MCU topic: {e}") from e
 
         topic = _extract_text(response)
         if not topic:
-            raise RuntimeError("Gemini returned no usable topic text (possibly blocked).")
+            raise RuntimeError("Gemini returned no usable topic text.")
 
-        # Strip stray quotes/markdown the model sometimes adds anyway
         topic = topic.strip().strip('"').strip("'").strip()
-        print(f"🎯 Selected Topic: {topic}")
+        print(f"🎯 Selected MCU Topic: {topic}")
         return topic
 
     def generate_script(self, topic):
         """
-        Generates a structured JSON script with visual cues.
+        Generates a structured MCU Short script optimized for a Hindi male narrator.
         """
-        print(f"📝 Writing script for: {topic}...")
+        print(f"📝 Writing MCU script for: {topic}...")
         prompt = f"""
-    You are the lead scriptwriter for a high-retention Hindi "Edutainment" YouTube Shorts channel.
+    You are an expert Marvel Cinematic Universe (MCU) content creator making viral YouTube Shorts in Hindi.
     Topic: {topic}
 
-    ### GOAL:
-    Create a script where every sentence has a "Visual Switch".
-    To keep retention high, we need TWO different stock videos for every single scene.
+    ### SCRIPT CREATION RULES:
+    1. **Voiceover Language (`text` field):** Written strictly in natural, spoken HINDI using Devanagari script (हिंदी).
+       - Tone: Intense, intriguing, confidential, and exciting—meant for a dramatic male voiceover.
+       - Use conversational Hindi phrases like "क्या आप जानते हैं?", "लेकिन सच तो यह है...", "Doctor Doom की यह थ्योरी आपका दिमाग घुमा देगी!".
+    2. **Structure:** 7-8 Scenes total.
+       - Hook -> Multiverse Context -> Character Theory/Fact (Doctor Doom/Iron Man/Spider-Man/Doctor Strange/Doomsday) -> Mind-Blowing Twist -> Channel Subscribe Outro.
+    3. **Visual Cues (`visual_1` & `visual_2` fields):** Must be in ENGLISH for stock image/video searches.
+       - Provide cinematic keywords (e.g., "dark superhero mask", "glowing magic portal", "futuristic armor closeup", "multiverse portal space").
 
-    ### 1. SCRIPT REQUIREMENTS (The Voiceover):
-    - **Language:** The "text" field MUST be written in natural, spoken HINDI using
-      Devanagari script (हिंदी). This is the voiceover that will be read aloud by a
-      Hindi text-to-speech voice, so it must sound like natural spoken Hindi, not a
-      literal word-for-word translation from English.
-    - **Perspective:** Strictly **3rd Person** ("वैज्ञानिकों ने पाया...", "समंदर के अंदर...").
-    - **Tone:** Engaging, fast-paced, logical. No fluff.
-    - **Structure:** 8-9 Scenes total.
-    - **Flow:** Hook -> Context -> Mechanism (How it works) -> Twist -> Outro.
-    - Numbers, years, and proper nouns can stay in Hindi or Latin numerals, whichever
-      sounds more natural when spoken aloud.
-
-    ### 2. VISUAL REQUIREMENTS (Dual Visuals):
-    - The "visual_1" and "visual_2" fields MUST stay in ENGLISH, even though "text" is
-      in Hindi — these are stock-footage search terms (Pexels), which only return good
-      results for English keywords.
-    - For EVERY scene, provide TWO distinct English search terms:
-      - **visual_1:** Matches the *start* of the sentence's meaning.
-      - **visual_2:** Matches the *end* of the sentence's meaning or provides a reaction/context.
-    - **Strictly Literal:** If the scene is about the economy crashing, do NOT search "sad man". Search "Stock market red chart".
-
-    Respond with a JSON array only, matching this shape:
+    Respond with a JSON array only:
     [
         {{
             "id": 1,
-            "text": "1995 में, यलोस्टोन पार्क में चौदह भेड़िये छोड़े गए, और उन्होंने वहां की नदियों तक को बदल डाला।",
-            "visual_1": "wolves running snow aerial",
-            "visual_2": "river flowing forest drone",
-            "mood": "intriguing"
+            "text": "क्या Avengers Doomsday में Robert Downey Jr का Victor von Doom असल में Iron Man का ही एक डार्क वेरिएंट है?",
+            "visual_1": "dark iron armor metallic",
+            "visual_2": "glowing green magic energy",
+            "mood": "mysterious"
         }}
     ]
     """
@@ -118,8 +87,6 @@ class ContentBrain:
             response = client.models.generate_content(
                 model=MODEL_NAME,
                 contents=prompt,
-                # Ask the API to guarantee valid JSON instead of relying on
-                # manual markdown-fence stripping, which is fragile.
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json"
                 ),
@@ -129,11 +96,9 @@ class ContentBrain:
 
         raw_text = _extract_text(response)
         if not raw_text:
-            print("❌ Gemini returned no script text (possibly blocked).")
+            print("❌ Gemini returned no script text.")
             return None
 
-        # Still strip markdown fences defensively, in case the model
-        # ignores response_mime_type on some SDK/model versions.
         clean_text = raw_text.replace("```json", "").replace("```", "").strip()
 
         try:
@@ -146,25 +111,24 @@ class ContentBrain:
 
     def generate_metadata(self, topic, script_data):
         """
-        Generates a YouTube Shorts title, description, and tags for the
-        finished video. Kept as a separate lightweight call so a failure
-        here doesn't waste the (expensive) script generation call.
+        Generates MCU-focused YouTube Shorts metadata with Hindi titles and trending English Marvel tags.
         """
         full_text = " ".join(scene.get("text", "") for scene in script_data)
         prompt = f"""
-    You are writing YouTube Shorts metadata for a Hindi short documentary video.
+    Write YouTube Shorts metadata for an MCU theory video.
     Topic: {topic}
-    Script (for context only, in Hindi): {full_text}
+    Script context: {full_text}
 
-    Write the "title" and "description" in natural, spoken HINDI (Devanagari script),
-    since the video's audience and voiceover are Hindi. Keep "tags" in English, since
-    YouTube search tags perform better in English/Roman script.
+    Requirements:
+    - **Title:** Punchy Hindi title with high CTR (under 80 chars), mentioning key characters (Doom, Iron Man, Spider-Man, Doomsday).
+    - **Description:** 2 Hindi sentences summarizing the video + MCU hashtags (#AvengersDoomsday #DoctorDoom #MarvelHindi #MCUTheories #Shorts).
+    - **Tags:** English Marvel tags (e.g., "Avengers Doomsday", "Doctor Doom Hindi", "Iron Man variant", "Marvel theories", "Spider-Man", "Doctor Strange").
 
-    Return ONLY a JSON object with this exact shape, no markdown fences:
+    Return ONLY a JSON object:
     {{
-        "title": "Under 90 characters, punchy, curiosity-driven Hindi title, no clickbait lies",
-        "description": "2-4 Hindi sentences summarizing the video, then 5-8 relevant hashtags on a new line",
-        "tags": ["short", "list", "of", "8-12", "single-or-two-word", "english", "keywords"]
+        "title": "Hindi Title Here",
+        "description": "Hindi Description Here",
+        "tags": ["tag1", "tag2", "tag3"]
     }}
     """
         client = _get_client()
@@ -176,33 +140,18 @@ class ContentBrain:
             )
             raw_text = _extract_text(response)
             if not raw_text:
-                raise RuntimeError("empty metadata response")
+                raise RuntimeError("Empty metadata response")
             clean_text = raw_text.replace("```json", "").replace("```", "").strip()
             metadata = json.loads(clean_text)
         except Exception as e:
-            print(f"⚠️ Metadata generation failed ({e}), falling back to topic as title.")
+            print(f"⚠️ Metadata generation failed, using fallback.")
             metadata = {
-                "title": topic[:90],
-                "description": f"{topic}\n\n#shorts #trending",
-                "tags": ["shorts", "trending"],
+                "title": f"{topic[:70]} | MCU Theory Hindi",
+                "description": f"{topic}\n\n#AvengersDoomsday #DoctorDoom #MarvelHindi #MCU #Shorts",
+                "tags": ["Avengers Doomsday", "Doctor Doom", "Marvel Theories", "Iron Man", "MCU Hindi"],
             }
 
-        # Guardrails: YouTube hard-caps title at 100 chars.
         metadata["title"] = str(metadata.get("title", topic))[:95]
         metadata["description"] = str(metadata.get("description", topic))[:4900]
         metadata["tags"] = list(metadata.get("tags", []))[:15]
         return metadata
-
-
-# --- TESTING THE MODULE ---
-if __name__ == "__main__":
-    brain = ContentBrain()
-    topic = brain.get_trending_topic()
-    script = brain.generate_script(topic)
-
-    if script:
-        with open("script.json", "w") as f:
-            json.dump(script, f, indent=4)
-        print("✅ Script saved to script.json")
-    else:
-        print("❌ No script to save.")
