@@ -94,7 +94,7 @@ async def main():
     # 3. ASSETS: Get Stock Video
     asset_manager = AssetManager()
     try:
-        assets_map = asset_manager.get_videos(script)
+        assets_map = asset_manager.get_videos(script, topic=topic)
     except Exception as e:
         print(f"❌ Asset Error: {e}")
         return
