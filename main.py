@@ -12,9 +12,15 @@ from modules.brain import ContentBrain
 from modules.asset_manager import AssetManager
 from modules.audio import AudioEngine
 from modules.composer import Composer
+from modules.youtube_uploader import YouTubeUploader
 
 # Load environment variables from .env file (for local testing)
 load_dotenv()
+
+# Set to "false" (as a GitHub secret/variable or local env var) to render
+# the video without publishing it — useful for testing the pipeline.
+UPLOAD_TO_YOUTUBE = os.getenv("UPLOAD_TO_YOUTUBE", "true").lower() != "false"
+YOUTUBE_PRIVACY_STATUS = os.getenv("YOUTUBE_PRIVACY_STATUS", "public")
 
 PROJECT_ROOT = os.getcwd()
 ASSETS_ROOT = os.path.join(PROJECT_ROOT, "assets")
@@ -103,11 +109,38 @@ async def main():
         return
 
     # 5. STITCH WITH TRANSITIONS
-    if final_scene_paths:
-        composer.concatenate_with_transitions(final_scene_paths)
-        clean_cache()
-    else:
+    if not final_scene_paths:
         print("❌ Failed to generate any scenes.")
+        return
+
+    final_video_path = composer.concatenate_with_transitions(final_scene_paths)
+
+    if not final_video_path:
+        print("❌ Stitching failed, nothing to upload.")
+        clean_cache()
+        return
+
+    # 6. UPLOAD TO YOUTUBE
+    if UPLOAD_TO_YOUTUBE:
+        try:
+            metadata = brain.generate_metadata(topic, script)
+            uploader = YouTubeUploader()
+            uploader.upload_video(
+                final_video_path,
+                title=metadata["title"],
+                description=metadata["description"],
+                tags=metadata["tags"],
+                privacy_status=YOUTUBE_PRIVACY_STATUS,
+            )
+        except Exception as e:
+            print(f"❌ YouTube Upload Error: {e}")
+            # Don't clean_cache here — keep the rendered video so it can be
+            # recovered from the workflow artifact if upload failed.
+            return
+    else:
+        print("ℹ️ UPLOAD_TO_YOUTUBE is false — skipping upload.")
+
+    clean_cache()
 
 
 if __name__ == "__main__":
