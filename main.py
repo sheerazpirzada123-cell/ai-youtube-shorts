@@ -70,11 +70,11 @@ def clean_cache():
 async def main():
     print("🚀 STARTING AUTOMATION...")
 
-    # 1. BRAIN: Get Script
+    # 1. BRAIN: Get Topic + Script + Metadata (single Gemini call — kinder
+    # to the free-tier daily quota than three separate calls)
     brain = ContentBrain()
     try:
-        topic = brain.get_trending_topic()
-        script = brain.generate_script(topic)
+        topic, script, metadata = brain.generate_package()
     except Exception as e:
         print(f"❌ Brain Error: {e}")
         return
@@ -123,7 +123,6 @@ async def main():
     # 6. UPLOAD TO YOUTUBE
     if UPLOAD_TO_YOUTUBE:
         try:
-            metadata = brain.generate_metadata(topic, script)
             uploader = YouTubeUploader()
             uploader.upload_video(
                 final_video_path,
