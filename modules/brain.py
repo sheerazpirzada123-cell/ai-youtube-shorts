@@ -135,6 +135,51 @@ class ContentBrain:
             print(clean_text)
             return None
 
+    def generate_metadata(self, topic, script_data):
+        """
+        Generates a YouTube Shorts title, description, and tags for the
+        finished video. Kept as a separate lightweight call so a failure
+        here doesn't waste the (expensive) script generation call.
+        """
+        full_text = " ".join(scene.get("text", "") for scene in script_data)
+        prompt = f"""
+    You are writing YouTube Shorts metadata for a short documentary video.
+    Topic: {topic}
+    Script (for context only): {full_text}
+
+    Return ONLY a JSON object with this exact shape, no markdown fences:
+    {{
+        "title": "Under 90 characters, punchy, curiosity-driven, no clickbait lies",
+        "description": "2-4 sentences summarizing the video, then 5-8 relevant hashtags on a new line",
+        "tags": ["short", "list", "of", "8-12", "single-or-two-word", "keywords"]
+    }}
+    """
+        client = _get_client()
+        try:
+            response = client.models.generate_content(
+                model=MODEL_NAME,
+                contents=prompt,
+                config=types.GenerateContentConfig(response_mime_type="application/json"),
+            )
+            raw_text = _extract_text(response)
+            if not raw_text:
+                raise RuntimeError("empty metadata response")
+            clean_text = raw_text.replace("```json", "").replace("```", "").strip()
+            metadata = json.loads(clean_text)
+        except Exception as e:
+            print(f"⚠️ Metadata generation failed ({e}), falling back to topic as title.")
+            metadata = {
+                "title": topic[:90],
+                "description": f"{topic}\n\n#shorts #trending",
+                "tags": ["shorts", "trending"],
+            }
+
+        # Guardrails: YouTube hard-caps title at 100 chars.
+        metadata["title"] = str(metadata.get("title", topic))[:95]
+        metadata["description"] = str(metadata.get("description", topic))[:4900]
+        metadata["tags"] = list(metadata.get("tags", []))[:15]
+        return metadata
+
 
 # --- TESTING THE MODULE ---
 if __name__ == "__main__":
