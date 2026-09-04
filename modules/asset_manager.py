@@ -31,6 +31,25 @@ STAGE_KEYWORDS = {
     "सफलता": ["crowd cheering concert night", "flashing camera lights"],
 }
 
+# Curated, safe fallback moods for when Pexels has NO results at all for a
+# scene's query. Previously this fell back to retrying with just the query's
+# *last word* — which is how totally unrelated clips (a Turkish snack shop,
+# an anime cosplay video, a "click here" ad) ended up in biography videos:
+# a stray single word like "album" or "shop" or "click" matches whatever
+# Pexels has tagged with that word, with zero relevance to the story. This
+# list is deliberately generic-but-on-theme for a life-story/biography video,
+# so a fallback never produces something wildly off-topic.
+SAFE_FALLBACK_QUERIES = [
+    "vintage film reel cinema",
+    "old typewriter paper desk",
+    "empty theatre stage spotlight",
+    "black and white photograph vintage",
+    "city lights night motivational",
+    "clapperboard film set",
+    "rain window silhouette",
+    "sunrise over city skyline",
+]
+
 
 def _detect_stage_terms(*texts):
     """Scan scene text/topic for story-stage cues and return extra mood keywords."""
@@ -291,12 +310,21 @@ class AssetManager:
             data = response.json()
             
             if not data.get('videos'):
-                # Retry strategy: Simplify query if complex query fails
-                if " " in query:
-                    simple_query = query.split()[-1] # Try last word (usually the noun)
-                    print(f"      ⚠️ No results. Retrying with '{simple_query}'...")
-                    return self.search_video(simple_query, duration_min, prefer_relevance)
-                return None
+                # No results for this specific query — retry with a curated,
+                # on-theme SAFE_FALLBACK_QUERIES pick instead of shrinking to
+                # a single ambiguous word (that's what used to cause totally
+                # unrelated results like anime cosplay or a random shop, since
+                # a lone word like "album" or "shop" matches Pexels' loose
+                # tagging with zero relevance to the video).
+                fallback_query = random.choice(SAFE_FALLBACK_QUERIES)
+                print(f"      ⚠️ No results for '{query}'. Retrying with safe fallback '{fallback_query}'...")
+                params["query"] = fallback_query
+                response = requests.get(self.base_url, headers=self.headers, params=params, timeout=10)
+                if response.status_code != 200:
+                    return None
+                data = response.json()
+                if not data.get('videos'):
+                    return None
             
             # Filter logic: Prefer videos that aren't too short (at least 4 seconds).
             # Keep Pexels' original relevance order (don't re-sort by anything else).
@@ -372,10 +400,12 @@ class AssetManager:
         local_photos = self.get_local_actor_photos(actor_name)
 
         # 2. Auto-fetched free-licensed career/press photos from Wikimedia
-        # Commons, topped up if you didn't supply enough manual photos.
-        if len(local_photos) < 4:
-            wiki_photos = self.fetch_wikimedia_photos(actor_name)
-            local_photos = local_photos + wiki_photos
+        # Commons. Always attempted (it's cached after the first run, so
+        # this costs nothing on reruns) and merged with any manual photos —
+        # for a well-known actor like this, real photos are the single
+        # biggest fix for irrelevant-visuals issues, so we lean on this hard.
+        wiki_photos = self.fetch_wikimedia_photos(actor_name, limit=8)
+        local_photos = local_photos + wiki_photos
 
         if local_photos:
             print(f"   🖼️ Using {len(local_photos)} real photo(s) for '{actor_name}' (manual + Wikimedia).")
