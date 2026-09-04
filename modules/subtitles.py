@@ -75,20 +75,41 @@ def get_word_timings(audio_path, text, duration):
     return timings
 
 
+MIN_CHUNK_DURATION = 0.28  # seconds — below this, a caption flashes faster than it can be read
+MAX_CHUNK_CHARS = 18       # keeps the on-screen box from overcrowding on long compound words
+
+
 def group_into_chunks(word_timings, chunk_size=2):
     """
-    Groups (word, start, end) tuples into (text, start, end) chunks of
-    `chunk_size` words each, for one-chunk-on-screen-at-a-time captions.
+    Groups (word, start, end) tuples into (text, start, end) chunks of at
+    most `chunk_size` words. Shrinks the group to 1 word if the combined
+    text is too wide for a clean caption, and stretches too-short chunks up
+    to MIN_CHUNK_DURATION (without overlapping the next chunk) so fast
+    speech doesn't produce captions that flicker on/off unreadably.
     """
     chunks = []
-    for i in range(0, len(word_timings), chunk_size):
+    i = 0
+    n = len(word_timings)
+    while i < n:
         group = word_timings[i:i + chunk_size]
-        if not group:
-            continue
         text = " ".join(w for w, _, _ in group)
+        if len(text) > MAX_CHUNK_CHARS and len(group) > 1:
+            group = group[:1]
+            text = group[0][0]
+        if not group:
+            i += 1
+            continue
+
         start = group[0][1]
         end = group[-1][2]
+
+        if end - start < MIN_CHUNK_DURATION:
+            next_idx = i + len(group)
+            next_start = word_timings[next_idx][1] if next_idx < n else start + MIN_CHUNK_DURATION
+            end = max(end, min(start + MIN_CHUNK_DURATION, next_start))
+
         chunks.append((text, start, end))
+        i += len(group)
     return chunks
 
 
