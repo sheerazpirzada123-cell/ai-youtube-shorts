@@ -20,12 +20,35 @@ except ImportError:
     _PARLER_AVAILABLE = False
 
 
-def _text_to_ssml(text, voice):
+# Mood -> (rate, volume, pitch) tuning. These are edge-tts's/Azure SSML's
+# actual prosody knobs. Kept modest (roughly +-12%) — pushing past that
+# starts producing chipmunk/robotic artifacts on neural voices, but staying
+# flat at 0% for every mood is exactly what makes narration sound tired.
+MOOD_TTS_PARAMS = {
+    "mysterious": {"rate": "-4%",  "volume": "+0%",  "pitch": "-2Hz"},
+    "dramatic":   {"rate": "-2%",  "volume": "+6%",  "pitch": "+0Hz"},
+    "emotional":  {"rate": "-6%",  "volume": "-2%",  "pitch": "-3Hz"},
+    "sad":        {"rate": "-8%",  "volume": "-4%",  "pitch": "-4Hz"},
+    "suspense":   {"rate": "-6%",  "volume": "+2%",  "pitch": "-3Hz"},
+    "inspiring":  {"rate": "+4%",  "volume": "+8%",  "pitch": "+4Hz"},
+    "triumphant": {"rate": "+8%",  "volume": "+12%", "pitch": "+6Hz"},
+    "energetic":  {"rate": "+10%", "volume": "+10%", "pitch": "+5Hz"},
+    "default":    {"rate": "+0%",  "volume": "+0%",  "pitch": "+0Hz"},
+}
+
+
+def _mood_params(mood):
+    return MOOD_TTS_PARAMS.get((mood or "default").strip().lower(), MOOD_TTS_PARAMS["default"])
+
+
+def _text_to_ssml(text, voice, mood="default"):
     """
-    Converts plain narration text into SSML with real pauses and slightly
-    deliberate pacing — this is the actual lever for sounding less robotic
-    (not pitch-shifting the whole voice). Danda (।) and full stops get a
-    longer breath pause; commas and "..." get a shorter one.
+    Converts plain narration text into SSML with real pauses and
+    mood-driven pacing — this is the actual lever for sounding less robotic
+    (not just pitch-shifting the whole voice arbitrarily). Danda (।) and
+    full stops get a longer breath pause; commas and "..." get a shorter
+    one; rate/pitch/volume are driven by the scene's mood so narration
+    doesn't sound flat across an entire video.
     """
     # Split on sentence-ending punctuation, keep the punctuation attached.
     parts = re.split(r'([।.!?]+)', text)
@@ -43,9 +66,10 @@ def _text_to_ssml(text, voice):
         sentence_with_pauses = sentence.replace("...", '<break time="400ms"/>').replace(",", ',<break time="150ms"/>')
         body += f'<s>{sentence_with_pauses}</s><break time="450ms"/>\n'
 
+    params = _mood_params(mood)
     return f"""<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="hi-IN">
     <voice name="{voice}">
-        <prosody rate="0%" pitch="0%">
+        <prosody rate="{params['rate']}" pitch="{params['pitch']}">
             {body}
         </prosody>
     </voice>
@@ -133,7 +157,7 @@ class AudioEngine:
         sf.write(output_path, audio_arr, self._local_model.config.sampling_rate)
         return output_path
 
-    def _generate_azure(self, text, output_path):
+    def _generate_azure(self, text, output_path, mood="default"):
         speech_config = speechsdk.SpeechConfig(subscription=self.azure_key, region=self.azure_region)
         speech_config.set_speech_synthesis_output_format(
             speechsdk.SpeechSynthesisOutputFormat.Audio24Khz96KBitRateMonoMp3
@@ -141,7 +165,7 @@ class AudioEngine:
         audio_config = speechsdk.audio.AudioOutputConfig(filename=output_path)
         synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=audio_config)
 
-        ssml = _text_to_ssml(text, self.voice)
+        ssml = _text_to_ssml(text, self.voice, mood)
         result = synthesizer.speak_ssml_async(ssml).get()
 
         if result.reason != speechsdk.ResultReason.SynthesizingAudioCompleted:
@@ -152,11 +176,10 @@ class AudioEngine:
     async def generate_audio(self, text, output_filename, retries=3, mood="mysterious"):
         """
         Generates Hindi male voiceover using whichever engine was selected
-        at startup (see AudioEngine docstring). Local/Azure paths get real
-        pacing/description control; edge-tts uses the voice's natural
-        rate/pitch — pitch-shifting a neural voice away from its trained
-        baseline (e.g. rate="+8%", pitch="-2Hz") makes it sound MORE
-        synthetic, not less.
+        at startup (see AudioEngine docstring). All three paths now apply
+        mood-driven rate/volume/pitch tuning (see MOOD_TTS_PARAMS) so the
+        narration's energy actually matches the scene instead of staying
+        flat throughout the video.
         """
         # Local engine outputs WAV (raw model output); others output MP3.
         if self.engine == "local":
@@ -168,9 +191,13 @@ class AudioEngine:
                 if self.engine == "local":
                     return await asyncio.to_thread(self._generate_local, text, output_path, mood)
                 elif self.engine == "azure":
-                    return await asyncio.to_thread(self._generate_azure, text, output_path)
+                    return await asyncio.to_thread(self._generate_azure, text, output_path, mood)
                 else:
-                    communicate = edge_tts.Communicate(text, self.voice)
+                    params = _mood_params(mood)
+                    communicate = edge_tts.Communicate(
+                        text, self.voice,
+                        rate=params["rate"], volume=params["volume"], pitch=params["pitch"],
+                    )
                     await communicate.save(output_path)
                     return output_path
 
