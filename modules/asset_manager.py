@@ -432,8 +432,14 @@ class AssetManager:
                 # to generic stock below instead of losing the scene.
 
             # 1. Get base search terms from the script
-            query_a = scene.get('visual_1', scene.get('keywords', 'abstract'))
-            query_b = scene.get('visual_2', query_a)
+            # Falling back to the literal word "abstract" used to send that
+            # exact query to Pexels, which returns generic unrelated shape/
+            # motion clips — this was the biggest source of visual mismatch.
+            # Fall back to the video's own topic instead, so an unlabeled
+            # scene still gets an on-theme B-roll.
+            default_query = topic.strip() if topic and topic.strip() else "cinematic biography storytelling"
+            query_a = scene.get('visual_1') or scene.get('keywords') or default_query
+            query_b = scene.get('visual_2') or default_query
 
             # 1b. Bias toward the story stage this scene is actually about
             # (childhood/struggle/award/etc), so clips match the moment.
