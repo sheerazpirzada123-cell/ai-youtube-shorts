@@ -56,7 +56,7 @@ def _call_with_retry(fn, *, max_attempts=6, base_delay=2.0, max_delay=60.0):
                 delay = min(max_delay, base_delay * (2 ** (attempt - 1))) + random.uniform(0, 1)
             note = " [daily free-tier quota]" if _is_daily_quota_exhausted(e) else ""
             print(f"⏳ Gemini call failed (attempt {attempt}/{max_attempts}){note}: {e}")
-            print(f"   Retrying in {delay:.1f}s...")
+            print(f"    Retrying in {delay:.1f}s...")
             time.sleep(delay)
     raise last_exc
 
@@ -111,8 +111,8 @@ class ContentBrain:
     health conditions, or unverified scandal/gossip — stick to their career
     journey, struggle, background, and publicly known biographical facts.
 
-    STEP 2 — SCRIPT: Write a 7-8 scene script about that actor's untold/life
-    story.
+    STEP 2 — SCRIPT: Write a 3-4 scene script about that actor's untold/life
+    story (KEEP IT SHORT AND FAST-PACED, total words under 80 words for a short under 45 seconds).
     - Voiceover (`text` field): written in Devanagari script, but the
       VOCABULARY must be everyday spoken HINDUSTANI (the common mixed
       Hindi-Urdu that ordinary people actually speak in India/Pakistan —
@@ -132,8 +132,7 @@ class ContentBrain:
       "(ACTOR_NAME) के बारे में आपको ये बातें शायद ही पता होंगी..."
       then continue the hook in the same everyday Hindustani style.
     - Structure: Hook (as above) -> Early life / background -> Struggle
-      phase -> Big break / turning point -> Untold/lesser-known fact ->
-      Where they are today -> Channel Subscribe Outro.
+      phase -> Big break/turning point -> Channel Subscribe Outro.
     - Only use publicly known, non-defamatory biographical information.
       Do not invent private/personal claims that aren't publicly established.
     - Visual cues (`visual_1` & `visual_2`): ENGLISH generic mood keywords
@@ -154,7 +153,7 @@ class ContentBrain:
       includes the actor's name and a curiosity phrase like "Untold Story".
     - description: 2-3 Hinglish (Roman-script) sentences summarizing the
       video, written so it naturally contains the kind of terms people
-      actually search for (actor's name + "biography", "life story",
+      actually search for (actor name + "biography", "life story",
       "untold story", "struggle story", "unknown facts" etc.), followed by
       relevant hashtags including the actor's name.
     - tags: 10-15 SEO tags in English/Hinglish a viewer would actually type
@@ -278,9 +277,8 @@ class ContentBrain:
        - The FIRST scene's text MUST start with the exact hook pattern (actor's real name in place of
          ACTOR_NAME): "(ACTOR_NAME) के बारे में आपको ये बातें शायद ही पता होंगी..." then continue the hook
          in the same everyday Hindustani style.
-    2. **Structure:** 7-8 Scenes total.
-       - Hook -> Early life/background -> Struggle phase -> Big break/turning point -> Untold/lesser-known
-         fact -> Where they are today -> Channel Subscribe Outro.
+    2. **Structure:** 3-4 Scenes total (KEEP IT SHORT AND FAST-PACED, under 80 words total for a short under 45 seconds).
+       - Hook -> Struggle phase -> Big break -> Outro.
        - Only use publicly known, non-defamatory biographical information.
     3. **Visual Cues (`visual_1` & `visual_2` fields):** Must be in ENGLISH, generic mood keywords for
        stock footage that do NOT depend on it being that specific real person (e.g. "small indian
