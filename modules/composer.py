@@ -1,16 +1,41 @@
 import os
 import random
 import ffmpeg
+from modules.subtitles import get_word_timings, group_into_chunks, escape_drawtext
 
 class Composer:
     def __init__(self):
         self.temp_dir = os.path.join(os.getcwd(), "assets", "temp")
         self.final_dir = os.path.join(os.getcwd(), "assets", "final")
         self.avatar_path = os.path.join(os.getcwd(), "assets", "avatar", "avatars.mp4")
-        
+        self.bgm_dir = os.path.join(os.getcwd(), "assets", "bgm")
+
         os.makedirs(self.temp_dir, exist_ok=True)
         os.makedirs(self.final_dir, exist_ok=True)
+        os.makedirs(self.bgm_dir, exist_ok=True)
         self.transitions = ['fade', 'diagbr', 'diagtl']
+
+        # Caption styling. `caption_font` is a fontconfig family name (needs
+        # the corresponding font installed system-wide — the CI workflow
+        # installs `fonts-noto` which covers Devanagari + Latin). If you're
+        # running locally on a machine without that font, install a
+        # Devanagari-capable bold font and update this name, or set
+        # `caption_fontfile` to a direct .ttf path instead (drawtext accepts
+        # either).
+        self.caption_font = "Noto Sans Devanagari Bold"
+        self.caption_fontfile = None  # e.g. "assets/fonts/NotoSansDevanagari-Bold.ttf"
+        self.caption_words_per_chunk = 2  # "1-2 words highlight" style
+
+    def _pick_bgm(self):
+        """Returns a random BGM track from assets/bgm/, or None if empty."""
+        if not os.path.isdir(self.bgm_dir):
+            return None
+        valid_ext = (".mp3", ".wav", ".m4a", ".aac")
+        tracks = [
+            os.path.join(self.bgm_dir, f) for f in os.listdir(self.bgm_dir)
+            if f.lower().endswith(valid_ext)
+        ]
+        return random.choice(tracks) if tracks else None
 
     def get_duration(self, filepath):
         try:
@@ -19,11 +44,58 @@ class Composer:
         except:
             return 0.0
 
+    def _add_captions(self, video_stream, scene):
+        """
+        Burns in dynamic, TikTok/Reels-style captions: 1-2 words on screen
+        at a time, bold with a semi-transparent background box, timed to the
+        actual voiceover (via faster-whisper word timestamps when available,
+        otherwise an even-duration-split approximation — see subtitles.py).
+        """
+        audio_path = scene.get('audio_path')
+        text = scene.get('text', '')
+        duration = scene.get('duration', 0)
+
+        if not audio_path or not text or duration <= 0:
+            return video_stream
+
+        try:
+            word_timings = get_word_timings(audio_path, text, duration)
+            chunks = group_into_chunks(word_timings, self.caption_words_per_chunk)
+        except Exception as e:
+            print(f"      ⚠️ Caption timing failed for scene {scene.get('id')}: {e}")
+            return video_stream
+
+        font_kwargs = {"fontfile": self.caption_fontfile} if self.caption_fontfile else {"font": self.caption_font}
+
+        for chunk_text, start, end in chunks:
+            safe_text = escape_drawtext(chunk_text)
+            if not safe_text.strip() or end <= start:
+                continue
+            video_stream = video_stream.filter(
+                'drawtext',
+                text=safe_text,
+                fontsize=64,
+                fontcolor='white',
+                borderw=4,
+                bordercolor='black',
+                box=1,
+                boxcolor='black@0.45',
+                boxborderw=18,
+                x='(w-text_w)/2',
+                y='h*0.72-(text_h/2)',
+                enable=f'between(t,{start:.3f},{end:.3f})',
+                **font_kwargs,
+            )
+
+        return video_stream
+
     def process_scene(self, scene, video_pair, is_avatar=False):
         """
         Combines Audio with Visuals.
         - If Avatar: Loop single video + CROP LOGO.
         - If Stock: Split duration 50/50 between Video A and Video B.
+        - Always: burns in dynamic word-highlight captions from the
+          voiceover (see _add_captions).
         """
         scene_id = scene['id']
         audio_path = scene['audio_path']
@@ -80,6 +152,9 @@ class Composer:
                 )
 
                 video_stream = ffmpeg.concat(stream_a, stream_b, v=1, a=0)
+
+            # Burn in dynamic word-highlight captions
+            video_stream = self._add_captions(video_stream, scene)
 
             # Combine Video + Audio
             runner = ffmpeg.output(
@@ -188,6 +263,21 @@ class Composer:
             )
             
             current_dur = (current_dur + next_dur) - trans_dur
+
+        # Mix in background music, ducked well under the voiceover, if you've
+        # dropped any royalty-free tracks into assets/bgm/. Looped and
+        # trimmed to match the voice track's length automatically via `amix`.
+        bgm_path = self._pick_bgm()
+        if bgm_path:
+            print(f"   🎵 Adding background music: {os.path.basename(bgm_path)}")
+            bgm_stream = (
+                ffmpeg.input(bgm_path, stream_loop=-1)
+                .filter('volume', 0.12)
+            )
+            a_stream = ffmpeg.filter([a_stream, bgm_stream], 'amix', inputs=2, duration='first', dropout_transition=2)
+        else:
+            print("   ℹ️ No background music found in assets/bgm/ — skipping BGM "
+                  "(add a royalty-free instrumental .mp3 there to enable it).")
 
         try:
             runner = ffmpeg.output(
