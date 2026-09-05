@@ -83,15 +83,14 @@ async def main():
         print("❌ Script generation failed.")
         return
 
-    # 2. AUDIO: Generate Voice
+    # 2. AUDIO: No narration/TTS anymore — just confirm bgm/sfx assets exist
+    # (see modules/audio.py). Scene durations are already fixed in brain.py.
     audio_engine = AudioEngine()
-    try:
-        script = await audio_engine.process_script(script)
-    except Exception as e:
-        print(f"❌ Audio Error: {e}")
-        return
+    audio_engine.check_audio_assets(script)
 
-    # 3. ASSETS: Get cat-centric Pexels stock video for each scene
+    # 3. ASSETS: Get cat-centric video for each scene — Pixabay's
+    # video_type=animation first (real 3D/animated-style cat clips), then
+    # Pexels stock footage as fallback (see modules/asset_manager.py).
     asset_manager = AssetManager()
     try:
         assets_map = asset_manager.get_videos(script, topic=topic)
