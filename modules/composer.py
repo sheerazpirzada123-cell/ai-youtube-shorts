@@ -70,11 +70,24 @@ class Composer:
             duration_a = total_duration / 2
             duration_b = (total_duration / 2) + 0.5
 
+            # NOTE ON setsar(1): Clip A and Clip B can come from different
+            # sources (Pixabay animation vs Pexels stock — see
+            # asset_manager.py), and their source files can carry different
+            # pixel aspect ratios (SAR) — e.g. a Pixabay render tagged
+            # SAR 256:81 next to a Pexels clip at SAR 1:1. `scale`/`crop`
+            # alone do NOT normalize that away, and ffmpeg's `concat` filter
+            # refuses to join two streams whose SAR doesn't match ("Input
+            # link parameters do not match the corresponding output link
+            # parameters"), which was failing 100% of scenes. Forcing
+            # setsar=1 (square pixels) on BOTH streams right after crop
+            # guarantees they always match at the concat step, regardless
+            # of which source either clip came from.
             stream_a = (
                 ffmpeg.input(path_a, stream_loop=-1)
                 .trim(duration=duration_a)
                 .setpts('PTS-STARTPTS')
                 .filter('scale', 1080, 1920).filter('crop', 1080, 1920)
+                .filter('setsar', 1)
                 .filter('fps', fps=30, round='up')
             )
 
@@ -83,6 +96,7 @@ class Composer:
                 .trim(duration=duration_b)
                 .setpts('PTS-STARTPTS')
                 .filter('scale', 1080, 1920).filter('crop', 1080, 1920)
+                .filter('setsar', 1)
                 .filter('fps', fps=30, round='up')
             )
 
