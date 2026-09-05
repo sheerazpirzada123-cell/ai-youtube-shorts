@@ -139,6 +139,7 @@ class AssetManager:
             "key": self.pixabay_api_key,
             "q": query,
             "video_type": "animation",  # <-- the filter Pexels doesn't have
+            "orientation": "vertical",  # prefer portrait-shot source clips
             "safesearch": "true",
             "per_page": 20,  # Pixabay's minimum allowed value
         }
