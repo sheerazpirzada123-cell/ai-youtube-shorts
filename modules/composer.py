@@ -135,7 +135,7 @@ def render_short_video(scenes, scene_video_paths, scene_audio_paths, scene_word_
 
         caption = _make_word_captions(words, duration)
         if caption is None:
-            caption = _make_caption(scene["narration"], duration)
+            caption = _make_caption(scene.get("narration", ""), duration)
 
         segment = CompositeVideoClip([clip, caption]).set_duration(duration)
         video_segments.append(segment)
