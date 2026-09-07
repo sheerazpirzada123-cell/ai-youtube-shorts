@@ -1,8 +1,11 @@
 name: Auto YouTube Shorts Generator
 
 on:
-  schedule:
-    - cron: '0 4,16 * * *' # Rozana do baar auto-run hoga
+  # Auto-schedule is OFF for now so nothing uploads while you're still testing.
+  # Once you're happy with the output, uncomment the two lines below to go
+  # back to running automatically twice a day (4 AM & 4 PM UTC).
+  # schedule:
+  #   - cron: '0 4,16 * * *'
   workflow_dispatch: # Manual run button ke liye
 
 jobs:
@@ -22,7 +25,10 @@ jobs:
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg
+          sudo apt-get install -y ffmpeg imagemagick
+          # ImageMagick's default security policy blocks some operations moviepy's
+          # TextClip needs (used for the on-screen captions) - relax it here.
+          sudo sed -i 's/rights="none" pattern="@\*"/rights="read|write" pattern="@*"/' /etc/ImageMagick-6/policy.xml || true
 
       - name: Install Python Dependencies
         run: |
@@ -37,6 +43,9 @@ jobs:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+          # Set to "true" (as a repo Variable, Settings > Secrets and variables > Actions > Variables)
+          # once you want real uploads to go live. Defaults to false = dry run.
+          YOUTUBE_UPLOAD_ENABLED: ${{ vars.YOUTUBE_UPLOAD_ENABLED }}
         run: |
           python main.py
 
@@ -45,5 +54,5 @@ jobs:
         if: always()
         with:
           name: generated-short-video
-          path: output.mp4
+          path: final_short.mp4
           retention-days: 1
