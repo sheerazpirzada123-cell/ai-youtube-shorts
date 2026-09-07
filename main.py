@@ -2,9 +2,6 @@ import os
 import re
 import sys
 import time
-import uuid
-import inspect
-import itertools
 import requests
 import subprocess
 from gtts import gTTS
@@ -17,12 +14,14 @@ except ImportError:
     GEMINI_AVAILABLE = False
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+PEXELS_API_KEY = os.getenv("PEXELS_API_KEY", "")
+PIXABAY_API_KEY = os.getenv("PIXABAY_API_KEY", "")
 
 # --- YouTube auto-upload (free, YouTube Data API v3) --------------------
 YT_CLIENT_ID = os.getenv("YT_CLIENT_ID", "")
 YT_CLIENT_SECRET = os.getenv("YT_CLIENT_SECRET", "")
 YT_REFRESH_TOKEN = os.getenv("YT_REFRESH_TOKEN", "")
-YT_PRIVACY_STATUS = os.getenv("YT_PRIVACY_STATUS", "private")
+YT_PRIVACY_STATUS = os.getenv("YT_PRIVACY_STATUS", "public")
 
 NUM_SCENES = int(os.getenv("NUM_SCENES", "5"))
 
@@ -34,21 +33,6 @@ ELEVEN_KEYS = [
 ]
 ELEVEN_KEYS = [k for k in ELEVEN_KEYS if k.strip()]
 
-# Hugging Face free Spaces for base video generation
-HF_TOKENS = []
-if os.getenv("HF_TOKEN", "").strip():
-    HF_TOKENS.append(os.getenv("HF_TOKEN").strip())
-for i in range(1, 5):
-    tok = os.getenv(f"HF_TOKEN_{i}", "").strip()
-    if tok:
-        HF_TOKENS.append(tok)
-HF_TOKENS = list(dict.fromkeys(HF_TOKENS))
-
-HF_VIDEO_SPACES = [
-    s.strip() for s in os.getenv("HF_VIDEO_SPACES", "Wan-AI/Wan2.1").split(",")
-    if s.strip()
-]
-
 gemini_client = None
 if GEMINI_AVAILABLE and GEMINI_API_KEY:
     try:
@@ -58,29 +42,28 @@ if GEMINI_AVAILABLE and GEMINI_API_KEY:
 
 
 def generate_story_script():
-    """Generates an NUM_SCENES-scene cute 3D cartoon style story script with dynamic unique plots every time."""
-    print("Generating Unique & Cute 3D Cartoon Story Script via Gemini...")
+    """Generates an NUM_SCENES-scene facts script with visual keywords for Pexels/Pixabay."""
+    print("Generating Unique Facts Script via Gemini...")
 
     if not gemini_client:
         print("Gemini client not available, using default script.")
         return {"scenes": [
-            {"prompt": "Cute 3D Pixar style animated fluffy cat talking with funny expressive eyes, bright cozy room background, vertical 9:16", "script": "O yaaron, aaj maine ek naya business shuru karne ka socha hai, dekhte hain kya hota hai!"},
-            {"prompt": "Cute 3D Pixar style animated funny dog reacting with shocked expression, colorful cartoon park background, vertical 9:16", "script": "Arre bhai, tera naya business sunkar mere toh hosh hi udd gaye!"}
+            {"keyword": "galaxy space stars", "script": "Kya aapko pata hai, hamari galaxy mein taron ki sankhya samandar ki reti ke kano se bhi zyada hai!"},
+            {"keyword": "deep ocean waves", "script": "Duniya ka sabse gehra hissa itna andhera hai ke wahan rooh kaanp jaye!"}
         ]}
 
     models_to_try = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash-latest"]
 
     format_lines = []
     for i in range(1, NUM_SCENES + 1):
-        format_lines.append(f"SCENE {i} PROMPT: [Video prompt]")
-        format_lines.append(f"SCENE {i} SCRIPT: [Hindi dialogue line]")
+        format_lines.append(f"SCENE {i} KEYWORD: [Pexels search keyword in English]")
+        format_lines.append(f"SCENE {i} SCRIPT: [Hindi voiceover line]")
     format_block = "\n".join(format_lines)
 
     prompt_text = (
-        f"Create a totally unique, random, and funny {NUM_SCENES}-scene animated Hindi short story starring cute 3D cartoon characters "
-        "(like funny cats, pets, or cute cartoon creatures) with a continuing storyline. Avoid repetition. Each scene must have a "
-        "visual video prompt in English describing cute actions in a vibrant 3D Pixar/Disney style (max 12 words) "
-        "and 1 pure Hindi dialogue line (roughly 6-8 seconds when spoken), making the whole short about 30-40 seconds.\n\n"
+        f"Create a viral facts YouTube Short script with {NUM_SCENES} scenes in Hindi. "
+        "Each scene must have a short English search keyword for downloading stock videos (like Pexels) "
+        "and 1 engaging Hindi dialogue line.\n\n"
         "STRICT FORMAT (no extra text before/after):\n" + format_block
     )
 
@@ -93,133 +76,111 @@ def generate_story_script():
             raw_text = (response.text or "").strip()
 
             scenes = []
-            video_prompts = re.findall(r'SCENE \d+ PROMPT:\s*(.*)', raw_text)
+            keywords = re.findall(r'SCENE \d+ KEYWORD:\s*(.*)', raw_text)
             scripts = re.findall(r'SCENE \d+ SCRIPT:\s*(.*)', raw_text)
 
-            if len(video_prompts) >= NUM_SCENES and len(scripts) >= NUM_SCENES:
+            if len(keywords) >= NUM_SCENES and len(scripts) >= NUM_SCENES:
                 for i in range(NUM_SCENES):
                     clean_script = re.sub(r'\(.*?\)', '', scripts[i]).replace('*', '').replace('"', '').strip()
-                    clean_prompt = video_prompts[i].strip() + ", cute 3D Pixar style animation, vibrant colors, bright lighting, vertical 9:16"
-                    if clean_script and clean_prompt:
-                        scenes.append({"prompt": clean_prompt, "script": clean_script})
+                    clean_keyword = keywords[i].strip()
+                    if clean_script and clean_keyword:
+                        scenes.append({"keyword": clean_keyword, "script": clean_script})
                 if len(scenes) == NUM_SCENES:
                     return {"scenes": scenes}
         except Exception as e:
             print(f"Gemini Story Error ({model_name}): {e}")
 
     return {"scenes": [
-        {"prompt": "Cute 3D Pixar style animated fluffy cat talking with funny expressive eyes, bright cozy room background, vertical 9:16", "script": "O yaaron, aaj maine ek naya business shuru karne ka socha hai, dekhte hain kya hota hai!"},
-        {"prompt": "Cute 3D Pixar style animated funny dog reacting with shocked expression, colorful cartoon park background, vertical 9:16", "script": "Arre bhai, tera naya business sunkar mere toh hosh hi udd gaye!"}
+        {"keyword": "galaxy space stars", "script": "Kya aapko pata hai, hamari galaxy mein taron ki sankhya samandar ki reti ke kano se bhi zyada hai!"},
+        {"keyword": "deep ocean waves", "script": "Duniya ka sabse gehra hissa itna andhera hai ke wahan rooh kaanp jaye!"}
     ]}
 
 
-def _make_hf_client(space_id, token):
-    from gradio_client import Client
-    kwargs = {}
-    if token:
-        try:
-            sig_params = inspect.signature(Client.__init__).parameters
-        except (TypeError, ValueError):
-            sig_params = {}
-        if "hf_token" in sig_params:
-            kwargs["hf_token"] = token
-        elif "token" in sig_params:
-            kwargs["token"] = token
-    return Client(space_id, **kwargs)
-
-
-def generate_video_hf_spaces(prompt_text, idx):
-    try:
-        from gradio_client import Client  # noqa: F401
-    except ImportError:
+def download_pexels_video(keyword, idx):
+    """Pexels API se stock video download karta hai."""
+    if not PEXELS_API_KEY:
         return None
-
-    tokens_to_try = HF_TOKENS if HF_TOKENS else [None]
-
-    for space_id in HF_VIDEO_SPACES:
-        for token_idx, token in enumerate(tokens_to_try):
-            try:
-                client = _make_hf_client(space_id, token)
-                result = client.predict(
-                    prompt_text,
-                    "",          # negative_prompt
-                    480,         # resolution
-                    5,           # duration
-                    api_name="/generate_video"
-                )
-            except Exception:
-                continue
-
-            video_path = result
-            if isinstance(video_path, (list, tuple)) and video_path:
-                video_path = video_path[0]
-            if isinstance(video_path, dict):
-                video_path = video_path.get("video") or video_path.get("path")
-
-            if not video_path or not os.path.exists(video_path):
-                continue
-
-            out_file = f"scene_{idx}_hf.mp4"
-            try:
-                with open(video_path, "rb") as src, open(out_file, "wb") as dst:
-                    dst.write(src.read())
-                return out_file
-            except OSError:
-                continue
+    
+    headers = {"Authorization": PEXELS_API_KEY}
+    url = f"https://api.pexels.com/videos/search?query={requests.utils.quote(keyword)}&per_page=1"
+    
+    try:
+        res = requests.get(url, headers=headers, timeout=15)
+        if res.status_code == 200:
+            data = res.json()
+            videos = data.get("videos", [])
+            if videos:
+                # HD ya vertical video files find karein
+                video_files = videos[0].get("video_files", [])
+                best_url = None
+                for vf in video_files:
+                    if vf.get("width") and vf.get("height") and vf["height"] > vf["width"]:
+                        best_url = vf["link"]
+                        break
+                if not best_url and video_files:
+                    best_url = video_files[0]["link"]
+                
+                if best_url:
+                    vid_res = requests.get(best_url, stream=True, timeout=30)
+                    if vid_res.status_code == 200:
+                        out_path = f"pexels_scene_{idx}.mp4"
+                        with open(out_path, "wb") as f:
+                            for chunk in vid_res.iter_content(chunk_size=1024):
+                                if chunk:
+                                    f.write(chunk)
+                        return out_path
+    except Exception as e:
+        print(f"Pexels download error: {e}")
     return None
 
 
-def generate_video_pollinations_zoom(prompt_text, idx):
-    img_prompt = requests.utils.quote(f"{prompt_text}, cute 3D cartoon style, bright lighting, colorful background, vertical")
-    img_url = f"https://image.pollinations.ai/prompt/{img_prompt}?width=1080&height=1920&nologo=true"
-    img_file = f"scene_{idx}_pollinations.jpg"
-
+def download_pixabay_video(keyword, idx):
+    """Agar Pexels na mile toh Pixabay se stock video download karta hai."""
+    if not PIXABAY_API_KEY:
+        return None
+        
+    url = f"https://pixabay.com/api/videos/?key={PIXABAY_API_KEY}&q={requests.utils.quote(keyword)}&per_page=3"
     try:
-        res = requests.get(img_url, timeout=60)
-        res.raise_for_status()
-        with open(img_file, "wb") as f:
-            f.write(res.content)
+        res = requests.get(url, timeout=15)
+        if res.status_code == 200:
+            hits = res.json().get("hits", [])
+            if hits:
+                vid_url = hits[0]["videos"]["medium"]["url"]
+                vid_res = requests.get(vid_url, stream=True, timeout=30)
+                if vid_res.status_code == 200:
+                    out_path = f"pixabay_scene_{idx}.mp4"
+                    with open(out_path, "wb") as f:
+                        for chunk in vid_res.iter_content(chunk_size=1024):
+                            if chunk:
+                                f.write(chunk)
+                    return out_path
     except Exception as e:
-        print(f"Pollinations image fetch failed: {e}")
-        return None
+        print(f"Pixabay download error: {e}")
+    return None
 
-    out_file = f"scene_{idx}_pollinations.mp4"
-    zoom_cmd = [
-        "ffmpeg",
-        "-loop", "1",
-        "-i", img_file,
-        "-vf",
-        "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,"
-        "zoompan=z='min(zoom+0.0015,1.4)':d=200:s=1080x1920:fps=25",
-        "-t", "8",
-        "-c:v", "libx264",
-        "-pix_fmt", "yuv420p",
-        "-y",
-        out_file
-    ]
+
+def get_fallback_bg_video(keyword, idx):
+    """Agar Pexels/Pixabay fail ho jaye toh Pollinations se background image generate karke zoompan video bana deta hai."""
+    img_prompt = requests.utils.quote(f"{keyword}, cinematic background, vertical 9:16")
+    img_url = f"https://image.pollinations.ai/prompt/{img_prompt}?width=1080&height=1920&nologo=true"
+    img_file = f"fallback_{idx}.jpg"
+    out_file = f"fallback_scene_{idx}.mp4"
+    
     try:
-        subprocess.run(zoom_cmd, check=True, capture_output=True, text=True)
-    except subprocess.CalledProcessError as e:
-        print(f"ffmpeg zoompan failed: {e.stderr}")
-        return None
-
-    return {"video": out_file, "face_image": img_file}
-
-
-def generate_video_any_provider(prompt_text, idx):
-    providers = [
-        ("HF Spaces (free)", generate_video_hf_spaces),
-        ("Pollinations cute cartoon image + zoom (guaranteed fallback)", generate_video_pollinations_zoom),
-    ]
-    for name, func in providers:
-        try:
-            result = func(prompt_text, idx)
-        except Exception:
-            result = None
-        if result:
-            if isinstance(result, dict):
-                return result
-            return {"video": result, "face_image": None}
+        res = requests.get(img_url, timeout=30)
+        if res.status_code == 200:
+            with open(img_file, "wb") as f:
+                f.write(res.content)
+            
+            zoom_cmd = [
+                "ffmpeg", "-loop", "1", "-i", img_file,
+                "-vf", "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,zoompan=z='min(zoom+0.0015,1.3)':d=150:s=1080x1920:fps=25",
+                "-t", "6", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-y", out_file
+            ]
+            subprocess.run(zoom_cmd, check=True, capture_output=True, text=True)
+            return out_file
+    except Exception as e:
+        print(f"Fallback bg generation failed: {e}")
     return None
 
 
@@ -234,126 +195,11 @@ def get_media_duration(path):
     return float(result.stdout.strip())
 
 
-def _clone_with_retry(repo_url, dest, attempts=3, timeout_s=180):
-    """Shallow-clone with a hard timeout + retries so a stalled clone can't hang the job forever."""
-    env = os.environ.copy()
-    env["GIT_TERMINAL_PROMPT"] = "0"  # never wait for a credentials prompt
-    for attempt in range(1, attempts + 1):
-        if os.path.exists(dest):
-            return
-        try:
-            print(f"Cloning {repo_url} (attempt {attempt}/{attempts})...")
-            subprocess.run(
-                ["git", "clone", "--depth", "1", repo_url, dest],
-                check=True,
-                timeout=timeout_s,
-                env=env,
-            )
-            return
-        except subprocess.TimeoutExpired:
-            print(f"Clone timed out after {timeout_s}s, retrying...")
-            subprocess.run(["rm", "-rf", dest])
-        except subprocess.CalledProcessError as e:
-            print(f"Clone failed: {e}, retrying...")
-            subprocess.run(["rm", "-rf", dest])
-    raise RuntimeError(f"Failed to clone {repo_url} after {attempts} attempts")
-
-
-def _download_with_retry(url, dest_path, min_size_bytes=1_000_000, attempts=3, timeout_s=120):
-    """Stream a download to disk (no huge in-memory buffering) with retries + size sanity check."""
-    for attempt in range(1, attempts + 1):
-        try:
-            print(f"Downloading {os.path.basename(dest_path)} (attempt {attempt}/{attempts})...")
-            with requests.get(url, stream=True, timeout=timeout_s) as r:
-                r.raise_for_status()
-                with open(dest_path, "wb") as f:
-                    for chunk in r.iter_content(chunk_size=1 << 20):
-                        if chunk:
-                            f.write(chunk)
-            if os.path.exists(dest_path) and os.path.getsize(dest_path) >= min_size_bytes:
-                return
-            print(f"Downloaded file too small, retrying...")
-        except (requests.RequestException, OSError) as e:
-            print(f"Download failed: {e}, retrying...")
-    raise RuntimeError(f"Failed to download {url} after {attempts} attempts")
-
-
-def setup_wav2lip():
-    _clone_with_retry("https://github.com/Rudrabha/Wav2Lip.git", "Wav2Lip")
-    os.makedirs("Wav2Lip/checkpoints", exist_ok=True)
-    os.makedirs("Wav2Lip/face_detection/detection/sfd", exist_ok=True)
-
-    weights_path = "Wav2Lip/checkpoints/wav2lip.pth"
-    if not (os.path.exists(weights_path) and os.path.getsize(weights_path) >= 1_000_000):
-        weights_url = "https://github.com/justinjohn0306/Wav2Lip/releases/download/models/wav2lip.pth"
-        _download_with_retry(weights_url, weights_path)
-
-    s3fd_path = "Wav2Lip/face_detection/detection/sfd/s3fd.pth"
-    if not (os.path.exists(s3fd_path) and os.path.getsize(s3fd_path) >= 1_000_000):
-        s3fd_url = "https://www.adrianbulat.com/downloads/python-fan/s3fd-619a316812.pth"
-        _download_with_retry(s3fd_url, s3fd_path)
-
-
-def apply_wav2lip_lipsync(face_file, video_file, audio_file, output_clip, idx):
-    """Applies Wav2Lip local lipsync with proper fallback handling if face detection misses.
-    face_file: static image (fast, single face-detection pass) if available, else same as video_file.
-    video_file: always a video, used for the ffmpeg fallback if Wav2Lip fails/times out.
-    """
-    setup_wav2lip()
-    
-    # Ensure temp directory exists for Wav2Lip audio processing
-    os.makedirs("temp", exist_ok=True)
-    
-    inference_script = "Wav2Lip/inference.py"
-    checkpoint_path = "Wav2Lip/checkpoints/wav2lip.pth"
-    
-    cmd = [
-        "python", inference_script,
-        "--checkpoint_path", checkpoint_path,
-        "--face", face_file,
-        "--audio", audio_file,
-        "--outfile", output_clip,
-        "--pads", "0", "10", "0", "0",
-        "--nosmooth",
-        "--resize_factor", "2",
-        "--face_det_batch_size", "2",
-        "--wav2lip_batch_size", "16",
-    ]
-
-    env = os.environ.copy()
-    env["OMP_NUM_THREADS"] = "1"
-    env["MKL_NUM_THREADS"] = "1"
-
-    try:
-        print(f"Running Wav2Lip lipsync for scene {idx + 1}...")
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=240, env=env)
-        if result.returncode == 0 and os.path.exists(output_clip) and os.path.getsize(output_clip) > 1000:
-            print(f"Wav2Lip successfully applied for scene {idx + 1}!")
-            return output_clip
-        else:
-            print(f"Wav2Lip warning output: {result.stderr}")
-    except subprocess.TimeoutExpired:
-        print(f"Wav2Lip timed out for scene {idx + 1}, falling back...")
-    except Exception as e:
-        print(f"Wav2Lip execution error: {e}")
-    
-    print("Applying standard audio-video sync fallback for this scene...")
-    audio_duration = get_media_duration(audio_file)
-    fallback_cmd = [
-        "ffmpeg", "-stream_loop", "-1", "-i", video_file, "-i", audio_file,
-        "-filter_complex", "[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920[v]",
-        "-map", "[v]", "-map", "1:a", "-c:v", "libx264", "-c:a", "aac",
-        "-t", f"{audio_duration:.2f}", "-y", output_clip
-    ]
-    subprocess.run(fallback_cmd, check=True, capture_output=True, text=True)
-    return output_clip
-
-
-def assemble_scene(video_file, face_image, script_text, idx):
+def assemble_scene(keyword, script_text, idx):
+    # 1. Voiceover generate karein (ElevenLabs ya gTTS)
     audio_file = f"audio_{idx}.mp3"
-
     eleven_success = False
-    for key_idx, key in enumerate(ELEVEN_KEYS):
+    for key in ELEVEN_KEYS:
         try:
             url = "https://api.elevenlabs.io/v1/text-to-speech/pNInz6obpgDQGcFmaJgB"
             headers = {"xi-api-key": key, "Content-Type": "application/json"}
@@ -376,24 +222,31 @@ def assemble_scene(video_file, face_image, script_text, idx):
             tts = gTTS(text=script_text, lang="hi", slow=False)
             tts.save(audio_file)
         except Exception as e:
-            print(f"gTTS fallback failed: {e}")
+            print(f"gTTS failed: {e}")
             raise
 
-    padded_audio_file = f"audio_{idx}_padded.mp3"
-    pad_cmd = [
-        "ffmpeg", "-i", audio_file,
-        "-af", "apad=pad_dur=0.5",
-        "-y", padded_audio_file
-    ]
-    try:
-        subprocess.run(pad_cmd, check=True, capture_output=True, text=True)
-        audio_file = padded_audio_file
-    except subprocess.CalledProcessError as e:
-        print(f"Audio padding failed, using unpadded audio: {e.stderr}")
+    audio_duration = get_media_duration(audio_file)
 
+    # 2. Pexels ya Pixabay se stock video uthayein
+    video_file = download_pexels_video(keyword, idx)
+    if not video_file:
+        video_file = download_pixabay_video(keyword, idx)
+    if not video_file:
+        video_file = get_fallback_bg_video(keyword, idx)
+
+    if not video_file:
+        raise RuntimeError(f"Could not get video for scene {idx}")
+
+    # 3. FFmpeg se video ko audio ke mutabiq resize aur trim karein (Vertical 9:16)
     output_clip = f"clip_{idx}.mp4"
-    face_file = face_image if face_image else video_file
-    return apply_wav2lip_lipsync(face_file, video_file, audio_file, output_clip, idx)
+    ffmpeg_cmd = [
+        "ffmpeg", "-stream_loop", "-1", "-i", video_file, "-i", audio_file,
+        "-filter_complex", "[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920[v]",
+        "-map", "[v]", "-map", "1:a", "-c:v", "libx264", "-c:a", "aac",
+        "-t", f"{audio_duration:.2f}", "-y", output_clip
+    ]
+    subprocess.run(ffmpeg_cmd, check=True, capture_output=True, text=True)
+    return output_clip
 
 
 def merge_clips(clip_files, final_output="final_short.mp4"):
@@ -411,6 +264,7 @@ def merge_clips(clip_files, final_output="final_short.mp4"):
 
 def upload_to_youtube(video_path, title, description):
     if not (YT_CLIENT_ID and YT_CLIENT_SECRET and YT_REFRESH_TOKEN):
+        print("YouTube credentials missing, skipping upload.")
         return None
 
     try:
@@ -435,8 +289,8 @@ def upload_to_youtube(video_path, title, description):
             "snippet": {
                 "title": title[:100],
                 "description": description[:5000],
-                "tags": ["shorts", "comedy", "hindi", "AI animation"],
-                "categoryId": "23",
+                "tags": ["shorts", "facts", "hindi", "amazingfacts", "viral"],
+                "categoryId": "22",
             },
             "status": {
                 "privacyStatus": YT_PRIVACY_STATUS,
@@ -457,18 +311,16 @@ def upload_to_youtube(video_path, title, description):
 
 
 if __name__ == "__main__":
-    print("=== Fully Automated AI Short Bot with Fixed Wav2Lip Started ===")
+    print("=== Stock Footage Facts Short Bot Started ===")
     story = generate_story_script()
     scenes = story["scenes"]
     final_clips = []
 
     for idx, scene in enumerate(scenes):
-        print(f"\n--- Processing Scene {idx + 1}/{len(scenes)} ---")
+        print(f"\n--- Processing Scene {idx + 1}/{len(scenes)}: {scene['keyword']} ---")
         try:
-            media = generate_video_any_provider(scene["prompt"], idx)
-            if media:
-                clip = assemble_scene(media["video"], media["face_image"], scene["script"], idx)
-                final_clips.append(clip)
+            clip = assemble_scene(scene["keyword"], scene["script"], idx)
+            final_clips.append(clip)
         except Exception as e:
             print(f"Scene {idx + 1} failed: {e}")
 
@@ -481,8 +333,8 @@ if __name__ == "__main__":
             sys.exit(1)
         print(f"\nSUCCESS: Short Ready: {final_video} (~{total_duration:.1f}s)")
 
-        yt_title = "मज़ेदार AI कार्टून कहानी #Shorts"
-        yt_description = "\n".join(s["script"] for s in scenes) + "\n\n#Shorts #Comedy #Hindi #AIAnimation"
+        yt_title = "Mind Blowing Facts 🤯 #Shorts"
+        yt_description = "\n".join(s["script"] for s in scenes) + "\n\n#Shorts #Facts #HindiFacts #Viral #Trending #AmazingFacts"
         upload_to_youtube(final_video, yt_title, yt_description)
     else:
         print("\nFAILED: No clips produced.")
