@@ -2,17 +2,17 @@ from moviepy.editor import VideoFileClip, AudioFileClip, CompositeAudioClip
 import os
 
 def render_short_video(output_file="final_short.mp4"):
-    # Load Main Audio Files
+    # Load Main Audio File (voice only for now)
     voice = AudioFileClip("voice.mp3")
-    bgm = AudioFileClip("assets/bgm.mp3").volumex(0.12).set_duration(voice.duration)
     
-    # Sound Effects filhaal disable hain (baad mein dobara enable karenge)
+    # BGM aur Sound Effects filhaal disable hain (baad mein dobara enable karenge)
+    # bgm = AudioFileClip("assets/bgm.mp3").volumex(0.12).set_duration(voice.duration)
     # sfx1 = AudioFileClip("assets/whoosh.mp3").volumex(0.5).set_start(0.5)
     # sfx2 = AudioFileClip("assets/pop.mp3").volumex(0.5).set_start(10.0)
     # sfx3 = AudioFileClip("assets/whoosh.mp3").volumex(0.5).set_start(20.0)
     
-    # Mix Voice aur Music (SFX abhi shamil nahi)
-    final_audio = CompositeAudioClip([voice, bgm])
+    # Filhaal sirf Voice (music/SFX baad mein add karenge)
+    final_audio = CompositeAudioClip([voice])
     
     # Load and Prepare Background Video
     video = VideoFileClip("assets/bg_video.mp4")
