@@ -6,13 +6,13 @@ def render_short_video(output_file="final_short.mp4"):
     voice = AudioFileClip("voice.mp3")
     bgm = AudioFileClip("assets/bgm.mp3").volumex(0.12).set_duration(voice.duration)
     
-    # Sound Effects Placement (Automatic Timing)
-    sfx1 = AudioFileClip("assets/whoosh.mp3").volumex(0.5).set_start(0.5)
-    sfx2 = AudioFileClip("assets/pop.mp3").volumex(0.5).set_start(10.0)
-    sfx3 = AudioFileClip("assets/whoosh.mp3").volumex(0.5).set_start(20.0)
+    # Sound Effects filhaal disable hain (baad mein dobara enable karenge)
+    # sfx1 = AudioFileClip("assets/whoosh.mp3").volumex(0.5).set_start(0.5)
+    # sfx2 = AudioFileClip("assets/pop.mp3").volumex(0.5).set_start(10.0)
+    # sfx3 = AudioFileClip("assets/whoosh.mp3").volumex(0.5).set_start(20.0)
     
-    # Mix Voice, Music, and Sound Effects
-    final_audio = CompositeAudioClip([voice, bgm, sfx1, sfx2, sfx3])
+    # Mix Voice aur Music (SFX abhi shamil nahi)
+    final_audio = CompositeAudioClip([voice, bgm])
     
     # Load and Prepare Background Video
     video = VideoFileClip("assets/bg_video.mp4")
