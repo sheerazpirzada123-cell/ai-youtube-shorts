@@ -49,24 +49,37 @@ def get_story():
 
 
 def build_video(story):
-    scenes = story["scenes"]
+    scenes_raw = story["scenes"]
+    scenes = []
     audio_paths = []
     durations = []
     word_timings = []
 
-    for i, scene in enumerate(scenes):
-        print(f"\n--- Scene {i + 1}/{len(scenes)}: generating voiceover ---")
-        audio_path = f"assets/audio_{i}.mp3"
-        audio.generate_voiceover(scene["narration"], output_path=audio_path)
+    for i, scene in enumerate(scenes_raw):
+        narration = (scene.get("narration") or "").strip()
+        if not narration:
+            print(f"\n--- Scene {i + 1}/{len(scenes_raw)}: skipped (Gemini ne is scene ke liye 'narration' nahi diya) ---")
+            continue
 
-        from moviepy.editor import AudioFileClip
-        clip = AudioFileClip(audio_path)
-        duration = clip.duration
-        clip.close()
+        print(f"\n--- Scene {i + 1}/{len(scenes_raw)}: generating voiceover ---")
+        try:
+            audio_path = f"assets/audio_{i}.mp3"
+            audio.generate_voiceover(narration, output_path=audio_path)
 
-        audio_paths.append(audio_path)
-        durations.append(duration)
-        word_timings.append(audio.estimate_word_timings(scene["narration"], duration))
+            from moviepy.editor import AudioFileClip
+            clip = AudioFileClip(audio_path)
+            duration = clip.duration
+            clip.close()
+
+            scenes.append(scene)
+            audio_paths.append(audio_path)
+            durations.append(duration)
+            word_timings.append(audio.estimate_word_timings(narration, duration))
+        except Exception as e:
+            print(f"Scene {i + 1} failed, skipping: {e}")
+
+    if not scenes:
+        raise RuntimeError("Koi bhi scene successfully process nahi ho saka.")
 
     print("\n--- Fetching scene video clips (Pexels -> Pixabay -> AI fallback) ---")
     video_paths = asset_manager.fetch_scene_clips(scenes, durations)
