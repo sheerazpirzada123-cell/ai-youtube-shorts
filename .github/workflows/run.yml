@@ -1,34 +1,28 @@
-name: Auto Hindi Facts Short Generator & YouTube Uploader
+name: Auto YouTube Shorts Generator
 
 on:
   schedule:
-    - cron: '0 8 * * *'   # 8:00 AM UTC (~1:00 PM Pakistan time)
-    - cron: '0 15 * * *'  # 3:00 PM UTC (~8:00 PM Pakistan time)
-  workflow_dispatch:
+    - cron: '0 4,16 * * *' # Rozana do baar auto-run hoga
+  workflow_dispatch: # Manual run button ke liye
 
 jobs:
   build-and-run:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
+      - name: Post Checkout Code
         uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.10' # Numba error fix karne ke liye Python 3.10[cite: 1]
+          cache: 'pip'
 
-      - name: Install System Dependencies (FFmpeg + ImageMagick for captions)
+      - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg imagemagick
-          # ImageMagick ki default policy "@filename" reads block karti hai, jo moviepy
-          # ka TextClip (captions) internally use karta hai. Isko allow karte hain.
-          POLICY_FILE=$(find /etc -iname "policy.xml" -path "*ImageMagick*" 2>/dev/null | head -n1)
-          if [ -n "$POLICY_FILE" ]; then
-            sudo sed -i 's/rights="none" pattern="@\*"/rights="read|write" pattern="@*"/' "$POLICY_FILE"
-          fi
+          sudo apt-get install -y ffmpeg
 
       - name: Install Python Dependencies
         run: |
@@ -39,13 +33,17 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
-        run: python main.py
+        run: |
+          python main.py
 
       - name: Upload Output Video as Artifact
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: generated-short-video
-          path: output_short.mp4
+          path: output.mp4
+          retention-days: 1
