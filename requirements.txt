@@ -3,6 +3,8 @@ requests
 moviepy
 Pillow
 gTTS
+scipy
+librosa
 decorator==4.4.2
 proglog==0.1.10
 numba==0.56.4
