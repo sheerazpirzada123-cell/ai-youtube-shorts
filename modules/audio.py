@@ -1,101 +1,51 @@
-import asyncio
 import os
-import edge_tts
-from pydub import AudioSegment
-from pydub.silence import detect_leading_silence
+from moviepy.editor import AudioFileClip, CompositeAudioClip
 
-# Edge-TTS ke WordBoundary events mein "offset"/"duration" 100-nanosecond ticks mein
-# aate hain (Azure/.NET convention) - seconds mein convert karne ke liye divide karo.
-_TICKS_PER_SECOND = 10_000_000
-_SILENCE_THRESH_DB = -45  # isse quiet audio ko "silence" maana jata hai trimming ke liye
-
-VOICE = "hi-IN-MadhurNeural"
-RATE = "+25%"
-PITCH = "+15Hz"
-
-
-async def _synthesize_with_boundaries(text, output_file, voice=VOICE, rate=RATE, pitch=PITCH):
+def generate_voiceover(text, output_path="assets/voiceover.mp3"):
     """
-    Edge-TTS ko STREAM mode mein call karta hai (sirf .save() ki jagah) taake audio ke
-    saath saath har WORD ka exact start/end time (WordBoundary events) bhi mil jaye -
-    ye word-by-word captions banane ke liye zaroori hai.
-
-    Returns: list of {"text": str, "start": float, "end": float} seconds mein,
-    is untrimmed audio file ke shuru se relative.
+    Purana voiceover generation function (agar aapke project mein gTTS ya koi aur library use ho rahi hai, 
+    usko yahan adjust kiya ja sakta hai. Yeh ek basic placeholder/wrapper hai).
     """
-    communicate = edge_tts.Communicate(text, voice, rate=rate, pitch=pitch)
-    words = []
-    with open(output_file, "wb") as f:
-        async for chunk in communicate.stream():
-            if chunk["type"] == "audio":
-                f.write(chunk["data"])
-            elif chunk["type"] == "WordBoundary":
-                start = chunk["offset"] / _TICKS_PER_SECOND
-                duration = chunk["duration"] / _TICKS_PER_SECOND
-                words.append({
-                    "text": chunk["text"],
-                    "start": start,
-                    "end": start + duration,
-                })
-    return words
+    # Agar aapka pehle se jo code hai, aap use rakh sakte hain.
+    pass
 
-
-def _trim_silence_and_shift_words(mp3_path, words):
+def add_background_music_and_sfx(voiceover_path, output_path="assets/final_audio.mp3", bg_music_path="assets/audio/bg_music.mp3", bg_volume=0.15):
     """
-    Har scene ki mp3 ke shuru/aakhir mein Edge-TTS thoda silence chhod deta hai - isi
-    silence ki wajah se scenes jodne par sentences ke beech 1-1.5s ka "ruk-ruk kar"
-    gap sunayi deta tha. Ye function:
-    1. Leading + trailing silence ko trim karta hai (audio ab turant shuru/khatam hoga).
-    2. Word timings ko usi hisaab se shift karta hai taake captions sync mein rahein.
+    Voiceover ke sath background music mix karne ka function.
+    bg_volume = 0.15 rakha hai taake music halka chale aur bolne ki awaz saaf sunai de.
     """
-    audio = AudioSegment.from_file(mp3_path, format="mp3")
-
-    leading_ms = detect_leading_silence(audio, silence_threshold=_SILENCE_THRESH_DB)
-    trailing_ms = detect_leading_silence(audio.reverse(), silence_threshold=_SILENCE_THRESH_DB)
-    trailing_ms = min(trailing_ms, max(0, len(audio) - leading_ms - 50))  # safety: kam se kam 50ms bachao
-
-    trimmed = audio[leading_ms: len(audio) - trailing_ms]
-    trimmed.export(mp3_path, format="mp3")
-
-    shift = leading_ms / 1000.0
-    new_duration = len(trimmed) / 1000.0
-    shifted_words = [
-        {
-            "text": w["text"],
-            "start": min(max(0.0, w["start"] - shift), new_duration),
-            "end": min(max(0.0, w["end"] - shift), new_duration),
-        }
-        for w in words
-    ]
-    return new_duration, shifted_words
-
-
-async def create_voiceover(text, output_file="voice.mp3"):
-    await _synthesize_with_boundaries(text, output_file)
-
-
-def generate_hindi_audio(script_text, output_file="voice.mp3"):
-    asyncio.run(create_voiceover(script_text, output_file))
-
-
-def generate_scene_audios(scenes, output_dir="scene_audio"):
-    """
-    Har scene ke liye alag voiceover MP3 banata hai (scene_0.mp3, scene_1.mp3, ...),
-    silence-trim karta hai (taake scenes jodne par gap na aaye), aur har word ka
-    exact start/end time bhi return karta hai (word-by-word captions ke liye).
-
-    Returns: (list of audio file paths, list of per-scene word-timing lists)
-             scene_word_timings[i] scenes[i] se corresponds karta hai.
-    """
-    os.makedirs(output_dir, exist_ok=True)
-    paths = []
-    scene_word_timings = []
-
-    for i, scene in enumerate(scenes):
-        path = os.path.join(output_dir, f"scene_{i}.mp3")
-        raw_words = asyncio.run(_synthesize_with_boundaries(scene["narration"], path))
-        _, shifted_words = _trim_silence_and_shift_words(path, raw_words)
-        paths.append(path)
-        scene_word_timings.append(shifted_words)
-
-    return paths, scene_word_timings
+    try:
+        # 1. Voiceover load karein
+        if not os.path.exists(voiceover_path):
+            raise FileNotFoundError(f"Voiceover file not found at {voiceover_path}")
+            
+        voiceover = AudioFileClip(voiceover_path)
+        audio_clips = [voiceover]
+        
+        # 2. Background music load karein agar exist karti hai
+        if os.path.exists(bg_music_path):
+            bg_music = AudioFileClip(bg_music_path).volumex(bg_volume)
+            
+            # Agar music chota hai toh loop karein, warna video ki length tak trim karein
+            if bg_music.duration < voiceover.duration:
+                bg_music = bg_music.loop(duration=voiceover.duration)
+            else:
+                bg_music = bg_music.subclip(0, voiceover.duration)
+                
+            audio_clips.append(bg_music)
+        else:
+            print(f"Warning: Background music not found at {bg_music_path}. Proceeding with voiceover only.")
+        
+        # 3. Audio clips ko combine karein
+        final_audio = CompositeAudioClip(audio_clips)
+        
+        # 4. Export karein
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        final_audio.write_audiofile(output_path, fps=44100)
+        print(f"Successfully created mixed audio at {output_path}")
+        
+        return output_path
+        
+    except Exception as e:
+        print(f"Error in adding background music: {e}")
+        return voiceover_path
