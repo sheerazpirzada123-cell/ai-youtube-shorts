@@ -13,3 +13,4 @@ scipy
 opencv-python
 numpy
 protobuf<4.0.0
+librosa
