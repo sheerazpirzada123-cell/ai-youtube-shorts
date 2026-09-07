@@ -16,14 +16,14 @@ def main():
     print(f"Scenes: {len(scenes)}")
 
     print("2. Generating Voiceover for each Scene...")
-    scene_audio_paths = generate_scene_audios(scenes)
+    scene_audio_paths, scene_word_timings = generate_scene_audios(scenes)
     scene_durations = [AudioFileClip(p).duration for p in scene_audio_paths]
 
     print("3. Fetching matching Pexels clip for each Scene...")
     scene_video_paths = fetch_scene_clips(scenes, scene_durations)
 
-    print("4. Rendering Final Short Video (synced clips + captions)...")
-    render_short_video(scenes, scene_video_paths, scene_audio_paths, "output_short.mp4")
+    print("4. Rendering Final Short Video (synced clips + word-by-word captions)...")
+    render_short_video(scenes, scene_video_paths, scene_audio_paths, scene_word_timings, "output_short.mp4")
     print("Success! Your Short video is ready: output_short.mp4")
 
     print("5. Uploading to YouTube...")
