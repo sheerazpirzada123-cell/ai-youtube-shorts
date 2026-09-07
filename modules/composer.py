@@ -22,8 +22,19 @@ def render_short_video(video_clips_paths, voiceover_path, bg_music_path="assets/
         voiceover = AudioFileClip(voiceover_path)
         total_duration = voiceover.duration
         
+        # Flatten and clean video_clips_paths in case it contains lists or nested structures
+        flat_paths = []
+        if isinstance(video_clips_paths, list):
+            for item in video_clips_paths:
+                if isinstance(item, list):
+                    flat_paths.extend([p for p in item if isinstance(p, str)])
+                elif isinstance(item, str):
+                    flat_paths.append(item)
+        elif isinstance(video_clips_paths, str):
+            flat_paths.append(video_clips_paths)
+
         # 2. Load and combine video clips to match the voiceover length
-        clips = [VideoFileClip(p) for p in video_clips_paths if os.path.exists(p)]
+        clips = [VideoFileClip(p) for p in flat_paths if isinstance(p, str) and os.path.exists(p)]
         if not clips:
             raise Exception("❌ No valid video clips found!")
             
