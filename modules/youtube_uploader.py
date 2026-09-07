@@ -1,13 +1,3 @@
-import os
-import pickle
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload
-
-# YouTube API scopes
-SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
-
 def get_youtube_service():
     """
     Authenticates and returns the YouTube API service object.
@@ -20,9 +10,9 @@ def get_youtube_service():
     client_secret = os.getenv("YOUTUBE_CLIENT_SECRET")
     refresh_token = os.getenv("YOUTUBE_REFRESH_TOKEN")
 
-    print(f"✓ YT_CLIENT_ID exists: {bool(client_id)}")
-    print(f"✓ YT_CLIENT_SECRET exists: {bool(client_secret)}")
-    print(f"✓ YT_REFRESH_TOKEN exists: {bool(refresh_token)}")
+    print(f"✓ YOUTUBE_CLIENT_ID exists: {bool(client_id)}")
+    print(f"✓ YOUTUBE_CLIENT_SECRET exists: {bool(client_secret)}")
+    print(f"✓ YOUTUBE_REFRESH_TOKEN exists: {bool(refresh_token)}")
 
     if client_id and client_secret and refresh_token:
         from google.oauth2.credentials import Credentials
@@ -53,46 +43,6 @@ def get_youtube_service():
                 with open("token.pickle", "wb") as token:
                     pickle.dump(creds, token)
             else:
-                raise Exception("❌ YouTube Credentials ghayab hain! GitHub Secrets check karein.")
+                raise Exception("❌ YouTube Credentials ghayab hain! GitHub Secrets (YOUTUBE_CLIENT_ID, YOUTUBE_CLIENT_SECRET, YOUTUBE_REFRESH_TOKEN) check karein.")
 
     return build("youtube", "v3", credentials=creds)
-
-def upload_video(video_path, title, description, tags=None, category_id="22", privacy_status="public"):
-    """
-    Uploads a video to YouTube.
-    """
-    if tags is None:
-        tags = ["shorts", "youtubeshorts"]
-
-    youtube = get_youtube_service()
-
-    body = {
-        "snippet": {
-            "title": title,
-            "description": description,
-            "tags": tags,
-            "categoryId": category_id
-        },
-        "status": {
-            "privacyStatus": privacy_status,
-            "selfDeclaredMadeForKids": False
-        }
-    }
-
-    media = MediaFileUpload(video_path, chunksize=-1, resumable=True)
-
-    print(f"Uploading '{title}'...")
-    request = youtube.videos().insert(
-        part="snippet,status",
-        body=body,
-        media_body=media
-    )
-
-    response = None
-    while response is None:
-        status, response = request.next_chunk()
-        if status:
-            print(f"Uploaded {int(status.progress() * 100)}%")
-
-    print(f"✅ Video successfully uploaded! Video ID: {response.get('id')}")
-    return response.get('id')
