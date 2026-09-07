@@ -34,17 +34,26 @@ def get_youtube_service():
             token_uri="https://oauth2.googleapis.com/token",
             scopes=SCOPES
         )
+        try:
+            # Force refresh to get a valid access token from refresh token
+            creds.refresh(Request())
+        except Exception as e:
+            print(f"⚠️ Token refresh warning: {e}")
     else:
         # Fallback for local token file if running locally
         if os.path.exists("token.pickle"):
             with open("token.pickle", "rb") as token:
                 creds = pickle.load(token)
 
-    # Refresh or prompt login if credentials are invalid/expired
+    # Refresh or prompt login if credentials are still invalid/expired
     if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
+        if creds and creds.refresh_token:
+            try:
+                creds.refresh(Request())
+            except Exception as e:
+                print(f"Refresh failed: {e}")
+
+        if not creds or not creds.valid:
             if os.path.exists("client_secret.json"):
                 flow = InstalledAppFlow.from_client_secrets_file(
                     "client_secret.json", SCOPES
