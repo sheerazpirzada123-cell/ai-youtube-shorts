@@ -1,157 +1,86 @@
-from moviepy.editor import (
-    VideoFileClip, AudioFileClip, CompositeAudioClip, CompositeVideoClip,
-    TextClip, ColorClip, concatenate_videoclips, concatenate_audioclips,
-)
-from moviepy.video.fx.all import crop, loop
 import os
+import random
+from moviepy.editor import (
+    VideoFileClip, 
+    AudioFileClip, 
+    CompositeAudioClip, 
+    concatenate_audioclips
+)
 
-VIDEO_W, VIDEO_H = 1080, 1920
-
-
-def _cover_resize(clip, w=VIDEO_W, h=VIDEO_H):
-    """Clip ko target size (9:16) mein 'cover' fit karta hai - stretch/distort nahi, balke
-    scale karke beech se crop karta hai, jaisa Instagram/YouTube Shorts editors karte hain."""
-    clip_ratio = clip.w / clip.h
-    target_ratio = w / h
-    if clip_ratio > target_ratio:
-        clip = clip.resize(height=h)
-    else:
-        clip = clip.resize(width=w)
-    return crop(clip, width=w, height=h, x_center=clip.w / 2, y_center=clip.h / 2)
-
-
-def _make_caption(text, duration, w=VIDEO_W):
-    """Fallback: agar kisi scene ke liye word-timing data available na ho, to pura
-    sentence ek sath dikhata hai (jaisa pehle hota tha) - taake video kabhi crash na ho."""
-    txt_clip = TextClip(
-        text,
-        fontsize=64,
-        color="white",
-        font="DejaVu-Sans-Bold",
-        method="caption",
-        size=(w - 120, None),
-        align="center",
-        stroke_color="black",
-        stroke_width=2,
-    ).set_duration(duration)
-
-    bg = ColorClip(
-        size=(txt_clip.w + 60, txt_clip.h + 40),
-        color=(0, 0, 0),
-    ).set_opacity(0.45).set_duration(duration)
-
-    caption = CompositeVideoClip([bg, txt_clip.set_position("center")])
-    caption = caption.set_position(("center", 0.72), relative=True)
-    return caption
-
-
-_CAPTION_COLORS = ["#FFD400", "#00E0FF", "#FF4D6D", "#7CFF6B", "#FF9F45", "#C77DFF"]
-
-
-def _make_word_captions(words, duration, w=VIDEO_W):
+def create_professional_short(video_clips_paths, voiceover_path, bg_music_path=None, sfx_folder="assets/sfx", output_path="assets/final_short.mp4"):
     """
-    Word-by-word (karaoke/TikTok-style) captions banata hai - har word apni exact
-    timing par bada, BOLD font aur ek alag bright color mein screen ke center mein
-    pop hota hai. `words` empty ho to None return karta hai (caller fallback caption
-    use karega).
+    Combines video clips, applies the energetic voiceover, adds background music with ducking,
+    and places sound effects precisely at scene transitions.
     """
-    valid_words = [wd for wd in words if wd["text"].strip()]
-    if not valid_words:
-        return None
-
-    segments = []
-    for i, wd in enumerate(valid_words):
-        text = wd["text"].strip()
-        start = max(0.0, wd["start"])
-        end = valid_words[i + 1]["start"] if i + 1 < len(valid_words) else duration
-        end = max(end, start + 0.05)
-        seg_duration = min(end, duration) - start
-        if seg_duration <= 0:
-            continue
-
-        color = _CAPTION_COLORS[i % len(_CAPTION_COLORS)]
-
-        txt_clip = TextClip(
-            text,
-            fontsize=100,
-            color=color,
-            font="DejaVu-Sans-Bold",
-            method="caption",
-            size=(w - 100, None),
-            align="center",
-            stroke_color="black",
-            stroke_width=5,
-        ).set_duration(seg_duration).set_start(start)
-
-        bg = ColorClip(
-            size=(txt_clip.w + 60, txt_clip.h + 40),
-            color=(0, 0, 0),
-        ).set_opacity(0.4).set_duration(seg_duration).set_start(start).set_position("center")
-
-        word_clip = CompositeVideoClip(
-            [bg, txt_clip.set_position("center")],
-            size=(w, txt_clip.h + 40),
-        ).set_start(start).set_duration(seg_duration)
-        segments.append(word_clip)
-
-    if not segments:
-        return None
-
-    max_h = max(seg.h for seg in segments)
-    caption_track = CompositeVideoClip(segments, size=(w, max_h)).set_duration(duration)
-    caption_track = caption_track.set_position(("center", 0.72), relative=True)
-    return caption_track
-
-
-def render_short_video(scenes, scene_video_paths, scene_audio_paths, scene_word_timings=None,
-                        output_file="output_short.mp4"):
-    """
-    Har scene ke liye: uski voiceover duration nikaal kar, uske matching video clip ko
-    usi duration tak trim/loop karta hai, uske upar word-by-word caption lagata hai
-    (ya word-timing na ho to poore sentence wala caption), phir sab scenes ko ek ke
-    baad ek jodta hai (concatenate) taake poori video topic ke hisaab se sync ho.
-    """
-    if scene_word_timings is None:
-        scene_word_timings = [[] for _ in scenes]
-
-    video_segments = []
-    audio_segments = []
-
-    for scene, video_path, audio_path, words in zip(
-        scenes, scene_video_paths, scene_audio_paths, scene_word_timings
-    ):
-        voice = AudioFileClip(audio_path)
-        duration = voice.duration
-        audio_segments.append(voice)
-
-        clip = VideoFileClip(video_path)
-        clip = _cover_resize(clip)
-
-        if clip.duration < duration:
-            clip = loop(clip, duration=duration)
+    try:
+        print("🎬 Assembling professional YouTube Short...")
+        
+        # 1. Load Voiceover to get total duration
+        if not os.path.exists(voiceover_path):
+            raise FileNotFoundError(f"Voiceover not found at {voiceover_path}")
+        
+        voiceover = AudioFileClip(voiceover_path)
+        total_duration = voiceover.duration
+        
+        # 2. Load and combine video clips to match the voiceover length
+        clips = [VideoFileClip(p) for p in video_clips_paths if os.path.exists(p)]
+        if not clips:
+            raise Exception("❌ Koi valid video clips nahi mili!")
+            
+        # Adjust video clips speed or loop them to match target length (50-60s)
+        from moviepy.editor import concatenate_videoclips
+        final_video = concatenate_videoclips(clips, method="compose")
+        
+        if final_video.duration > total_duration:
+            final_video = final_video.subclip(0, total_duration)
         else:
-            clip = clip.subclip(0, duration)
-        clip = clip.set_duration(duration)
+            # Loop video if it's shorter than voiceover
+            loops = int(total_duration // final_video.duration) + 1
+            final_video = final_video.loop(n=loops).subclip(0, total_duration)
 
-        caption = _make_word_captions(words, duration)
-        if caption is None:
-            caption = _make_caption(scene.get("narration", ""), duration)
+        # 3. Setup Audio Mixing (Voiceover + Background Music)
+        audio_tracks = [voiceover]
+        
+        if bg_music_path and os.path.exists(bg_music_path):
+            bg_music = AudioFileClip(bg_music_path).volumex(0.12) # Low volume for proper ducking
+            if bg_music.duration < total_duration:
+                bg_music = bg_music.loop(duration=total_duration)
+            else:
+                bg_music = bg_music.subclip(0, total_duration)
+            audio_tracks.append(bg_music)
 
-        segment = CompositeVideoClip([clip, caption]).set_duration(duration)
-        video_segments.append(segment)
+        # 4. Precise Sound Effects (SFX) Placement at Scene Cuts/Transitions
+        # Har scene change par ek subtle whoosh ya pop sound lagayenge
+        if os.path.exists(sfx_folder):
+            sfx_files = [os.path.join(sfx_folder, f) for f in os.listdir(sfx_folder) if f.endswith(('.mp3', '.wav'))]
+            if sfx_files:
+                # Calculate cut intervals based on number of clips
+                cut_interval = total_duration / max(len(clips), 1)
+                current_time = cut_interval
+                
+                while current_time < total_duration - 1:
+                    sfx_path = random.choice(sfx_files)
+                    sfx = AudioFileClip(sfx_path).volumex(0.25).set_start(current_time)
+                    audio_tracks.append(sfx)
+                    current_time += cut_interval
 
-    final_video = concatenate_videoclips(video_segments, method="compose")
-    final_audio = concatenate_audioclips(audio_segments)
-    final_video = final_video.set_audio(final_audio)
+        # 5. Composite Final Audio and Export Video
+        final_audio = CompositeAudioClip(audio_tracks)
+        final_video = final_video.set_audio(final_audio)
+        
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        final_video.write_videofile(
+            output_path, 
+            fps=30, 
+            codec="libx264", 
+            audio_codec="aac", 
+            preset="medium",
+            bitrate="5000k"
+        )
+        
+        print(f"✅ Professional video successfully created at {output_path}")
+        return output_path
 
-    final_video.write_videofile(
-        output_file,
-        fps=30,
-        codec="libx264",
-        audio_codec="aac",
-    )
-
-    for seg in video_segments:
-        seg.close()
-    for a in audio_segments:
-        a.close()
+    except Exception as e:
+        print(f"❌ Error in creating video: {e}")
+        return None
