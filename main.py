@@ -9,38 +9,6 @@ import requests
 import subprocess
 from gtts import gTTS
 
-# ✅ FIXED: Check for required packages
-def check_dependencies():
-    """Check that all required packages are installed"""
-    required_packages = {
-        'google': 'google-genai',
-        'gtts': 'gtts',
-        'pydub': 'pydub',
-        'moviepy': 'moviepy',
-        'PIL': 'Pillow',
-        'requests': 'requests',
-        'gradio_client': 'gradio-client',
-        'scipy': 'scipy',
-        'cv2': 'opencv-python',
-        'numpy': 'numpy',
-        'librosa': 'librosa'
-    }
-    
-    missing = []
-    for module, package_name in required_packages.items():
-        try:
-            __import__(module)
-        except ImportError:
-            missing.append(package_name)
-    
-    if missing:
-        print(f"❌ Missing packages: {', '.join(missing)}")
-        print(f"Run: pip install {' '.join(missing)}")
-        sys.exit(1)
-    print("✅ All dependencies are installed")
-
-check_dependencies()
-
 # Gemini Setup
 try:
     from google import genai
@@ -51,10 +19,9 @@ except ImportError:
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 
 # --- YouTube auto-upload (free, YouTube Data API v3) --------------------
-# ✅ FIXED: Updated to match GitHub Secrets names exactly
-YT_CLIENT_ID = os.getenv("YOUTUBE_CLIENT_ID", "")
-YT_CLIENT_SECRET = os.getenv("YOUTUBE_CLIENT_SECRET", "")
-YT_REFRESH_TOKEN = os.getenv("YOUTUBE_REFRESH_TOKEN", "")
+YT_CLIENT_ID = os.getenv("YT_CLIENT_ID", "")
+YT_CLIENT_SECRET = os.getenv("YT_CLIENT_SECRET", "")
+YT_REFRESH_TOKEN = os.getenv("YT_REFRESH_TOKEN", "")
 YT_PRIVACY_STATUS = os.getenv("YT_PRIVACY_STATUS", "private")
 
 NUM_SCENES = int(os.getenv("NUM_SCENES", "5"))
@@ -268,8 +235,9 @@ def get_media_duration(path):
 
 
 def _clone_with_retry(repo_url, dest, attempts=3, timeout_s=180):
+    """Shallow-clone with a hard timeout + retries so a stalled clone can't hang the job forever."""
     env = os.environ.copy()
-    env["GIT_TERMINAL_PROMPT"] = "0"
+    env["GIT_TERMINAL_PROMPT"] = "0"  # never wait for a credentials prompt
     for attempt in range(1, attempts + 1):
         if os.path.exists(dest):
             return
@@ -292,6 +260,7 @@ def _clone_with_retry(repo_url, dest, attempts=3, timeout_s=180):
 
 
 def _download_with_retry(url, dest_path, min_size_bytes=1_000_000, attempts=3, timeout_s=120):
+    """Stream a download to disk (no huge in-memory buffering) with retries + size sanity check."""
     for attempt in range(1, attempts + 1):
         try:
             print(f"Downloading {os.path.basename(dest_path)} (attempt {attempt}/{attempts})...")
@@ -326,7 +295,13 @@ def setup_wav2lip():
 
 
 def apply_wav2lip_lipsync(face_file, video_file, audio_file, output_clip, idx):
+    """Applies Wav2Lip local lipsync with proper fallback handling if face detection misses.
+    face_file: static image (fast, single face-detection pass) if available, else same as video_file.
+    video_file: always a video, used for the ffmpeg fallback if Wav2Lip fails/times out.
+    """
     setup_wav2lip()
+    
+    # Ensure temp directory exists for Wav2Lip audio processing
     os.makedirs("temp", exist_ok=True)
     
     inference_script = "Wav2Lip/inference.py"
@@ -435,49 +410,27 @@ def merge_clips(clip_files, final_output="final_short.mp4"):
 
 
 def upload_to_youtube(video_path, title, description):
-    print("\n" + "="*70)
-    print("🔍 YouTube Upload Check:")
-    print("="*70)
-    print(f"✓ Video file: {video_path}")
-    print(f"✓ YOUTUBE_CLIENT_ID exists: {bool(YT_CLIENT_ID)}")
-    print(f"✓ YOUTUBE_CLIENT_SECRET exists: {bool(YT_CLIENT_SECRET)}")
-    print(f"✓ YOUTUBE_REFRESH_TOKEN exists: {bool(YT_REFRESH_TOKEN)}")
-    print("="*70)
-    
     if not (YT_CLIENT_ID and YT_CLIENT_SECRET and YT_REFRESH_TOKEN):
-        print("\n❌ YouTube Credentials ghayab hain!")
-        return None
-
-    if not os.path.exists(video_path):
-        print(f"\n❌ Video file nahi mili: {video_path}")
         return None
 
     try:
         from google.oauth2.credentials import Credentials
         from googleapiclient.discovery import build
         from googleapiclient.http import MediaFileUpload
-    except ImportError as e:
-        print(f"\n❌ Required libraries missing: {e}")
+    except ImportError:
         return None
 
-    try:
-        creds = Credentials(
-            token=None,
-            refresh_token=YT_REFRESH_TOKEN,
-            token_uri="https://oauth2.googleapis.com/token",
-            client_id=YT_CLIENT_ID,
-            client_secret=YT_CLIENT_SECRET,
-            scopes=["https://www.googleapis.com/auth/youtube.upload"],
-        )
-        print("\n✅ Credentials object ban gaya hai")
-    except Exception as e:
-        print(f"\n❌ Credentials error: {e}")
-        return None
+    creds = Credentials(
+        token=None,
+        refresh_token=YT_REFRESH_TOKEN,
+        token_uri="https://oauth2.googleapis.com/token",
+        client_id=YT_CLIENT_ID,
+        client_secret=YT_CLIENT_SECRET,
+        scopes=["https://www.googleapis.com/auth/youtube.upload"],
+    )
 
     try:
-        print("🔗 YouTube API se connect ho rahe hain...")
         youtube = build("youtube", "v3", credentials=creds)
-        
         body = {
             "snippet": {
                 "title": title[:100],
@@ -490,100 +443,47 @@ def upload_to_youtube(video_path, title, description):
                 "selfDeclaredMadeForKids": False,
             },
         }
-        
-        print("📤 Video upload ho rahi hai...")
-        media = MediaFileUpload(
-            video_path, 
-            chunksize=-1, 
-            resumable=True, 
-            mimetype="video/mp4"
-        )
-        
-        request = youtube.videos().insert(
-            part="snippet,status", 
-            body=body, 
-            media_body=media
-        )
-        
+        media = MediaFileUpload(video_path, chunksize=-1, resumable=True, mimetype="video/mp4")
+        request = youtube.videos().insert(part="snippet,status", body=body, media_body=media)
         response = None
         while response is None:
             status, response = request.next_chunk()
-            if status:
-                print(f"   Progress: {int(status.progress() * 100)}%")
-        
         video_id = response.get("id")
-        if video_id:
-            print("\n" + "="*70)
-            print("✅ SUCCESS! Video YouTube par upload hogayi!")
-            print(f"🎬 Link: https://youtube.com/shorts/{video_id}")
-            print("="*70)
-            return video_id
-        return None
-            
+        print(f"Uploaded to YouTube: https://youtube.com/shorts/{video_id}")
+        return video_id
     except Exception as e:
-        print(f"\n❌ YouTube upload failed: {e}")
+        print(f"YouTube upload failed: {e}")
         return None
 
 
 if __name__ == "__main__":
-    try:
-        print("="*70)
-        print("🚀 Fully Automated AI Short Bot - Starting...")
-        print("="*70)
-        
-        if not GEMINI_API_KEY:
-            print("⚠️ Warning: GEMINI_API_KEY not set, using default story")
-        
-        if YT_CLIENT_ID and YT_CLIENT_SECRET and YT_REFRESH_TOKEN:
-            print("✅ YouTube credentials found - videos will be uploaded")
-        else:
-            print("⚠️ Warning: YouTube credentials incomplete - upload will be skipped")
-        
-        print("\n📝 Generating story script...")
-        story = generate_story_script()
-        scenes = story["scenes"]
-        print(f"✅ Generated {len(scenes)} scenes")
-        
-        final_clips = []
-        for idx, scene in enumerate(scenes):
-            print(f"\n--- Processing Scene {idx + 1}/{len(scenes)} ---")
-            try:
-                media = generate_video_any_provider(scene["prompt"], idx)
-                if media:
-                    clip = assemble_scene(media["video"], media["face_image"], scene["script"], idx)
-                    final_clips.append(clip)
-                else:
-                    print(f"⚠️ Scene {idx + 1}: No video generated")
-            except Exception as e:
-                print(f"❌ Scene {idx + 1} failed: {e}")
-                continue
+    print("=== Fully Automated AI Short Bot with Fixed Wav2Lip Started ===")
+    story = generate_story_script()
+    scenes = story["scenes"]
+    final_clips = []
 
-        if final_clips:
-            try:
-                print(f"\n🎬 Merging {len(final_clips)} clips...")
-                final_video = merge_clips(final_clips)
-                total_duration = get_media_duration(final_video)
-                print(f"✅ Video merged successfully!")
-            except Exception as e:
-                print(f"\n❌ FAILED to merge clips: {e}")
-                sys.exit(1)
-            
-            print(f"\n✅ SUCCESS: Short Ready: {final_video} (~{total_duration:.1f}s)")
+    for idx, scene in enumerate(scenes):
+        print(f"\n--- Processing Scene {idx + 1}/{len(scenes)} ---")
+        try:
+            media = generate_video_any_provider(scene["prompt"], idx)
+            if media:
+                clip = assemble_scene(media["video"], media["face_image"], scene["script"], idx)
+                final_clips.append(clip)
+        except Exception as e:
+            print(f"Scene {idx + 1} failed: {e}")
 
-            yt_title = "Cute AI Cartoon Story - Hindi Comedy #Shorts"
-            yt_description = "Mazedaar AI-generated cartoon kahani!\n\n" + "\n".join(s["script"] for s in scenes) + "\n\n#Shorts #Comedy #Hindi #AIAnimation #CartoonStory"
-            
-            print("\n📤 Attempting YouTube upload...")
-            upload_to_youtube(final_video, yt_title, yt_description)
-        else:
-            print("\n❌ FAILED: No clips produced.")
+    if final_clips:
+        try:
+            final_video = merge_clips(final_clips)
+            total_duration = get_media_duration(final_video)
+        except Exception as e:
+            print(f"\nFAILED: {e}")
             sys.exit(1)
-            
-    except KeyboardInterrupt:
-        print("\n⚠️ Process interrupted by user")
-        sys.exit(0)
-    except Exception as e:
-        print(f"\n❌ FATAL ERROR: {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"\nSUCCESS: Short Ready: {final_video} (~{total_duration:.1f}s)")
+
+        yt_title = "मज़ेदार AI कार्टून कहानी #Shorts"
+        yt_description = "\n".join(s["script"] for s in scenes) + "\n\n#Shorts #Comedy #Hindi #AIAnimation"
+        upload_to_youtube(final_video, yt_title, yt_description)
+    else:
+        print("\nFAILED: No clips produced.")
         sys.exit(1)
