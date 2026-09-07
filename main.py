@@ -22,7 +22,8 @@ def check_dependencies():
         'gradio_client': 'gradio-client',
         'scipy': 'scipy',
         'cv2': 'opencv-python',
-        'numpy': 'numpy'
+        'numpy': 'numpy',
+        'librosa': 'librosa'
     }
     
     missing = []
@@ -50,9 +51,10 @@ except ImportError:
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 
 # --- YouTube auto-upload (free, YouTube Data API v3) --------------------
-YT_CLIENT_ID = os.getenv("YT_CLIENT_ID", "")
-YT_CLIENT_SECRET = os.getenv("YT_CLIENT_SECRET", "")
-YT_REFRESH_TOKEN = os.getenv("YT_REFRESH_TOKEN", "")
+# ✅ FIXED: Updated to match GitHub Secrets names exactly
+YT_CLIENT_ID = os.getenv("YOUTUBE_CLIENT_ID", "")
+YT_CLIENT_SECRET = os.getenv("YOUTUBE_CLIENT_SECRET", "")
+YT_REFRESH_TOKEN = os.getenv("YOUTUBE_REFRESH_TOKEN", "")
 YT_PRIVACY_STATUS = os.getenv("YT_PRIVACY_STATUS", "private")
 
 NUM_SCENES = int(os.getenv("NUM_SCENES", "5"))
@@ -266,9 +268,8 @@ def get_media_duration(path):
 
 
 def _clone_with_retry(repo_url, dest, attempts=3, timeout_s=180):
-    """Shallow-clone with a hard timeout + retries so a stalled clone can't hang the job forever."""
     env = os.environ.copy()
-    env["GIT_TERMINAL_PROMPT"] = "0"  # never wait for a credentials prompt
+    env["GIT_TERMINAL_PROMPT"] = "0"
     for attempt in range(1, attempts + 1):
         if os.path.exists(dest):
             return
@@ -291,7 +292,6 @@ def _clone_with_retry(repo_url, dest, attempts=3, timeout_s=180):
 
 
 def _download_with_retry(url, dest_path, min_size_bytes=1_000_000, attempts=3, timeout_s=120):
-    """Stream a download to disk (no huge in-memory buffering) with retries + size sanity check."""
     for attempt in range(1, attempts + 1):
         try:
             print(f"Downloading {os.path.basename(dest_path)} (attempt {attempt}/{attempts})...")
@@ -326,13 +326,7 @@ def setup_wav2lip():
 
 
 def apply_wav2lip_lipsync(face_file, video_file, audio_file, output_clip, idx):
-    """Applies Wav2Lip local lipsync with proper fallback handling if face detection misses.
-    face_file: static image (fast, single face-detection pass) if available, else same as video_file.
-    video_file: always a video, used for the ffmpeg fallback if Wav2Lip fails/times out.
-    """
     setup_wav2lip()
-    
-    # Ensure temp directory exists for Wav2Lip audio processing
     os.makedirs("temp", exist_ok=True)
     
     inference_script = "Wav2Lip/inference.py"
@@ -441,47 +435,31 @@ def merge_clips(clip_files, final_output="final_short.mp4"):
 
 
 def upload_to_youtube(video_path, title, description):
-    """Improved YouTube upload with better error handling and debugging"""
-    
-    # Debug: Check if credentials exist
     print("\n" + "="*70)
     print("🔍 YouTube Upload Check:")
     print("="*70)
     print(f"✓ Video file: {video_path}")
-    print(f"✓ YT_CLIENT_ID exists: {bool(YT_CLIENT_ID)}")
-    print(f"✓ YT_CLIENT_SECRET exists: {bool(YT_CLIENT_SECRET)}")
-    print(f"✓ YT_REFRESH_TOKEN exists: {bool(YT_REFRESH_TOKEN)}")
+    print(f"✓ YOUTUBE_CLIENT_ID exists: {bool(YT_CLIENT_ID)}")
+    print(f"✓ YOUTUBE_CLIENT_SECRET exists: {bool(YT_CLIENT_SECRET)}")
+    print(f"✓ YOUTUBE_REFRESH_TOKEN exists: {bool(YT_REFRESH_TOKEN)}")
     print("="*70)
     
-    # Check if all credentials are present
     if not (YT_CLIENT_ID and YT_CLIENT_SECRET and YT_REFRESH_TOKEN):
-        print("\n❌ YouTube Credentials غائب ہیں!")
-        print("\n✅ حل:")
-        print("1. Google Cloud Console میں OAuth credentials بنائیں")
-        print("2. Refresh Token حاصل کریں (get_youtube_token.py استعمال کریں)")
-        print("3. GitHub Secrets میں شامل کریں:")
-        print("   - YT_CLIENT_ID")
-        print("   - YT_CLIENT_SECRET")
-        print("   - YT_REFRESH_TOKEN")
-        print("\n📖 مکمل guide: YOUTUBE_UPLOAD_SETUP.md دیکھیں")
+        print("\n❌ YouTube Credentials ghayab hain!")
         return None
 
-    # Check if video file exists
     if not os.path.exists(video_path):
-        print(f"\n❌ Video file نہیں ملی: {video_path}")
+        print(f"\n❌ Video file nahi mili: {video_path}")
         return None
 
-    # Try to import required libraries
     try:
         from google.oauth2.credentials import Credentials
         from googleapiclient.discovery import build
         from googleapiclient.http import MediaFileUpload
     except ImportError as e:
         print(f"\n❌ Required libraries missing: {e}")
-        print("یہ کمانڈ چلائیں: pip install google-auth-httplib2")
         return None
 
-    # Create credentials
     try:
         creds = Credentials(
             token=None,
@@ -491,23 +469,21 @@ def upload_to_youtube(video_path, title, description):
             client_secret=YT_CLIENT_SECRET,
             scopes=["https://www.googleapis.com/auth/youtube.upload"],
         )
-        print("\n✅ Credentials object بنایا گیا")
+        print("\n✅ Credentials object ban gaya hai")
     except Exception as e:
-        print(f"\n❌ Credentials object میں error: {e}")
+        print(f"\n❌ Credentials error: {e}")
         return None
 
-    # Try to upload
     try:
-        print("🔗 YouTube API سے connect ہو رہے ہیں...")
+        print("🔗 YouTube API se connect ho rahe hain...")
         youtube = build("youtube", "v3", credentials=creds)
         
-        print("📝 Video metadata تیار ہو رہی ہے...")
         body = {
             "snippet": {
                 "title": title[:100],
                 "description": description[:5000],
                 "tags": ["shorts", "comedy", "hindi", "AI animation"],
-                "categoryId": "23",  # Entertainment
+                "categoryId": "23",
             },
             "status": {
                 "privacyStatus": YT_PRIVACY_STATUS,
@@ -515,9 +491,7 @@ def upload_to_youtube(video_path, title, description):
             },
         }
         
-        print("📤 Video file upload ہو رہی ہے...")
-        print(f"   File size: {os.path.getsize(video_path) / (1024*1024):.1f}MB")
-        
+        print("📤 Video upload ho rahi hai...")
         media = MediaFileUpload(
             video_path, 
             chunksize=-1, 
@@ -532,45 +506,22 @@ def upload_to_youtube(video_path, title, description):
         )
         
         response = None
-        retry_count = 0
         while response is None:
             status, response = request.next_chunk()
-            retry_count += 1
             if status:
-                progress = int(status.progress() * 100)
-                print(f"   Progress: {progress}% (chunk {retry_count})")
+                print(f"   Progress: {int(status.progress() * 100)}%")
         
         video_id = response.get("id")
-        
         if video_id:
             print("\n" + "="*70)
-            print("✅ SUCCESS! Video YouTube پر upload ہوگیا!")
-            print("="*70)
-            print(f"🎬 Video ID: {video_id}")
-            print(f"🔗 Link: https://youtube.com/shorts/{video_id}")
+            print("✅ SUCCESS! Video YouTube par upload hogayi!")
+            print(f"🎬 Link: https://youtube.com/shorts/{video_id}")
             print("="*70)
             return video_id
-        else:
-            print(f"\n❌ Response میں video ID نہیں ملی")
-            print(f"Response: {response}")
-            return None
+        return None
             
     except Exception as e:
-        print(f"\n❌ YouTube upload failed:")
-        print(f"Error type: {type(e).__name__}")
-        print(f"Error message: {e}")
-        
-        # Common error solutions
-        if "invalid_grant" in str(e):
-            print("\n💡 شاید Refresh Token expired ہے")
-            print("   حل: get_youtube_token.py دوبارہ چلائیں")
-        elif "quotaExceeded" in str(e):
-            print("\n💡 YouTube API quota ختم ہو گیا")
-            print("   کل: 10,000 units/day")
-        elif "authenticationFailed" in str(e):
-            print("\n💡 Authentication fail ہوا")
-            print("   حل: Credentials صحیح ہیں؟")
-        
+        print(f"\n❌ YouTube upload failed: {e}")
         return None
 
 
@@ -580,15 +531,13 @@ if __name__ == "__main__":
         print("🚀 Fully Automated AI Short Bot - Starting...")
         print("="*70)
         
-        # ✅ Check environment variables
-        print("\n✅ Checking configuration...")
         if not GEMINI_API_KEY:
-            print("⚠️  Warning: GEMINI_API_KEY not set, using default story")
+            print("⚠️ Warning: GEMINI_API_KEY not set, using default story")
         
         if YT_CLIENT_ID and YT_CLIENT_SECRET and YT_REFRESH_TOKEN:
             print("✅ YouTube credentials found - videos will be uploaded")
         else:
-            print("⚠️  Warning: YouTube credentials incomplete - upload will be skipped")
+            print("⚠️ Warning: YouTube credentials incomplete - upload will be skipped")
         
         print("\n📝 Generating story script...")
         story = generate_story_script()
@@ -604,7 +553,7 @@ if __name__ == "__main__":
                     clip = assemble_scene(media["video"], media["face_image"], scene["script"], idx)
                     final_clips.append(clip)
                 else:
-                    print(f"⚠️  Scene {idx + 1}: No video generated")
+                    print(f"⚠️ Scene {idx + 1}: No video generated")
             except Exception as e:
                 print(f"❌ Scene {idx + 1} failed: {e}")
                 continue
@@ -621,7 +570,6 @@ if __name__ == "__main__":
             
             print(f"\n✅ SUCCESS: Short Ready: {final_video} (~{total_duration:.1f}s)")
 
-            # ✅ FIXED: Use ASCII-safe title to avoid encoding issues
             yt_title = "Cute AI Cartoon Story - Hindi Comedy #Shorts"
             yt_description = "Mazedaar AI-generated cartoon kahani!\n\n" + "\n".join(s["script"] for s in scenes) + "\n\n#Shorts #Comedy #Hindi #AIAnimation #CartoonStory"
             
@@ -632,7 +580,7 @@ if __name__ == "__main__":
             sys.exit(1)
             
     except KeyboardInterrupt:
-        print("\n⚠️  Process interrupted by user")
+        print("\n⚠️ Process interrupted by user")
         sys.exit(0)
     except Exception as e:
         print(f"\n❌ FATAL ERROR: {e}")
