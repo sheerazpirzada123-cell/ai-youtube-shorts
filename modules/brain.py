@@ -1,6 +1,8 @@
 from google import genai
+from google.genai import errors as genai_errors
 import json
 import random
+import time
 
 FACT_TOPICS = [
     "Wahiyat aur Ajeeb Facts",
@@ -98,10 +100,45 @@ def generate_fact_script(api_key):
     }}
     """
     
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt
-    )
-    
+    response = _generate_with_retry(client, prompt)
+
     clean_text = response.text.replace('```json', '').replace('```', '').strip()
     return json.loads(clean_text)
+
+
+def _generate_with_retry(client, prompt, max_attempts=4, base_delay=15):
+    """
+    Gemini API kabhi kabhi 503 UNAVAILABLE ("model overloaded, high demand")
+    return karta hai jo temporary hota hai. Ye function:
+    1. Primary model (gemini-2.5-flash) ko exponential backoff ke saath retry karta hai.
+    2. Agar phir bhi fail ho to ek lighter fallback model (gemini-2.0-flash) try karta hai,
+       jo kabhi kabhi kam loaded hota hai.
+    Isse ek temporary spike ki wajah se poora GitHub Action run fail nahi hota.
+    """
+    models_to_try = ["gemini-2.5-flash", "gemini-2.0-flash"]
+    last_error = None
+
+    for model_name in models_to_try:
+        for attempt in range(1, max_attempts + 1):
+            try:
+                return client.models.generate_content(
+                    model=model_name,
+                    contents=prompt
+                )
+            except genai_errors.ServerError as e:
+                last_error = e
+                print(f"[brain.py] {model_name} attempt {attempt}/{max_attempts} failed "
+                      f"(server overloaded): {e}")
+                if attempt < max_attempts:
+                    delay = base_delay * (2 ** (attempt - 1))  # 15s, 30s, 60s...
+                    print(f"[brain.py] Retrying in {delay}s...")
+                    time.sleep(delay)
+            except genai_errors.ClientError as e:
+                # 4xx errors (bad API key, invalid request, etc.) retry se theek nahi honge.
+                raise
+        print(f"[brain.py] Giving up on {model_name}, trying next fallback model if available...")
+
+    raise RuntimeError(
+        "Gemini API har model/retry ke baad bhi unavailable raha (server overloaded). "
+        "Thodi der baad workflow dobara chalayein."
+    ) from last_error
