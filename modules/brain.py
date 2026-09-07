@@ -1,4 +1,4 @@
-import google.generativeai as genai
+from google import genai
 import json
 import random
 
@@ -11,7 +11,7 @@ FACT_TOPICS = [
 ]
 
 def generate_fact_script(api_key):
-    genai.configure(api_key=api_key)
+    client = genai.Client(api_key=api_key)
     selected_topic = random.choice(FACT_TOPICS)
     
     prompt = f"""
@@ -20,13 +20,15 @@ def generate_fact_script(api_key):
     
     RULES:
     1. Language MUST BE natural spoken Hindi (Devanagari script).
-    2. Directly start with a energetic hook.
+    2. Directly start with an energetic hook.
     3. Output strictly in JSON format without markdown codeblocks:
     {{"title": "Title Here", "script": "Hindi spoken content..."}}
     """
     
-    model = genai.GenerativeModel("gemini-1.5-flash")
-    response = model.generate_content(prompt)
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt
+    )
     
     clean_text = response.text.replace('```json', '').replace('```', '').strip()
     return json.loads(clean_text)
