@@ -1,4 +1,5 @@
 google-genai
+gtts
 edge-tts
 pydub
 moviepy==1.0.3
