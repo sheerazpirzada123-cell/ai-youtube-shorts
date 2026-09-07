@@ -49,8 +49,12 @@ def download_file(url, target_path, extra_headers=None):
         raise RuntimeError(f"Asset download fail hua ({target_path}): {e}") from e
 
 
-def fetch_pexels_video(target_path="assets/bg_video.mp4"):
-    """Pexels API se ek random vertical (portrait) background video dhoondh kar download karta hai."""
+def fetch_pexels_clip(keyword, target_path, min_duration=3):
+    """
+    Pexels API se diye gaye keyword ke hisaab se ek vertical (portrait) video dhoondh kar
+    download karta hai. Agar keyword ka koi result na mile to generic fallback keywords try karta hai
+    taake pipeline kabhi crash na ho.
+    """
     if os.path.exists(target_path) and os.path.getsize(target_path) > 0:
         return
 
@@ -59,40 +63,59 @@ def fetch_pexels_video(target_path="assets/bg_video.mp4"):
             "PEXELS_API_KEY set nahi hai. GitHub repo secret 'PEXELS_API_KEY' workflow ke env mein pass karein."
         )
 
-    query = random.choice(PEXELS_SEARCH_TERMS)
-    print(f"Searching Pexels for '{query}' background video...")
-
-    search_url = "https://api.pexels.com/videos/search"
-    params = {"query": query, "orientation": "portrait", "per_page": 10}
     headers = {"Authorization": PEXELS_API_KEY}
+    search_url = "https://api.pexels.com/videos/search"
 
-    resp = requests.get(search_url, headers=headers, params=params, timeout=30)
-    resp.raise_for_status()
-    data = resp.json()
+    # Pehle asal keyword try karo, phir generic fallback keywords (agar koi result na mile)
+    queries_to_try = [keyword] + random.sample(PEXELS_SEARCH_TERMS, k=min(2, len(PEXELS_SEARCH_TERMS)))
 
-    videos = data.get("videos", [])
-    if not videos:
-        raise RuntimeError(f"Pexels par '{query}' ke liye koi video nahi mila.")
+    for query in queries_to_try:
+        print(f"Searching Pexels for '{query}'...")
+        params = {"query": query, "orientation": "portrait", "per_page": 15}
+        resp = requests.get(search_url, headers=headers, params=params, timeout=30)
+        resp.raise_for_status()
+        data = resp.json()
 
-    video = random.choice(videos)
-    files = [f for f in video.get("video_files", []) if f.get("file_type") == "video/mp4"]
-    if not files:
-        raise RuntimeError("Chuni gayi Pexels video mein koi mp4 file nahi mili.")
+        # Sirf itni lambi clips rakho jo scene ki duration cover kar sakein
+        videos = [v for v in data.get("videos", []) if v.get("duration", 0) >= min_duration]
+        if not videos:
+            continue
 
-    # Sabse acha portrait/HD quality wala file chunein (bohot bada file avoid karne ke liye ~1080 width cap)
-    files.sort(key=lambda f: (f.get("width") or 0), reverse=True)
-    suitable = [f for f in files if (f.get("width") or 0) <= 1080] or files
-    chosen = suitable[0]
+        video = random.choice(videos)
+        files = [f for f in video.get("video_files", []) if f.get("file_type") == "video/mp4"]
+        if not files:
+            continue
 
-    # Pexels ke video CDN links seedhe download hote hain, koi extra header ki zaroorat nahi
-    download_file(chosen["link"], target_path)
+        files.sort(key=lambda f: (f.get("width") or 0), reverse=True)
+        suitable = [f for f in files if (f.get("width") or 0) <= 1080] or files
+        chosen = suitable[0]
+
+        download_file(chosen["link"], target_path)
+        return
+
+    raise RuntimeError(f"'{keyword}' (aur fallback keywords) ke liye koi suitable Pexels video nahi mila.")
+
+
+def fetch_scene_clips(scenes, scene_durations, output_dir="assets/scene_clips"):
+    """
+    Har scene ke visual_keyword ke hisaab se alag Pexels clip download karta hai.
+    scene_durations = us scene ki voiceover duration (seconds), taake bohot chhoti clips skip ho jayein.
+    Returns list of video file paths, same order as scenes.
+    """
+    os.makedirs(output_dir, exist_ok=True)
+    paths = []
+    for i, (scene, duration) in enumerate(zip(scenes, scene_durations)):
+        target_path = os.path.join(output_dir, f"scene_{i}.mp4")
+        keyword = scene.get("visual_keyword", "").strip() or random.choice(PEXELS_SEARCH_TERMS)
+        fetch_pexels_clip(keyword, target_path, min_duration=max(2, int(duration)))
+        paths.append(target_path)
+    return paths
 
 
 def prepare_all_assets():
     os.makedirs("assets", exist_ok=True)
-    
     # BGM aur Whoosh/Pop SFX filhaal disable hain (Pixabay links expire ho chuke - 403) - baad mein fix karenge
     # download_file(BGM_URL, "assets/bgm.mp3")
     # download_file(WHOOSH_SFX_URL, "assets/whoosh.mp3")
     # download_file(POP_SFX_URL, "assets/pop.mp3")
-    fetch_pexels_video("assets/bg_video.mp4")
+    # Background video ab scene-wise fetch_scene_clips() se aati hai (main.py dekhein)
