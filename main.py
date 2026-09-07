@@ -9,6 +9,37 @@ import requests
 import subprocess
 from gtts import gTTS
 
+# ✅ FIXED: Check for required packages
+def check_dependencies():
+    """Check that all required packages are installed"""
+    required_packages = {
+        'google': 'google-genai',
+        'gtts': 'gtts',
+        'pydub': 'pydub',
+        'moviepy': 'moviepy',
+        'PIL': 'Pillow',
+        'requests': 'requests',
+        'gradio_client': 'gradio-client',
+        'scipy': 'scipy',
+        'cv2': 'opencv-python',
+        'numpy': 'numpy'
+    }
+    
+    missing = []
+    for module, package_name in required_packages.items():
+        try:
+            __import__(module)
+        except ImportError:
+            missing.append(package_name)
+    
+    if missing:
+        print(f"❌ Missing packages: {', '.join(missing)}")
+        print(f"Run: pip install {' '.join(missing)}")
+        sys.exit(1)
+    print("✅ All dependencies are installed")
+
+check_dependencies()
+
 # Gemini Setup
 try:
     from google import genai
@@ -544,33 +575,67 @@ def upload_to_youtube(video_path, title, description):
 
 
 if __name__ == "__main__":
-    print("=== Fully Automated AI Short Bot with Fixed Wav2Lip Started ===")
-    story = generate_story_script()
-    scenes = story["scenes"]
-    final_clips = []
+    try:
+        print("="*70)
+        print("🚀 Fully Automated AI Short Bot - Starting...")
+        print("="*70)
+        
+        # ✅ Check environment variables
+        print("\n✅ Checking configuration...")
+        if not GEMINI_API_KEY:
+            print("⚠️  Warning: GEMINI_API_KEY not set, using default story")
+        
+        if YT_CLIENT_ID and YT_CLIENT_SECRET and YT_REFRESH_TOKEN:
+            print("✅ YouTube credentials found - videos will be uploaded")
+        else:
+            print("⚠️  Warning: YouTube credentials incomplete - upload will be skipped")
+        
+        print("\n📝 Generating story script...")
+        story = generate_story_script()
+        scenes = story["scenes"]
+        print(f"✅ Generated {len(scenes)} scenes")
+        
+        final_clips = []
+        for idx, scene in enumerate(scenes):
+            print(f"\n--- Processing Scene {idx + 1}/{len(scenes)} ---")
+            try:
+                media = generate_video_any_provider(scene["prompt"], idx)
+                if media:
+                    clip = assemble_scene(media["video"], media["face_image"], scene["script"], idx)
+                    final_clips.append(clip)
+                else:
+                    print(f"⚠️  Scene {idx + 1}: No video generated")
+            except Exception as e:
+                print(f"❌ Scene {idx + 1} failed: {e}")
+                continue
 
-    for idx, scene in enumerate(scenes):
-        print(f"\n--- Processing Scene {idx + 1}/{len(scenes)} ---")
-        try:
-            media = generate_video_any_provider(scene["prompt"], idx)
-            if media:
-                clip = assemble_scene(media["video"], media["face_image"], scene["script"], idx)
-                final_clips.append(clip)
-        except Exception as e:
-            print(f"Scene {idx + 1} failed: {e}")
+        if final_clips:
+            try:
+                print(f"\n🎬 Merging {len(final_clips)} clips...")
+                final_video = merge_clips(final_clips)
+                total_duration = get_media_duration(final_video)
+                print(f"✅ Video merged successfully!")
+            except Exception as e:
+                print(f"\n❌ FAILED to merge clips: {e}")
+                sys.exit(1)
+            
+            print(f"\n✅ SUCCESS: Short Ready: {final_video} (~{total_duration:.1f}s)")
 
-    if final_clips:
-        try:
-            final_video = merge_clips(final_clips)
-            total_duration = get_media_duration(final_video)
-        except Exception as e:
-            print(f"\nFAILED: {e}")
+            # ✅ FIXED: Use ASCII-safe title to avoid encoding issues
+            yt_title = "Cute AI Cartoon Story - Hindi Comedy #Shorts"
+            yt_description = "Mazedaar AI-generated cartoon kahani!\n\n" + "\n".join(s["script"] for s in scenes) + "\n\n#Shorts #Comedy #Hindi #AIAnimation #CartoonStory"
+            
+            print("\n📤 Attempting YouTube upload...")
+            upload_to_youtube(final_video, yt_title, yt_description)
+        else:
+            print("\n❌ FAILED: No clips produced.")
             sys.exit(1)
-        print(f"\nSUCCESS: Short Ready: {final_video} (~{total_duration:.1f}s)")
-
-        yt_title = "मज़ेदार AI कार्टून कहानी #Shorts"
-        yt_description = "\n".join(s["script"] for s in scenes) + "\n\n#Shorts #Comedy #Hindi #AIAnimation"
-        upload_to_youtube(final_video, yt_title, yt_description)
-    else:
-        print("\nFAILED: No clips produced.")
+            
+    except KeyboardInterrupt:
+        print("\n⚠️  Process interrupted by user")
+        sys.exit(0)
+    except Exception as e:
+        print(f"\n❌ FATAL ERROR: {e}")
+        import traceback
+        traceback.print_exc()
         sys.exit(1)
