@@ -19,10 +19,16 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install System Dependencies (FFmpeg)
+      - name: Install System Dependencies (FFmpeg + ImageMagick for captions)
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg
+          sudo apt-get install -y ffmpeg imagemagick
+          # ImageMagick ki default policy "@filename" reads block karti hai, jo moviepy
+          # ka TextClip (captions) internally use karta hai. Isko allow karte hain.
+          POLICY_FILE=$(find /etc -iname "policy.xml" -path "*ImageMagick*" 2>/dev/null | head -n1)
+          if [ -n "$POLICY_FILE" ]; then
+            sudo sed -i 's/rights="none" pattern="@\*"/rights="read|write" pattern="@*"/' "$POLICY_FILE"
+          fi
 
       - name: Install Python Dependencies
         run: |
