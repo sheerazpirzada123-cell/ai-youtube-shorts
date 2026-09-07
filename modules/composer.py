@@ -4,12 +4,12 @@ from moviepy.editor import (
     VideoFileClip, 
     AudioFileClip, 
     CompositeAudioClip, 
-    concatenate_audioclips
+    concatenate_videoclips
 )
 
-def create_professional_short(video_clips_paths, voiceover_path, bg_music_path=None, sfx_folder="assets/sfx", output_path="assets/final_short.mp4"):
+def render_short_video(video_clips_paths, voiceover_path, bg_music_path="assets/audio/bg_music.mp3", sfx_folder="assets/sfx", output_path="assets/final_short.mp4"):
     """
-    Combines video clips, applies the energetic voiceover, adds background music with ducking,
+    Combines video clips, applies the voiceover, adds background music with ducking,
     and places sound effects precisely at scene transitions.
     """
     try:
@@ -27,22 +27,19 @@ def create_professional_short(video_clips_paths, voiceover_path, bg_music_path=N
         if not clips:
             raise Exception("❌ Koi valid video clips nahi mili!")
             
-        # Adjust video clips speed or loop them to match target length (50-60s)
-        from moviepy.editor import concatenate_videoclips
         final_video = concatenate_videoclips(clips, method="compose")
         
         if final_video.duration > total_duration:
             final_video = final_video.subclip(0, total_duration)
         else:
-            # Loop video if it's shorter than voiceover
             loops = int(total_duration // final_video.duration) + 1
             final_video = final_video.loop(n=loops).subclip(0, total_duration)
 
         # 3. Setup Audio Mixing (Voiceover + Background Music)
         audio_tracks = [voiceover]
         
-        if bg_music_path and os.path.exists(bg_music_path):
-            bg_music = AudioFileClip(bg_music_path).volumex(0.12) # Low volume for proper ducking
+        if os.path.exists(bg_music_path) and os.path.getsize(bg_music_path) > 0:
+            bg_music = AudioFileClip(bg_music_path).volumex(0.12)
             if bg_music.duration < total_duration:
                 bg_music = bg_music.loop(duration=total_duration)
             else:
@@ -50,11 +47,9 @@ def create_professional_short(video_clips_paths, voiceover_path, bg_music_path=N
             audio_tracks.append(bg_music)
 
         # 4. Precise Sound Effects (SFX) Placement at Scene Cuts/Transitions
-        # Har scene change par ek subtle whoosh ya pop sound lagayenge
         if os.path.exists(sfx_folder):
             sfx_files = [os.path.join(sfx_folder, f) for f in os.listdir(sfx_folder) if f.endswith(('.mp3', '.wav'))]
             if sfx_files:
-                # Calculate cut intervals based on number of clips
                 cut_interval = total_duration / max(len(clips), 1)
                 current_time = cut_interval
                 
@@ -68,14 +63,15 @@ def create_professional_short(video_clips_paths, voiceover_path, bg_music_path=N
         final_audio = CompositeAudioClip(audio_tracks)
         final_video = final_video.set_audio(final_audio)
         
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
         final_video.write_videofile(
             output_path, 
             fps=30, 
             codec="libx264", 
             audio_codec="aac", 
             preset="medium",
-            bitrate="5000k"
+            bitrate="5000k",
+            logger=None
         )
         
         print(f"✅ Professional video successfully created at {output_path}")
@@ -83,4 +79,4 @@ def create_professional_short(video_clips_paths, voiceover_path, bg_music_path=N
 
     except Exception as e:
         print(f"❌ Error in creating video: {e}")
-        return None
+        raise e
