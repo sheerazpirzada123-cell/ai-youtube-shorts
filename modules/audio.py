@@ -3,9 +3,19 @@ import os
 import edge_tts
 
 async def create_voiceover(text, output_file="voice.mp3"):
-    # Energetic Male Hindi Voice
+    # Young & Energetic Hindi Voice
+    # Edge-TTS mein Hindi ke liye sirf 2 hi neural voices available hain
+    # (hi-IN-MadhurNeural - male, hi-IN-SwaraNeural - female). Koi dedicated
+    # "teenager"/young-adult voice exist nahi karti, isliye rate + pitch dono
+    # badha kar isi male voice ko zyada young, punchy aur energetic banaya
+    # gaya hai (jaisa fast-paced facts Shorts mein hota hai).
     voice = "hi-IN-MadhurNeural"
-    communicate = edge_tts.Communicate(text, voice, rate="+10%")
+    communicate = edge_tts.Communicate(
+        text,
+        voice,
+        rate="+25%",
+        pitch="+15Hz"
+    )
     await communicate.save(output_file)
 
 def generate_hindi_audio(script_text, output_file="voice.mp3"):
