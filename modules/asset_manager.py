@@ -44,6 +44,7 @@ def prepare_all_assets():
     os.makedirs("assets", exist_ok=True)
     
     download_file(BGM_URL, "assets/bgm.mp3")
-    download_file(WHOOSH_SFX_URL, "assets/whoosh.mp3")
-    download_file(POP_SFX_URL, "assets/pop.mp3")
+    # Whoosh/Pop SFX filhaal disable hain (composer.py mein bhi off hain) - baad mein dobara enable karenge
+    # download_file(WHOOSH_SFX_URL, "assets/whoosh.mp3")
+    # download_file(POP_SFX_URL, "assets/pop.mp3")
     download_file(DEFAULT_BG_VIDEO, "assets/bg_video.mp4")
