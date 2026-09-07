@@ -1,145 +1,26 @@
-import asyncio
 import os
-import shutil
-from dotenv import load_dotenv
+from modules.brain import generate_fact_script
+from modules.audio import generate_hindi_audio
+from modules.asset_manager import prepare_all_assets
+from modules.composer import render_short_video
 
-# NOTE: These imports assume brain.py, asset_manager.py, audio.py, and
-# composer.py all live inside a `modules/` folder (with an __init__.py in
-# it) next to this file. If your repo currently has brain.py at the project
-# root, move it into modules/brain.py — otherwise this import will fail
-# with "ModuleNotFoundError: No module named 'modules'".
-from modules.brain import ContentBrain
-from modules.asset_manager import AssetManager
-from modules.audio import AudioEngine
-from modules.composer import Composer
-from modules.youtube_uploader import YouTubeUploader
+GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE"  # Apni API key yahan daalein
 
-# Load environment variables from .env file (for local testing)
-load_dotenv()
-
-# Set to "false" (as a GitHub secret/variable or local env var) to render
-# the video without publishing it — useful for testing the pipeline.
-UPLOAD_TO_YOUTUBE = os.getenv("UPLOAD_TO_YOUTUBE", "true").lower() != "false"
-YOUTUBE_PRIVACY_STATUS = os.getenv("YOUTUBE_PRIVACY_STATUS", "public")
-
-PROJECT_ROOT = os.getcwd()
-ASSETS_ROOT = os.path.join(PROJECT_ROOT, "assets")
-
-
-def clean_cache():
-    """
-    Safely deletes temporary files.
-    Includes a Safety Lock to prevent deleting anything outside the project.
-    """
-    print("🧹 Cleaning up temporary files...")
-
-    folders_to_clean = [
-        os.path.join(ASSETS_ROOT, "audio_clips"),
-        os.path.join(ASSETS_ROOT, "video_clips"),
-        os.path.join(ASSETS_ROOT, "temp"),
-    ]
-
-    for folder in folders_to_clean:
-        folder = os.path.abspath(folder)
-
-        # SAFETY CHECK 1: Ensure folder actually exists
-        if not os.path.exists(folder):
-            continue
-
-        # SAFETY CHECK 2: Folder must be a real subdirectory of our
-        # project's assets/ directory (not just contain the word "assets"
-        # somewhere in the path, which the old string check allowed).
-        if os.path.commonpath([folder, ASSETS_ROOT]) != ASSETS_ROOT:
-            print(f"    🚨 SECURITY ALERT: Skipping {folder} because it looks unsafe!")
-            continue
-
-        for filename in os.listdir(folder):
-            file_path = os.path.join(folder, filename)
-            try:
-                if os.path.isfile(file_path) or os.path.islink(file_path):
-                    os.unlink(file_path)
-                    print(f"      Deleted: {filename}")
-                elif os.path.isdir(file_path):
-                    shutil.rmtree(file_path)
-            except Exception as e:
-                print(f"    ❌ Failed to delete {file_path}. Reason: {e}")
-
-    print("✨ Workspace clean!")
-
-
-async def main():
-    print("🚀 STARTING AUTOMATION...")
-
-    # 1. BRAIN: Get Topic + Script + Metadata (single Gemini call — kinder
-    # to the free-tier daily quota than three separate calls)
-    brain = ContentBrain()
-    try:
-        topic, script, metadata = brain.generate_package()
-    except Exception as e:
-        print(f"❌ Brain Error: {e}")
-        return
-
-    if not script:
-        print("❌ Script generation failed.")
-        return
-
-    # 2. AUDIO: No narration/TTS anymore — just confirm bgm/sfx assets exist
-    # (see modules/audio.py). Scene durations are already fixed in brain.py.
-    audio_engine = AudioEngine()
-    audio_engine.check_audio_assets(script)
-
-    # 3. ASSETS: Get cat-centric video for each scene — Pixabay's
-    # video_type=animation first (real 3D/animated-style cat clips), then
-    # Pexels stock footage as fallback (see modules/asset_manager.py).
-    asset_manager = AssetManager()
-    try:
-        assets_map = asset_manager.get_videos(script, topic=topic)
-    except Exception as e:
-        print(f"❌ Asset Error: {e}")
-        return
-
-    # 4. COMPOSER: Merge Video + Audio
-    composer = Composer()
-
-    try:
-        final_scene_paths = composer.render_all_scenes(script, assets_map)
-    except Exception as e:
-        print(f"❌ Composer Error: {e}")
-        return
-
-    # 5. STITCH WITH TRANSITIONS
-    if not final_scene_paths:
-        print("❌ Failed to generate any scenes.")
-        return
-
-    final_video_path = composer.concatenate_with_transitions(final_scene_paths)
-
-    if not final_video_path:
-        print("❌ Stitching failed, nothing to upload.")
-        clean_cache()
-        return
-
-    # 6. UPLOAD TO YOUTUBE
-    if UPLOAD_TO_YOUTUBE:
-        try:
-            uploader = YouTubeUploader()
-            uploader.upload_video(
-                final_video_path,
-                title=metadata["title"],
-                description=metadata["description"],
-                tags=metadata["tags"],
-                privacy_status=YOUTUBE_PRIVACY_STATUS,
-            )
-        except Exception as e:
-            print(f"❌ YouTube Upload Error: {e}")
-            # Don't clean_cache here — keep the rendered video so it can be
-            # recovered from the workflow artifact if upload failed.
-            return
-    else:
-        print("ℹ️ UPLOAD_TO_YOUTUBE is false — skipping upload.")
-
-    clean_cache()
-
+def main():
+    print("1. Downloading/Checking BGM, SFX & Background Video...")
+    prepare_all_assets()
+    
+    print("2. Generating Random Hindi Fact Script...")
+    script_data = generate_fact_script(GEMINI_API_KEY)
+    print(f"Title: {script_data['title']}")
+    
+    print("3. Generating Voiceover...")
+    generate_hindi_audio(script_data['script'])
+    
+    print("4. Rendering Final Short Video (Audio + Music + Sound Effects)...")
+    render_short_video("output_short.mp4")
+    
+    print("Success! Your Short video is ready: output_short.mp4")
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
