@@ -1,8 +1,9 @@
-name: Daily Automatic Hindi Facts Short Generator
+name: Auto Hindi Facts Short Generator & YouTube Uploader
 
 on:
   schedule:
-    - cron: '0 8 * * *'
+    - cron: '0 8 * * *'   # 8:00 AM UTC (~1:00 PM Pakistan time)
+    - cron: '0 15 * * *'  # 3:00 PM UTC (~8:00 PM Pakistan time)
   workflow_dispatch:
 
 jobs:
@@ -32,6 +33,9 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
         run: python main.py
 
       - name: Upload Output Video as Artifact
