@@ -1,11 +1,11 @@
 name: Auto YouTube Shorts Generator
 
 on:
-  # Auto-schedule is OFF for now so nothing uploads while you're still testing.
-  # Once you're happy with the output, uncomment the two lines below to go
-  # back to running automatically twice a day (4 AM & 4 PM UTC).
-  # schedule:
-  #   - cron: '0 4,16 * * *'
+  # Auto-run twice a day at good engagement times for a Pakistan/India (PKT/IST)
+  # audience: ~1:30 PM and ~8:30 PM local time (lunchtime + evening scroll time).
+  # Cron times below are in UTC: 08:30 UTC = 1:30 PM PKT, 15:30 UTC = 8:30 PM PKT.
+  schedule:
+    - cron: '30 8,15 * * *'
   workflow_dispatch: # Manual run button ke liye
 
 jobs:
