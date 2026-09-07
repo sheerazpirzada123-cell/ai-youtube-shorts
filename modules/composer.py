@@ -15,7 +15,7 @@ def render_short_video(video_clips_paths, voiceover_path, bg_music_path="assets/
     try:
         print("🎬 Assembling professional YouTube Short...")
         
-        # 1. Load Voiceover to get total duration
+        # 1. Load voiceover to get total duration
         if not os.path.exists(voiceover_path):
             raise FileNotFoundError(f"Voiceover not found at {voiceover_path}")
         
@@ -25,7 +25,7 @@ def render_short_video(video_clips_paths, voiceover_path, bg_music_path="assets/
         # 2. Load and combine video clips to match the voiceover length
         clips = [VideoFileClip(p) for p in video_clips_paths if os.path.exists(p)]
         if not clips:
-            raise Exception("❌ Koi valid video clips nahi mili!")
+            raise Exception("❌ No valid video clips found!")
             
         final_video = concatenate_videoclips(clips, method="compose")
         
@@ -35,7 +35,7 @@ def render_short_video(video_clips_paths, voiceover_path, bg_music_path="assets/
             loops = int(total_duration // final_video.duration) + 1
             final_video = final_video.loop(n=loops).subclip(0, total_duration)
 
-        # 3. Setup Audio Mixing (Voiceover + Background Music)
+        # 3. Setup audio mixing (voiceover + background music)
         audio_tracks = [voiceover]
         
         if os.path.exists(bg_music_path) and os.path.getsize(bg_music_path) > 0:
@@ -46,7 +46,7 @@ def render_short_video(video_clips_paths, voiceover_path, bg_music_path="assets/
                 bg_music = bg_music.subclip(0, total_duration)
             audio_tracks.append(bg_music)
 
-        # 4. Precise Sound Effects (SFX) Placement at Scene Cuts/Transitions
+        # 4. Precise sound effects (SFX) placement at scene cuts/transitions
         if os.path.exists(sfx_folder):
             sfx_files = [os.path.join(sfx_folder, f) for f in os.listdir(sfx_folder) if f.endswith(('.mp3', '.wav'))]
             if sfx_files:
@@ -59,7 +59,7 @@ def render_short_video(video_clips_paths, voiceover_path, bg_music_path="assets/
                     audio_tracks.append(sfx)
                     current_time += cut_interval
 
-        # 5. Composite Final Audio and Export Video
+        # 5. Composite final audio and export video
         final_audio = CompositeAudioClip(audio_tracks)
         final_video = final_video.set_audio(final_audio)
         
@@ -80,4 +80,3 @@ def render_short_video(video_clips_paths, voiceover_path, bg_music_path="assets/
     except Exception as e:
         print(f"❌ Error in creating video: {e}")
         raise e
-```[cite: 3]
