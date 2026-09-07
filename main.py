@@ -4,7 +4,7 @@ from modules.audio import generate_hindi_audio
 from modules.asset_manager import prepare_all_assets
 from modules.composer import render_short_video
 
-GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE"  # Apni API key yahan daalein
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "YOUR_GEMINI_API_KEY_HERE")  # Environment variable / GitHub secret se read hoga
 
 def main():
     print("1. Downloading/Checking BGM, SFX & Background Video...")
