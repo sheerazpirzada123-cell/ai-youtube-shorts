@@ -2,9 +2,8 @@ name: Daily Automatic Hindi Facts Short Generator
 
 on:
   schedule:
-    # Daily Subah 8:00 AM UTC par auto-run hoga
     - cron: '0 8 * * *'
-  workflow_dispatch: # GitHub dashboard se manual trigger karne ke liye
+  workflow_dispatch:
 
 jobs:
   build-and-run:
@@ -35,7 +34,7 @@ jobs:
         run: python main.py
 
       - name: Upload Output Video as Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4  # <-- Yahan v3 ko badal kar v4 kar diya gaya hai
         with:
           name: generated-short-video
           path: output_short.mp4
