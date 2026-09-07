@@ -7,7 +7,7 @@ from moviepy.editor import (
     concatenate_videoclips
 )
 
-def render_short_video(video_clips_paths, voiceover_path, bg_music_path="assets/audio/bg_music.mp3", sfx_folder="assets/sfx", output_path="assets/final_short.mp4"):
+def render_short_video(video_clips_paths, voiceover_path, bg_music_path="assets/audio/bg_music.mp3", sfx_folder="assets/sfx", output_path="assets/final_short.mp4", scene_word_timings=None, **kwargs):
     """
     Combines video clips, applies the voiceover, adds background music with ducking,
     and places sound effects precisely at scene transitions.
@@ -80,3 +80,4 @@ def render_short_video(video_clips_paths, voiceover_path, bg_music_path="assets/
     except Exception as e:
         print(f"❌ Error in creating video: {e}")
         raise e
+```[cite: 3]
