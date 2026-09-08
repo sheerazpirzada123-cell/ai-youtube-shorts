@@ -1,5 +1,6 @@
 import os
 import random
+import subprocess
 
 from moviepy.editor import (
     VideoFileClip,
@@ -80,6 +81,73 @@ def create_placeholder_clip(duration=5, width=1080, height=1920):
         color=(0, 0, 0)
     ).set_duration(duration)
     return placeholder
+
+
+def safe_trim_video(video_clip, target_duration):
+    """
+    Safely trim/extend video to target duration.
+    
+    Issue: Direct .subclip() can cause 'NoneType' errors
+    Solution: Save and reload if duration mismatch
+    """
+    try:
+        if video_clip is None:
+            print(f"⚠️ Video is None, cannot trim")
+            return None
+            
+        if video_clip.duration <= 0:
+            print(f"⚠️ Invalid video duration: {video_clip.duration}")
+            return None
+        
+        # Agar duration almost same hai to skip karenge
+        duration_diff = abs(video_clip.duration - target_duration)
+        if duration_diff < 0.5:  # Less than 0.5 second difference
+            print(f"✓ Duration already close ({video_clip.duration:.2f}s)")
+            return video_clip
+        
+        # Trim using set_end to avoid moviepy subclip issues
+        if video_clip.duration > target_duration:
+            print(f"🔄 Trimming video from {video_clip.duration:.2f}s to {target_duration:.2f}s")
+            trimmed = video_clip.set_end(target_duration)
+            return trimmed
+        else:
+            return video_clip
+            
+    except Exception as e:
+        print(f"⚠️ Trimming failed: {e}, returning original")
+        return video_clip
+
+
+def safe_loop_video(video_clip, target_duration):
+    """
+    Safely loop/extend video to target duration.
+    
+    Issue: .loop().subclip() can cause issues
+    Solution: Use padding instead
+    """
+    try:
+        if video_clip is None or video_clip.duration <= 0:
+            return None
+        
+        if video_clip.duration >= target_duration:
+            return video_clip
+        
+        print(f"🔄 Extending video from {video_clip.duration:.2f}s to {target_duration:.2f}s")
+        
+        # Calculate how many loops we need
+        loops_needed = int(target_duration // video_clip.duration) + 1
+        
+        # Loop the video
+        looped = video_clip.loop(n=loops_needed)
+        
+        # Trim to exact duration
+        looped = looped.set_end(target_duration)
+        
+        return looped
+        
+    except Exception as e:
+        print(f"⚠️ Looping failed: {e}, returning original")
+        return video_clip
 
 
 def render_short_video(
@@ -171,7 +239,7 @@ def render_short_video(
                 print(f"⚠️ Concatenation failed: {e}, using first clip only")
                 final_video = clips[0]
 
-        # ✅ FIX: Check if final_video is None
+        # ✅ FIX #1: Check if final_video is None
         if final_video is None:
             print("❌ Final video is None! Using placeholder.")
             final_video = create_placeholder_clip(
@@ -186,24 +254,33 @@ def render_short_video(
         print(f"Video duration: {final_video.duration:.2f}s, Voiceover: {total_duration:.2f}s")
 
         # ===============================
-        # MATCH VOICEOVER DURATION
+        # MATCH VOICEOVER DURATION - SAFE WAY
         # ===============================
+        
         if final_video.duration > total_duration:
-            print(f"🔄 Trimming video from {final_video.duration:.2f}s to {total_duration:.2f}s")
-            trimmed = final_video.subclip(0, total_duration)
-            final_video.close()
-            final_video = trimmed
-
+            # ✅ FIX #2: Use safe_trim_video instead of direct subclip
+            final_video = safe_trim_video(final_video, total_duration)
+            
         elif final_video.duration < total_duration:
-            print(f"🔄 Looping video from {final_video.duration:.2f}s to {total_duration:.2f}s")
-            loops = int(total_duration // final_video.duration) + 1
-            looped = (
-                final_video
-                .loop(n=loops)
-                .subclip(0, total_duration)
+            # ✅ FIX #3: Use safe_loop_video instead of direct loop
+            final_video = safe_loop_video(final_video, total_duration)
+
+        # ✅ FIX #4: Validate final_video again after trimming
+        if final_video is None:
+            print("❌ Video became None after trimming! Using placeholder.")
+            final_video = create_placeholder_clip(
+                duration=total_duration,
+                width=1080,
+                height=1920
             )
-            final_video.close()
-            final_video = looped
+
+        if final_video.duration <= 0:
+            print("❌ Final video has invalid duration! Using placeholder.")
+            final_video = create_placeholder_clip(
+                duration=total_duration,
+                width=1080,
+                height=1920
+            )
 
         # ===============================
         # AUDIO
@@ -217,7 +294,7 @@ def render_short_video(
                 if bg_music.duration < total_duration:
                     bg_music = bg_music.loop(duration=total_duration)
                 else:
-                    bg_music = bg_music.subclip(0, total_duration)
+                    bg_music = bg_music.set_end(total_duration)
 
                 audio_tracks.append(bg_music)
             except Exception as e:
@@ -227,30 +304,33 @@ def render_short_video(
         # SOUND EFFECTS
         # ===============================
         if os.path.exists(sfx_folder):
-            sfx_files = [
-                os.path.join(sfx_folder, filename)
-                for filename in os.listdir(sfx_folder)
-                if filename.lower().endswith((".mp3", ".wav"))
-            ]
+            try:
+                sfx_files = [
+                    os.path.join(sfx_folder, filename)
+                    for filename in os.listdir(sfx_folder)
+                    if filename.lower().endswith((".mp3", ".wav"))
+                ]
 
-            if sfx_files:
-                cut_interval = total_duration / max(len(clips), 1)
-                current_time = cut_interval
+                if sfx_files:
+                    cut_interval = total_duration / max(len(clips), 1)
+                    current_time = cut_interval
 
-                while current_time < total_duration - 1:
-                    sfx_path = random.choice(sfx_files)
+                    while current_time < total_duration - 1:
+                        sfx_path = random.choice(sfx_files)
 
-                    try:
-                        sfx = (
-                            AudioFileClip(sfx_path)
-                            .volumex(0.20)
-                            .set_start(current_time)
-                        )
-                        audio_tracks.append(sfx)
-                    except Exception as error:
-                        print(f"SFX skipped: {error}")
+                        try:
+                            sfx = (
+                                AudioFileClip(sfx_path)
+                                .volumex(0.20)
+                                .set_start(current_time)
+                            )
+                            audio_tracks.append(sfx)
+                        except Exception as error:
+                            print(f"SFX skipped: {error}")
 
-                    current_time += cut_interval
+                        current_time += cut_interval
+            except Exception as e:
+                print(f"⚠️ Sound effects folder error: {e}")
 
         # ===============================
         # FINAL AUDIO
@@ -263,32 +343,54 @@ def render_short_video(
         os.makedirs(output_directory, exist_ok=True)
 
         # ===============================
-        # EXPORT
+        # EXPORT WITH RETRY
         # ===============================
         print("Rendering final MP4...")
 
-        final_video.write_videofile(
-            output_path,
-            fps=30,
-            codec="libx264",
-            audio_codec="aac",
-            preset="medium",
-            bitrate="5000k",
-            threads=2,
-            ffmpeg_params=[
-                "-pix_fmt",
-                "yuv420p",
-                "-movflags",
-                "+faststart"
-            ],
-            logger=None
-        )
+        try:
+            final_video.write_videofile(
+                output_path,
+                fps=30,
+                codec="libx264",
+                audio_codec="aac",
+                preset="medium",
+                bitrate="5000k",
+                threads=2,
+                verbose=False,
+                logger=None,
+                ffmpeg_params=[
+                    "-pix_fmt",
+                    "yuv420p",
+                    "-movflags",
+                    "+faststart"
+                ]
+            )
+        except Exception as write_error:
+            print(f"⚠️ Initial write failed: {write_error}")
+            print("Trying with different codec...")
+            
+            # Fallback: Try with different parameters
+            final_video.write_videofile(
+                output_path,
+                fps=30,
+                codec="libx264",
+                audio_codec="aac",
+                preset="fast",
+                verbose=False,
+                logger=None,
+                ffmpeg_params=[
+                    "-pix_fmt",
+                    "yuv420p"
+                ]
+            )
 
         print(f"✅ Professional video successfully created at {output_path}")
         return output_path
 
     except Exception as error:
         print(f"❌ Error in creating video: {error}")
+        import traceback
+        traceback.print_exc()
         raise
 
     finally:
