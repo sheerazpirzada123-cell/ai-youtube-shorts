@@ -84,6 +84,12 @@ def build_video(story):
     print("\n--- Fetching scene video clips (Pexels -> Pixabay -> AI fallback) ---")
     video_paths = asset_manager.fetch_scene_clips(scenes, durations)
 
+    print("\n--- Fetching background music + sound effects (Pixabay) ---")
+    try:
+        asset_manager.prepare_background_audio()
+    except Exception as e:
+        print(f"Background audio setup failed, continuing without it: {e}")
+
     print("\n--- Merging per-scene voiceovers into a single narration track ---")
     full_voiceover_path = audio.concatenate_voiceovers(audio_paths)
 
