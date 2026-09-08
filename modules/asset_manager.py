@@ -2,194 +2,1191 @@ import requests
 import os
 import random
 import subprocess
+import shutil
 
-# Free Royalty-Free Assets Direct Links
+
 BGM_URL = "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=suspense-scary-10332.mp3"
 WHOOSH_SFX_URL = "https://cdn.pixabay.com/download/audio/2022/03/10/audio_c35f9923ed.mp3?filename=whoosh-6316.mp3"
 POP_SFX_URL = "https://cdn.pixabay.com/download/audio/2021/08/04/audio_bb630cc098.mp3?filename=pop-39222.mp3"
 
+
 PEXELS_API_KEY = os.environ.get("PEXELS_API_KEY")
 PIXABAY_API_KEY = os.environ.get("PIXABAY_API_KEY")
-PEXELS_SEARCH_TERMS = ["space", "abstract background", "nature", "ocean", "galaxy", "clouds timelapse"]
 
-def download_file(url, target_path, extra_headers=None):
-    if os.path.exists(target_path) and os.path.getsize(target_path) > 0:
-        return
 
-    print(f"Downloading asset: {target_path}...")
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-        "Accept": "*/*",
-    }
-    if extra_headers:
-        headers.update(extra_headers)
+PEXELS_SEARCH_TERMS = [
+    "space",
+    "abstract background",
+    "nature",
+    "ocean",
+    "galaxy",
+    "clouds timelapse"
+]
+
+
+def validate_video(video_path):
+    """
+    ffprobe aur ffmpeg se check karta hai ke
+    video actual playable hai ya corrupt.
+    """
+
+    if not os.path.exists(video_path):
+        return False
+
+    if os.path.getsize(video_path) < 50000:
+        return False
 
     try:
-        r = requests.get(url, stream=True, headers=headers, timeout=30)
-        r.raise_for_status()  # non-200 (404/403 etc) par turant exception raise karega
 
-        content_type = r.headers.get("Content-Type", "")
-        if "audio" not in content_type and "video" not in content_type and "octet-stream" not in content_type:
-            raise ValueError(
-                f"Unexpected content-type '{content_type}' for {target_path}. "
-                f"URL shayad expired/invalid hai: {url}"
-            )
-
-        with open(target_path, 'wb') as f:
-            for chunk in r.iter_content(chunk_size=1024):
-                if chunk:
-                    f.write(chunk)
-
-        # Download ke baad file size check - agar bohot chhoti hai to ye asli asset nahi
-        if os.path.getsize(target_path) < 1024:
-            os.remove(target_path)
-            raise ValueError(f"Downloaded file for {target_path} bohot chhota/invalid hai. URL check karein: {url}")
-
-    except Exception as e:
-        if os.path.exists(target_path):
-            os.remove(target_path)  # corrupt/partial file na chhode
-        raise RuntimeError(f"Asset download fail hua ({target_path}): {e}") from e
-
-
-def fetch_pexels_clip(keyword, target_path, min_duration=3):
-    """
-    Pexels API se diye gaye keyword ke hisaab se ek vertical (portrait) video dhoondh kar
-    download karta hai. Agar keyword ka koi result na mile to generic fallback keywords try karta hai
-    taake pipeline kabhi crash na ho.
-    """
-    if os.path.exists(target_path) and os.path.getsize(target_path) > 0:
-        return
-
-    if not PEXELS_API_KEY:
-        raise RuntimeError(
-            "PEXELS_API_KEY set nahi hai. GitHub repo secret 'PEXELS_API_KEY' workflow ke env mein pass karein."
+        probe = subprocess.run(
+            [
+                "ffprobe",
+                "-v",
+                "error",
+                "-select_streams",
+                "v:0",
+                "-show_entries",
+                "stream=codec_name,width,height",
+                "-of",
+                "default=noprint_wrappers=1",
+                video_path
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30
         )
 
-    headers = {"Authorization": PEXELS_API_KEY}
-    search_url = "https://api.pexels.com/videos/search"
+        if probe.returncode != 0:
+            return False
 
-    # Pehle asal keyword try karo, phir generic fallback keywords (agar koi result na mile)
-    queries_to_try = [keyword] + random.sample(PEXELS_SEARCH_TERMS, k=min(2, len(PEXELS_SEARCH_TERMS)))
+        if not probe.stdout.strip():
+            return False
+
+
+        decode = subprocess.run(
+            [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                video_path,
+                "-frames:v",
+                "1",
+                "-f",
+                "null",
+                "-"
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+
+        if decode.returncode != 0:
+            return False
+
+        return True
+
+    except Exception:
+
+        return False
+
+
+def normalize_video(source_path, target_path):
+    """
+    Har downloaded video ko standard H264 format mein
+    convert karta hai taake MoviePy first-frame error na de.
+    """
+
+    temp_output = target_path + ".normalized.mp4"
+
+
+    if os.path.exists(temp_output):
+
+        os.remove(temp_output)
+
+
+    command = [
+
+        "ffmpeg",
+
+        "-y",
+
+        "-i",
+        source_path,
+
+        "-map",
+        "0:v:0",
+
+        "-an",
+
+        "-vf",
+        "scale='min(1080,iw)':-2",
+
+        "-c:v",
+        "libx264",
+
+        "-preset",
+        "fast",
+
+        "-crf",
+        "23",
+
+        "-pix_fmt",
+        "yuv420p",
+
+        "-movflags",
+        "+faststart",
+
+        temp_output
+    ]
+
+
+    result = subprocess.run(
+        command,
+        capture_output=True,
+        text=True,
+        timeout=180
+    )
+
+
+    if result.returncode != 0:
+
+        raise RuntimeError(
+            "FFmpeg video normalization failed:\n"
+            + result.stderr[-1500:]
+        )
+
+
+    if not validate_video(temp_output):
+
+        if os.path.exists(temp_output):
+            os.remove(temp_output)
+
+        raise RuntimeError(
+            "Normalized video is still invalid."
+        )
+
+
+    if os.path.exists(target_path):
+
+        os.remove(target_path)
+
+
+    shutil.move(
+        temp_output,
+        target_path
+    )
+
+
+    return target_path
+
+
+def download_file(
+    url,
+    target_path,
+    extra_headers=None,
+    asset_type="video"
+):
+
+    """
+    Asset ko pehle temporary file mein download karta hai.
+
+    Download complete aur valid hone ke baad hi
+    original target file banayi jati hai.
+    """
+
+
+    temp_path = target_path + ".download"
+
+
+    if os.path.exists(temp_path):
+
+        os.remove(temp_path)
+
+
+    print(
+        f"Downloading asset: {target_path}..."
+    )
+
+
+    headers = {
+
+        "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/124.0 Safari/537.36",
+
+        "Accept":
+        "*/*"
+    }
+
+
+    if extra_headers:
+
+        headers.update(
+            extra_headers
+        )
+
+
+    try:
+
+        with requests.get(
+            url,
+            stream=True,
+            headers=headers,
+            timeout=(20, 180)
+        ) as response:
+
+
+            response.raise_for_status()
+
+
+            content_type = (
+                response.headers.get(
+                    "Content-Type",
+                    ""
+                ).lower()
+            )
+
+
+            if asset_type == "video":
+
+                if (
+                    "video"
+                    not in content_type
+                    and
+                    "octet-stream"
+                    not in content_type
+                ):
+
+                    raise ValueError(
+                        f"Unexpected video content type: "
+                        f"{content_type}"
+                    )
+
+
+            elif asset_type == "audio":
+
+                if (
+                    "audio"
+                    not in content_type
+                    and
+                    "octet-stream"
+                    not in content_type
+                ):
+
+                    raise ValueError(
+                        f"Unexpected audio content type: "
+                        f"{content_type}"
+                    )
+
+
+            with open(
+                temp_path,
+                "wb"
+            ) as file:
+
+
+                for chunk in response.iter_content(
+                    chunk_size=1024 * 1024
+                ):
+
+                    if chunk:
+
+                        file.write(
+                            chunk
+                        )
+
+
+        if not os.path.exists(temp_path):
+
+            raise RuntimeError(
+                "Downloaded file was not created."
+            )
+
+
+        if os.path.getsize(temp_path) < 50000:
+
+            raise ValueError(
+                f"Downloaded file is too small "
+                f"({os.path.getsize(temp_path)} bytes)"
+            )
+
+
+        if asset_type == "video":
+
+            if not validate_video(
+                temp_path
+            ):
+
+                raise ValueError(
+                    "Downloaded MP4 is corrupt "
+                    "or cannot be decoded."
+                )
+
+
+        if os.path.exists(target_path):
+
+            os.remove(
+                target_path
+            )
+
+
+        shutil.move(
+            temp_path,
+            target_path
+        )
+
+
+        return target_path
+
+
+    except Exception as error:
+
+
+        if os.path.exists(temp_path):
+
+            os.remove(
+                temp_path
+            )
+
+
+        if os.path.exists(target_path):
+
+            os.remove(
+                target_path
+            )
+
+
+        raise RuntimeError(
+
+            f"Asset download failed "
+            f"({target_path}): {error}"
+
+        ) from error
+
+
+
+def fetch_pexels_clip(
+    keyword,
+    target_path,
+    min_duration=3
+):
+
+    """
+    Pexels se video fetch karta hai.
+    Download ke baad video validate aur normalize hota hai.
+    """
+
+
+    if validate_video(target_path):
+
+        return target_path
+
+
+    if os.path.exists(target_path):
+
+        os.remove(
+            target_path
+        )
+
+
+    if not PEXELS_API_KEY:
+
+        raise RuntimeError(
+            "PEXELS_API_KEY set nahi hai."
+        )
+
+
+    headers = {
+
+        "Authorization":
+        PEXELS_API_KEY
+    }
+
+
+    search_url = (
+        "https://api.pexels.com/videos/search"
+    )
+
+
+    fallback_count = min(
+        3,
+        len(PEXELS_SEARCH_TERMS)
+    )
+
+
+    queries_to_try = [
+
+        keyword
+
+    ] + random.sample(
+
+        PEXELS_SEARCH_TERMS,
+
+        k=fallback_count
+    )
+
 
     for query in queries_to_try:
-        print(f"Searching Pexels for '{query}'...")
-        params = {"query": query, "orientation": "portrait", "per_page": 15}
-        resp = requests.get(search_url, headers=headers, params=params, timeout=30)
-        resp.raise_for_status()
-        data = resp.json()
 
-        # Sirf itni lambi clips rakho jo scene ki duration cover kar sakein
-        videos = [v for v in data.get("videos", []) if v.get("duration", 0) >= min_duration]
+
+        print(
+            f"Searching Pexels for "
+            f"'{query}'..."
+        )
+
+
+        params = {
+
+            "query":
+            query,
+
+            "orientation":
+            "portrait",
+
+            "per_page":
+            15
+        }
+
+
+        response = requests.get(
+
+            search_url,
+
+            headers=headers,
+
+            params=params,
+
+            timeout=30
+        )
+
+
+        response.raise_for_status()
+
+
+        data = response.json()
+
+
+        videos = [
+
+            video
+
+            for video
+
+            in data.get(
+                "videos",
+                []
+            )
+
+            if video.get(
+                "duration",
+                0
+            ) >= min_duration
+        ]
+
+
         if not videos:
+
             continue
 
-        video = random.choice(videos)
-        files = [f for f in video.get("video_files", []) if f.get("file_type") == "video/mp4"]
-        if not files:
-            continue
 
-        files.sort(key=lambda f: (f.get("width") or 0), reverse=True)
-        suitable = [f for f in files if (f.get("width") or 0) <= 1080] or files
-        chosen = suitable[0]
-
-        download_file(chosen["link"], target_path)
-        return
-
-    raise RuntimeError(f"'{keyword}' (aur fallback keywords) ke liye koi suitable Pexels video nahi mila.")
+        random.shuffle(
+            videos
+        )
 
 
-def fetch_pixabay_clip(keyword, target_path):
-    """Pexels fail ho jaye toh Pixabay se try karta hai (dusra free stock source)."""
+        for video in videos:
+
+
+            files = [
+
+                file
+
+                for file
+
+                in video.get(
+                    "video_files",
+                    []
+                )
+
+                if file.get(
+                    "file_type"
+                ) == "video/mp4"
+            ]
+
+
+            if not files:
+
+                continue
+
+
+            # Medium resolution ko preference.
+            # Bohat huge files GitHub Actions mein
+            # incomplete download ka risk barhate hain.
+
+            files.sort(
+
+                key=lambda file:
+
+                abs(
+                    (
+                        file.get(
+                            "width",
+                            720
+                        )
+                        or 720
+                    )
+                    -
+                    720
+                )
+            )
+
+
+            for file in files:
+
+
+                raw_path = (
+                    target_path
+                    +
+                    ".raw.mp4"
+                )
+
+
+                try:
+
+
+                    if os.path.exists(raw_path):
+
+                        os.remove(
+                            raw_path
+                        )
+
+
+                    download_file(
+
+                        file["link"],
+
+                        raw_path,
+
+                        asset_type="video"
+                    )
+
+
+                    normalize_video(
+
+                        raw_path,
+
+                        target_path
+                    )
+
+
+                    if os.path.exists(raw_path):
+
+                        os.remove(
+                            raw_path
+                        )
+
+
+                    print(
+                        f"Valid Pexels clip ready: "
+                        f"{target_path}"
+                    )
+
+
+                    return target_path
+
+
+                except Exception as error:
+
+
+                    print(
+                        f"Pexels clip failed, "
+                        f"trying another clip: "
+                        f"{error}"
+                    )
+
+
+                    if os.path.exists(raw_path):
+
+                        os.remove(
+                            raw_path
+                        )
+
+
+                    if os.path.exists(target_path):
+
+                        os.remove(
+                            target_path
+                        )
+
+
+    raise RuntimeError(
+
+        f"No valid Pexels video found "
+        f"for '{keyword}'."
+    )
+
+
+
+def fetch_pixabay_clip(
+    keyword,
+    target_path
+):
+
+    """
+    Pexels fail hone par Pixabay.
+    """
+
+
+    if validate_video(target_path):
+
+        return target_path
+
+
+    if os.path.exists(target_path):
+
+        os.remove(
+            target_path
+        )
+
+
     if not PIXABAY_API_KEY:
-        raise RuntimeError("PIXABAY_API_KEY set nahi hai.")
 
-    url = f"https://pixabay.com/api/videos/?key={PIXABAY_API_KEY}&q={requests.utils.quote(keyword)}&per_page=3"
-    resp = requests.get(url, timeout=15)
-    resp.raise_for_status()
-    hits = resp.json().get("hits", [])
+        raise RuntimeError(
+            "PIXABAY_API_KEY set nahi hai."
+        )
+
+
+    url = (
+
+        "https://pixabay.com/api/videos/"
+        f"?key={PIXABAY_API_KEY}"
+        f"&q={requests.utils.quote(keyword)}"
+        "&per_page=10"
+    )
+
+
+    response = requests.get(
+
+        url,
+
+        timeout=30
+    )
+
+
+    response.raise_for_status()
+
+
+    hits = response.json().get(
+
+        "hits",
+        []
+    )
+
+
     if not hits:
-        raise RuntimeError(f"'{keyword}' ke liye Pixabay par koi video nahi mila.")
 
-    vid_url = hits[0]["videos"]["medium"]["url"]
-    download_file(vid_url, target_path)
+        raise RuntimeError(
+            f"No Pixabay video found "
+            f"for '{keyword}'."
+        )
 
 
-def fetch_fallback_ai_clip(keyword, target_path, duration=6):
+    random.shuffle(
+        hits
+    )
+
+
+    last_error = None
+
+
+    for hit in hits:
+
+
+        try:
+
+
+            videos = hit.get(
+                "videos",
+                {}
+            )
+
+
+            video_url = (
+
+                videos.get(
+                    "medium",
+                    {}
+                ).get("url")
+
+                or
+
+                videos.get(
+                    "small",
+                    {}
+                ).get("url")
+
+                or
+
+                videos.get(
+                    "large",
+                    {}
+                ).get("url")
+            )
+
+
+            if not video_url:
+
+                continue
+
+
+            raw_path = (
+                target_path
+                +
+                ".raw.mp4"
+            )
+
+
+            download_file(
+
+                video_url,
+
+                raw_path,
+
+                asset_type="video"
+            )
+
+
+            normalize_video(
+
+                raw_path,
+
+                target_path
+            )
+
+
+            if os.path.exists(raw_path):
+
+                os.remove(
+                    raw_path
+                )
+
+
+            return target_path
+
+
+        except Exception as error:
+
+
+            last_error = error
+
+
+            raw_path = (
+                target_path
+                +
+                ".raw.mp4"
+            )
+
+
+            if os.path.exists(raw_path):
+
+                os.remove(
+                    raw_path
+                )
+
+
+    raise RuntimeError(
+
+        f"All Pixabay clips failed "
+        f"for '{keyword}': {last_error}"
+    )
+
+
+
+def fetch_fallback_ai_clip(
+    keyword,
+    target_path,
+    duration=6
+):
+
     """
-    Pexels aur Pixabay dono fail ho jayein toh Pollinations se ek background image
-    generate karke usse zoompan (slow zoom) wala video banata hai, taake pipeline
-    kabhi bhi crash na ho aur hamesha koi na koi visual mil jaye.
+    Last fallback:
+    AI image ko FFmpeg se
+    valid H264 MP4 banata hai.
     """
-    img_prompt = requests.utils.quote(f"{keyword}, cinematic background, vertical 9:16")
-    img_url = f"https://image.pollinations.ai/prompt/{img_prompt}?width=1080&height=1920&nologo=true"
-    img_file = target_path + ".jpg"
 
-    res = requests.get(img_url, timeout=30)
-    res.raise_for_status()
-    with open(img_file, "wb") as f:
-        f.write(res.content)
 
-    zoom_cmd = [
-        "ffmpeg", "-loop", "1", "-i", img_file,
-        "-vf", "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,"
-               "zoompan=z='min(zoom+0.0015,1.3)':d=150:s=1080x1920:fps=25",
-        "-t", str(duration), "-c:v", "libx264", "-pix_fmt", "yuv420p", "-y", target_path,
+    if os.path.exists(target_path):
+
+        os.remove(
+            target_path
+        )
+
+
+    img_prompt = requests.utils.quote(
+
+        f"{keyword}, cinematic background, "
+        f"vertical 9:16"
+    )
+
+
+    img_url = (
+
+        "https://image.pollinations.ai/prompt/"
+        f"{img_prompt}"
+        "?width=1080"
+        "&height=1920"
+        "&nologo=true"
+    )
+
+
+    img_file = (
+        target_path
+        +
+        ".jpg"
+    )
+
+
+    response = requests.get(
+
+        img_url,
+
+        timeout=90
+    )
+
+
+    response.raise_for_status()
+
+
+    with open(
+        img_file,
+        "wb"
+    ) as file:
+
+        file.write(
+            response.content
+        )
+
+
+    command = [
+
+        "ffmpeg",
+
+        "-y",
+
+        "-loop",
+        "1",
+
+        "-i",
+        img_file,
+
+        "-vf",
+
+        "scale=1080:1920:"
+        "force_original_aspect_ratio=increase,"
+        "crop=1080:1920,"
+        "zoompan="
+        "z='min(zoom+0.0015,1.3)':"
+        "d=150:"
+        "s=1080x1920:"
+        "fps=25",
+
+        "-t",
+        str(
+            max(
+                duration,
+                4
+            )
+        ),
+
+        "-c:v",
+        "libx264",
+
+        "-pix_fmt",
+        "yuv420p",
+
+        "-movflags",
+        "+faststart",
+
+        "-an",
+
+        target_path
     ]
-    subprocess.run(zoom_cmd, check=True, capture_output=True, text=True)
-    os.remove(img_file)
 
 
-def fetch_scene_video(keyword, target_path, min_duration=3):
+    result = subprocess.run(
+
+        command,
+
+        check=False,
+
+        capture_output=True,
+
+        text=True,
+
+        timeout=180
+    )
+
+
+    if os.path.exists(img_file):
+
+        os.remove(
+            img_file
+        )
+
+
+    if result.returncode != 0:
+
+        raise RuntimeError(
+
+            "AI fallback FFmpeg failed:\n"
+
+            +
+            result.stderr[-1500:]
+        )
+
+
+    if not validate_video(target_path):
+
+        raise RuntimeError(
+            "AI fallback generated "
+            "an invalid video."
+        )
+
+
+    return target_path
+
+
+
+def fetch_scene_video(
+    keyword,
+    target_path,
+    min_duration=3
+):
+
     """
-    Ek scene ke liye video clip laata hai, is priority order mein:
-    Pexels -> Pixabay -> AI-generated background (zoompan image).
-    Koi ek step fail ho toh agla try hota hai, sab fail ho tabhi exception uthta hai.
+    Priority:
+
+    Pexels
+    ->
+    Pixabay
+    ->
+    AI fallback
     """
-    if os.path.exists(target_path) and os.path.getsize(target_path) > 0:
-        return
+
+
+    if validate_video(target_path):
+
+        return target_path
+
+
+    if os.path.exists(target_path):
+
+        os.remove(
+            target_path
+        )
+
 
     errors = []
-    try:
-        fetch_pexels_clip(keyword, target_path, min_duration=min_duration)
-        return
-    except Exception as e:
-        errors.append(f"Pexels: {e}")
+
 
     try:
-        fetch_pixabay_clip(keyword, target_path)
-        return
-    except Exception as e:
-        errors.append(f"Pixabay: {e}")
+
+
+        return fetch_pexels_clip(
+
+            keyword,
+
+            target_path,
+
+            min_duration=min_duration
+        )
+
+
+    except Exception as error:
+
+
+        errors.append(
+            f"Pexels: {error}"
+        )
+
+
+        if os.path.exists(target_path):
+
+            os.remove(
+                target_path
+            )
+
 
     try:
-        fetch_fallback_ai_clip(keyword, target_path, duration=max(min_duration, 4))
-        return
-    except Exception as e:
-        errors.append(f"AI fallback: {e}")
-
-    raise RuntimeError(f"'{keyword}' ke liye koi bhi visual source kaam nahi kar saka: " + " | ".join(errors))
 
 
-def fetch_scene_clips(scenes, scene_durations, output_dir="assets/scene_clips"):
+        return fetch_pixabay_clip(
+
+            keyword,
+
+            target_path
+        )
+
+
+    except Exception as error:
+
+
+        errors.append(
+            f"Pixabay: {error}"
+        )
+
+
+        if os.path.exists(target_path):
+
+            os.remove(
+                target_path
+            )
+
+
+    try:
+
+
+        return fetch_fallback_ai_clip(
+
+            keyword,
+
+            target_path,
+
+            duration=max(
+                min_duration,
+                4
+            )
+        )
+
+
+    except Exception as error:
+
+
+        errors.append(
+            f"AI fallback: {error}"
+        )
+
+
+    raise RuntimeError(
+
+        f"'{keyword}' ke liye "
+        "koi valid visual nahi mil saka:\n"
+
+        +
+
+        "\n".join(
+            errors
+        )
+    )
+
+
+
+def fetch_scene_clips(
+    scenes,
+    scene_durations,
+    output_dir="assets/scene_clips"
+):
+
     """
-    Har scene ke visual_keyword ke hisaab se alag clip download karta hai.
-    scene_durations = us scene ki voiceover duration (seconds), taake bohot chhoti clips skip ho jayein.
-    Returns list of video file paths, same order as scenes.
+    Har scene ke liye validated
+    aur MoviePy-compatible video.
     """
-    os.makedirs(output_dir, exist_ok=True)
+
+
+    os.makedirs(
+
+        output_dir,
+
+        exist_ok=True
+    )
+
+
     paths = []
-    for i, (scene, duration) in enumerate(zip(scenes, scene_durations)):
-        target_path = os.path.join(output_dir, f"scene_{i}.mp4")
-        keyword = scene.get("visual_keyword", "").strip() or random.choice(PEXELS_SEARCH_TERMS)
-        fetch_scene_video(keyword, target_path, min_duration=max(2, int(duration)))
-        paths.append(target_path)
+
+
+    for index, (
+        scene,
+        duration
+    ) in enumerate(
+
+        zip(
+            scenes,
+            scene_durations
+        )
+    ):
+
+
+        target_path = os.path.join(
+
+            output_dir,
+
+            f"scene_{index}.mp4"
+        )
+
+
+        keyword = (
+
+            scene.get(
+                "visual_keyword",
+                ""
+            ).strip()
+
+            or
+
+            random.choice(
+                PEXELS_SEARCH_TERMS
+            )
+        )
+
+
+        print(
+
+            f"\nFetching scene "
+            f"{index + 1}: "
+            f"{keyword}"
+        )
+
+
+        fetch_scene_video(
+
+            keyword,
+
+            target_path,
+
+            min_duration=max(
+                2,
+                int(duration)
+            )
+        )
+
+
+        if not validate_video(
+            target_path
+        ):
+
+            raise RuntimeError(
+
+                f"Scene {index + 1} "
+                "video is invalid "
+                f"after all fallbacks: "
+                f"{target_path}"
+            )
+
+
+        paths.append(
+            target_path
+        )
+
+
     return paths
 
 
+
 def prepare_all_assets():
-    os.makedirs("assets", exist_ok=True)
-    # BGM aur Whoosh/Pop SFX filhaal disable hain (Pixabay links expire ho chuke - 403) - baad mein fix karenge
-    # download_file(BGM_URL, "assets/bgm.mp3")
-    # download_file(WHOOSH_SFX_URL, "assets/whoosh.mp3")
-    # download_file(POP_SFX_URL, "assets/pop.mp3")
-    # Background video ab scene-wise fetch_scene_clips() se aati hai (main.py dekhein)
+
+    os.makedirs(
+        "assets",
+        exist_ok=True
+    )
