@@ -2,7 +2,7 @@ name: Generate YouTube Shorts
 
 on:
   schedule:
-    # Automation ko 3 times auto run ke liye trendy schedule par set kiya hai (Every 8 hours: 00:00, 08:00, 16:00 UTC)
+    # Din mein 3 dafa chalega (Har 8 ghante baad: 00:00, 08:00, 16:00 UTC)
     - cron: '0 0,8,16 * * *'
   workflow_dispatch:
 
