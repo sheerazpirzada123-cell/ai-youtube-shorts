@@ -1,58 +1,32 @@
-name: Auto YouTube Shorts Generator
+name: Generate YouTube Shorts
 
 on:
-  # Auto-run twice a day at good engagement times for a Pakistan/India (PKT/IST)
-  # audience: ~1:30 PM and ~8:30 PM local time (lunchtime + evening scroll time).
-  # Cron times below are in UTC: 08:30 UTC = 1:30 PM PKT, 15:30 UTC = 8:30 PM PKT.
   schedule:
-    - cron: '30 8,15 * * *'
-  workflow_dispatch: # Manual run button ke liye
+    # Automation ko 3 times auto run ke liye trendy schedule par set kiya hai (Every 8 hours: 00:00, 08:00, 16:00 UTC)
+    - cron: '0 0,8,16 * * *'
+  workflow_dispatch:
 
 jobs:
-  build-and-run:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Post Checkout Code
-        uses: actions/checkout@v4
+    - name: Checkout Repository
+      uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10' # Numba error fix karne ke liye Python 3.10[cite: 1]
-          cache: 'pip'
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
 
-      - name: Install System Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg imagemagick
-          # ImageMagick's default security policy blocks some operations moviepy's
-          # TextClip needs (used for the on-screen captions) - relax it here.
-          sudo sed -i 's/rights="none" pattern="@\*"/rights="read|write" pattern="@*"/' /etc/ImageMagick-6/policy.xml || true
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
 
-      - name: Install Python Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Run Short Generator Script
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
-          PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
-          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
-          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
-          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
-          # Set to "true" (as a repo Variable, Settings > Secrets and variables > Actions > Variables)
-          # once you want real uploads to go live. Defaults to false = dry run.
-          YOUTUBE_UPLOAD_ENABLED: ${{ vars.YOUTUBE_UPLOAD_ENABLED }}
-        run: |
-          python main.py
-
-      - name: Upload Output Video as Artifact
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: generated-short-video
-          path: final_short.mp4
-          retention-days: 1
+    - name: Run Script
+      env:
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+        YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+      run: python main.py
