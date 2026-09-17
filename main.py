@@ -1,139 +1,102 @@
 import os
-import sys
+import json
+import requests
+import google.generativeai as genai
 
-from modules import brain, audio, asset_manager, composer, youtube_uploader
+# Setup Gemini API
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+PEXELS_API_KEY = os.getenv("PEXELS_API_KEY")
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+genai.configure(api_key=GEMINI_API_KEY)
 
-# --- YouTube auto-upload (free, YouTube Data API v3) --------------------
-# NOTE: these names must match the secrets injected in .github/workflows/run.yml
-YOUTUBE_CLIENT_ID = os.getenv("YOUTUBE_CLIENT_ID", "")
-YOUTUBE_CLIENT_SECRET = os.getenv("YOUTUBE_CLIENT_SECRET", "")
-YOUTUBE_REFRESH_TOKEN = os.getenv("YOUTUBE_REFRESH_TOKEN", "")
-YT_PRIVACY_STATUS = os.getenv("YT_PRIVACY_STATUS", "public")
-# Extra safety switch: even if all 3 credentials above are present, upload only
-# runs when this is explicitly set to "true" (repo Variable). Defaults to false
-# so you can test the pipeline without accidentally publishing to your channel.
-YOUTUBE_UPLOAD_ENABLED = os.getenv("YOUTUBE_UPLOAD_ENABLED", "false").strip().lower() == "true"
-
-FINAL_OUTPUT = "final_short.mp4"
-
-DEFAULT_STORY = {
-    "title": "Mind Blowing Facts 🤯 #Shorts",
-    "description": "Kuch aisay hairat-angez facts jo aapko chaunka denge!\n\n"
-                    "#Shorts #Facts #HindiFacts #Viral #Trending #AmazingFacts",
-    "tags": ["shorts", "facts", "hindi facts", "amazing facts", "viral shorts", "did you know"],
-    "scenes": [
-        {"visual_keyword": "galaxy space stars",
-         "narration": "Kya aapko pata hai, hamari galaxy mein taron ki sankhya samandar ki reti ke kano se bhi zyada hai!"},
-        {"visual_keyword": "deep ocean waves",
-         "narration": "Duniya ka sabse gehra hissa itna andhera hai ke wahan rooh kaanp jaye!"},
-    ],
+# 1. Custom Keywords Mapping for Exact B-Roll Matching
+KEYWORD_MAP = {
+    "blood falls": "Antarctica red waterfall blood falls glacier",
+    "dancing forest": "Kaliningrad curved twisted pine trees forest",
+    "eternal flame": "New York eternal flame waterfall cavern cave fire",
+    "antarctica": "antarctica glacier ice freeze landscape",
+    "bermuda triangle": "bermuda triangle ocean storm dark water",
+    "surtsey island": "volcano island emergence sea ocean lava"
 }
 
+def get_optimized_search_query(text):
+    text_lower = text.lower()
+    for key, search_term in KEYWORD_MAP.items():
+        if key in text_lower:
+            return search_term
+    return text
 
-def get_story():
-    """Gemini se ('Facts Mine' style) fact script generate karta hai. Agar API key
-    missing ho ya Gemini call fail ho jaye, to ek chhota default script use karta hai
-    taake pipeline kabhi crash na ho."""
-    if not GEMINI_API_KEY:
-        print("GEMINI_API_KEY set nahi hai, default script use kar rahe hain.")
-        return DEFAULT_STORY
-
+# 2. Strict Script Generation Prompt
+def generate_script():
+    prompt = """
+    Create an engaging, mysterious YouTube Short script in Hindi/Urdu.
+    
+    STRICT RULES:
+    1. Duration: MUST be between 30 to 45 seconds (around 70 to 85 words max).
+    2. Focus: Pick ONLY 1 or 2 specific mysteries or places per video (e.g., Blood Falls or Eternal Flame Falls) so the context is detailed and focused.
+    3. Formatting: Return a valid JSON list where each object has "narration" and "search_keyword".
+    
+    Example Output Format:
+    [
+      {
+        "narration": "Kya aapne kabhi zameen ke neeche pani mein jalti hui aag dekhi hai?",
+        "search_keyword": "New York eternal flame waterfall cavern cave fire"
+      },
+      {
+        "narration": "Antarctica mein ek aisi jagah hai jahan barf ke beech se laal rang ka paani behta hai, jise Blood Falls kehte hain.",
+        "search_keyword": "Antarctica red waterfall blood falls glacier"
+      }
+    ]
+    """
+    
+    model = genai.GenerativeModel("gemini-1.5-flash")
+    response = model.generate_content(prompt)
+    
     try:
-        print("Generating Facts Mine style script via Gemini...")
-        return brain.generate_fact_script(GEMINI_API_KEY)
+        # Clean response text in case markdown formatting is included
+        clean_json = response.text.replace("```json", "").replace("```", "").strip()
+        script_data = json.loads(clean_json)
+        return script_data
     except Exception as e:
-        print(f"Gemini script generation failed ({e}), default script use kar rahe hain.")
-        return DEFAULT_STORY
+        print(f"Error parsing script JSON: {e}")
+        return []
 
+# 3. Fetch Stock Video from Pexels API
+def fetch_broll_video(query):
+    optimized_query = get_optimized_search_query(query)
+    headers = {"Authorization": PEXELS_API_KEY}
+    url = f"https://api.pexels.com/videos/search?query={optimized_query}&per_page=1&orientation=portrait"
+    
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        if data.get("videos"):
+            video_files = data["videos"][0]["video_files"]
+            # Pick high-quality link
+            return video_files[0]["link"]
+    
+    print(f"No exact match found for: {optimized_query}. Using fallback.")
+    return None
 
-def build_video(story):
-    scenes_raw = story["scenes"]
-    scenes = []
-    audio_paths = []
-    durations = []
-    word_timings = []
+def main():
+    print("Generating 30-45s Short script...")
+    script_data = generate_script()
+    
+    if not script_data:
+        print("Script generation failed.")
+        return
 
-    for i, scene in enumerate(scenes_raw):
-        narration = (scene.get("narration") or "").strip()
-        if not narration:
-            print(f"\n--- Scene {i + 1}/{len(scenes_raw)}: skipped (Gemini ne is scene ke liye 'narration' nahi diya) ---")
-            continue
-
-        print(f"\n--- Scene {i + 1}/{len(scenes_raw)}: generating voiceover ---")
-        try:
-            audio_path = f"assets/audio_{i}.mp3"
-            audio.generate_voiceover(narration, output_path=audio_path)
-
-            from moviepy.editor import AudioFileClip
-            clip = AudioFileClip(audio_path)
-            duration = clip.duration
-            clip.close()
-
-            scenes.append(scene)
-            audio_paths.append(audio_path)
-            durations.append(duration)
-            word_timings.append(audio.estimate_word_timings(narration, duration))
-        except Exception as e:
-            print(f"Scene {i + 1} failed, skipping: {e}")
-
-    if not scenes:
-        raise RuntimeError("Koi bhi scene successfully process nahi ho saka.")
-
-    print("\n--- Fetching scene video clips (Pexels -> Pixabay -> AI fallback) ---")
-    video_paths = asset_manager.fetch_scene_clips(scenes, durations)
-
-    print("\n--- Fetching sound effects (Pixabay) ---")
-    try:
-        asset_manager.prepare_background_audio()
-    except Exception as e:
-        print(f"Sound effect setup failed, continuing without it: {e}")
-
-    print("\n--- Merging per-scene voiceovers into a single narration track ---")
-    full_voiceover_path = audio.concatenate_voiceovers(audio_paths)
-
-    print("\n--- Composing final video with captions ---")
-    composer.render_short_video(
-        video_paths,
-        full_voiceover_path,
-        output_path=FINAL_OUTPUT,
-        scene_word_timings=word_timings,
-    )
-    return FINAL_OUTPUT
-
-
-def upload(video_path, story):
-    if not YOUTUBE_UPLOAD_ENABLED:
-        print("YOUTUBE_UPLOAD_ENABLED is not 'true', skipping upload.")
-        return None
-
-    if not (YOUTUBE_CLIENT_ID and YOUTUBE_CLIENT_SECRET and YOUTUBE_REFRESH_TOKEN):
-        print("YouTube credentials missing, skipping upload.")
-        return None
-
-    try:
-        return youtube_uploader.upload_video(
-            video_path,
-            title=story.get("title", "Amazing Facts 🤯 #Shorts")[:100],
-            description=story.get("description", "")[:5000],
-            tags=story.get("tags") or ["shorts", "facts"],
-            privacy_status=YT_PRIVACY_STATUS,
-        )
-    except Exception as e:
-        print(f"YouTube upload failed: {e}")
-        return None
-
+    print(f"Script generated with {len(script_data)} scenes.\n")
+    
+    for idx, scene in enumerate(script_data, start=1):
+        narration = scene.get("narration")
+        keyword = scene.get("search_keyword")
+        
+        print(f"Scene {idx}: {narration}")
+        print(f"Search Query: {keyword}")
+        
+        video_url = fetch_broll_video(keyword)
+        print(f"Video B-Roll URL: {video_url}\n" + "-"*40)
 
 if __name__ == "__main__":
-    print("=== Facts Mine Style Short Bot Started ===")
-    story = get_story()
-
-    try:
-        final_video = build_video(story)
-    except Exception as e:
-        print(f"\nFAILED: {e}")
-        sys.exit(1)
-
-    print(f"\nSUCCESS: Short Ready: {final_video}")
-    upload(final_video, story)
+    main()
