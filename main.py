@@ -43,24 +43,30 @@ def get_optimized_search_query(text):
             return search_term
     return text
 
+# 2. Script Generation (Updated for Simple Roman Urdu / Hinglish)
 def generate_script(max_retries=3, base_wait=20):
     prompt = """
-    Create an engaging, mysterious YouTube Short script in Hindi/Urdu.
+    Create an engaging, mysterious YouTube Short script in simple Roman Urdu / Roman Hindi with common English words.
     
-    STRICT RULES:
-    1. Duration: MUST be between 30 to 45 seconds (around 70 to 85 words max).
-    2. Focus: Pick ONLY 1 or 2 specific mysteries or places per video (e.g., Blood Falls or Eternal Flame Falls) so the context is detailed and focused.
-    3. Formatting: Return a valid JSON list where each object has "narration" and "search_keyword".
+    STRICT LANGUAGE RULES:
+    1. DO NOT use tough or formal Hindi words (like prakriti, chattaan, rahasya, etc.).
+    2. Use super simple Urdu/Hindi combined with basic English words that people speak daily (e.g. fire, water, place, mystery, magical, natural).
+    3. Language style must be clean, simple, and easy to understand when spoken.
+    
+    DURATION & CONTENT RULES:
+    1. Duration: MUST be between 30 to 45 seconds (around 70 to 85 words total).
+    2. Complete Fact: Tell a complete story or fact so it doesn't sound cut off at the end.
+    3. Formatting: Return ONLY a valid JSON list of objects with "narration" and "search_keyword".
     
     Example Output Format:
     [
       {
-        "narration": "Kya aapne kabhi zameen ke neeche pani mein jalti hui aag dekhi hai?",
+        "narration": "Kya aapne kabhi paani ke neeche jalti hui aag dekhi hai? New York mein ek aisi magical jagah hai jahan waterfall ke bilkul neeche natural fire hamesha jalti rehti hai.",
         "search_keyword": "New York eternal flame waterfall cavern cave fire"
       },
       {
-        "narration": "Antarctica mein ek aisi jagah hai jahan barf ke beech se laal rang ka paani behta hai, jise Blood Falls kehte hain.",
-        "search_keyword": "Antarctica red waterfall blood falls glacier"
+        "narration": "Log ise Eternal Flame Falls kehte hain. Scientist ke mutabiq zameen ke neeche se nikalne wali natural gas is aag ko hamesha zinda rakhti hai.",
+        "search_keyword": "Eternal flame falls cave fire natural gas"
       }
     ]
     """
@@ -112,9 +118,11 @@ def download_broll_video(query, save_path):
     print(f"No video found for: {optimized_query}")
     return False
 
+# 4. Voiceover Generation (Clear Voice & Normal Speed)
 async def generate_voiceover(text, output_file):
+    # 'ur-PK-AsadNeural' with rate='-5%' for clear & natural pacing
     voice = "ur-PK-AsadNeural"
-    communicate = edge_tts.Communicate(text, voice)
+    communicate = edge_tts.Communicate(text, voice, rate="-5%")
     await communicate.save(output_file)
 
 def main():
