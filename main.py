@@ -7,8 +7,9 @@ import edge_tts
 import google.generativeai as genai
 from google.api_core.exceptions import ResourceExhausted
 
-from composer import ShortsComposer
-from youtube_uploader import upload_video
+# Modules folder se imports (Fix for ModuleNotFoundError)
+from modules.composer import ShortsComposer
+from modules.youtube_uploader import upload_video
 
 # Setup Gemini API
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -149,10 +150,15 @@ def main():
     # 4. Combine Video & Audio
     print("🎬 Merging Video & Audio...")
     composer = ShortsComposer(output_dir=OUTPUT_DIR)
+    
+    # Background music path checking (modules folder inside)
+    bg_music_path = os.path.join("modules", "bg_music.mp3")
+    
     final_video_path = composer.create_short(
         video_path=video_path,
         voiceover_path=audio_path,
-        output_filename="final_short.mp4"
+        output_filename="final_short.mp4",
+        bg_music_path=bg_music_path
     )
 
     # 5. Upload to YouTube
