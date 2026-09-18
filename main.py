@@ -5,8 +5,8 @@ import re
 import requests
 import asyncio
 import edge_tts
-import google.generativeai as genai
-from google.api_core.exceptions import ResourceExhausted
+from google import genai
+from google.genai.errors import APIError
 
 from modules.composer import ShortsComposer
 from modules.youtube_uploader import upload_video
@@ -18,7 +18,8 @@ YOUTUBE_CLIENT_ID = os.getenv("YOUTUBE_CLIENT_ID")
 YOUTUBE_CLIENT_SECRET = os.getenv("YOUTUBE_CLIENT_SECRET")
 YOUTUBE_REFRESH_TOKEN = os.getenv("YOUTUBE_REFRESH_TOKEN")
 
-genai.configure(api_key=GEMINI_API_KEY)
+# New Client Initialization
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 ASSETS_DIR = "assets"
 TEMP_VIDEO_DIR = os.path.join(ASSETS_DIR, "video_clips")
@@ -44,7 +45,7 @@ def get_optimized_search_query(text):
             return search_term
     return text
 
-def generate_script(max_retries=3, base_wait=25):
+def generate_script(max_retries=3, base_wait=20):
     prompt = """
     Write a smooth, fast-paced engaging YouTube Short script in simple spoken Hindi/Urdu mixed with common English words.
 
@@ -70,19 +71,20 @@ def generate_script(max_retries=3, base_wait=25):
     ]
     """
 
-    # Quota issues avoid karne ke liye gemini-1.5-flash model
-    model = genai.GenerativeModel("gemini-1.5-flash")
-
     for attempt in range(1, max_retries + 1):
         try:
-            response = model.generate_content(prompt)
+            # Updated SDK call with model gemini-2.5-flash
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=prompt,
+            )
             clean_json = re.sub(r'```(?:json)?\s*([\s\S]*?)\s*```', r'\1', response.text).strip()
             script_data = json.loads(clean_json)
             if isinstance(script_data, list) and len(script_data) > 0:
                 return script_data
-        except ResourceExhausted as e:
+        except APIError as e:
             wait_time = base_wait * attempt
-            print(f"[Attempt {attempt}/{max_retries}] Quota limit hit (429). Retrying in {wait_time}s...")
+            print(f"[Attempt {attempt}/{max_retries}] API Error: {e}. Retrying in {wait_time}s...")
             if attempt < max_retries:
                 time.sleep(wait_time)
             else:
