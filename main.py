@@ -46,13 +46,13 @@ def get_optimized_search_query(text):
 
 def generate_script(max_retries=3, base_wait=20):
     prompt = """
-    Write a smooth, engaging YouTube Short script in simple spoken Hindi/Urdu mixed with common English words.
+    Write a smooth, fast-paced engaging YouTube Short script in simple spoken Hindi/Urdu mixed with common English words.
 
     STRICT LANGUAGE & STYLE RULES:
-    1. NO hard or formal Hindi words (Strictly avoid words like: prakriti, chattaan, rahasya, adbhut, drishya, etc.).
-    2. Use simple daily conversational Hindi/Urdu with simple English words naturally mixed in (e.g., waterfall, fire, mystery, natural gas, place, dangerous, scientists).
-    3. Script MUST sound like a real person talking naturally to a friend.
-    
+    1. NO hard or formal Hindi words (Strictly avoid: prakriti, chattaan, rahasya, adbhut, drishya, etc.).
+    2. Use simple daily conversational Hindi/Urdu with simple English words (waterfall, fire, mystery, natural gas, place, dangerous, scientists).
+    3. VERY IMPORTANT FOR CONTINUOUS FLOW: DO NOT use full stops (.), question marks (?), or commas (,) inside the narration text so there are NO LONG PAUSES OR GAPS between sentences. Keep sentences connected seamlessly.
+
     DURATION & STRUCTURAL RULES:
     1. Total length MUST be 30 to 40 seconds long (70-80 words total).
     2. Return ONLY a valid JSON list of objects containing "narration" and "search_keyword".
@@ -60,11 +60,11 @@ def generate_script(max_retries=3, base_wait=20):
     Example JSON Output Format:
     [
       {
-        "narration": "Kya aapne kabhi waterfall ke bilkul neeche aag jalti dekhi hai? New York mein ek aisi jagah hai jahan pani ke andar bhi natural fire hamesha jalti rehti hai.",
+        "narration": "Kya aapne kabhi waterfall ke bilkul neeche aag jalti dekhi hai New York mein ek aisi jagah hai jahan pani ke andar bhi natural fire hamesha jalti rehti hai",
         "search_keyword": "New York eternal flame waterfall cavern cave fire"
       },
       {
-        "narration": "Log isey Eternal Flame Falls kehte hain. Scientists ke mutabiq zameen ke neeche se nikalne wali gas is aag ko kabhie bujhne nahi deti.",
+        "narration": "Log isey Eternal Flame Falls kehte hain Scientists ke mutabiq zameen ke neeche se nikalne wali gas is aag ko kabhie bujhne nahi deti",
         "search_keyword": "Eternal flame falls cave fire natural gas"
       }
     ]
@@ -117,18 +117,23 @@ def download_broll_video(query, save_path):
     print(f"No video found for: {optimized_query}")
     return False
 
-# Edge-TTS Text Cleaning for Natural Voice Pronunciation
+# Edge-TTS Text Cleaning for Natural Voice Pronunciation & Zero Pause Gaps
 def clean_text_for_tts(text):
     text = re.sub(r'\bise\b', 'isey', text, flags=re.IGNORECASE)
     text = re.sub(r'\bI\.S\.E\b', 'isey', text, flags=re.IGNORECASE)
     text = re.sub(r'\bjise\b', 'jisey', text, flags=re.IGNORECASE)
     text = re.sub(r'\buse\b', 'usey', text, flags=re.IGNORECASE)
+    # Remove punctuations that create artificial long silences/pauses
+    text = text.replace(".", " ").replace("?", " ").replace("!", " ").replace(",", " ")
+    # Clean extra spaces
+    text = re.sub(r'\s+', ' ', text).strip()
     return text
 
 async def generate_voiceover(text, output_file):
     voice = "hi-IN-MadhurNeural"
     cleaned_text = clean_text_for_tts(text)
-    communicate = edge_tts.Communicate(cleaned_text, voice, rate="-2%")
+    # Rate set to +5% for fast-flowing continuous audio
+    communicate = edge_tts.Communicate(cleaned_text, voice, rate="+5%")
     await communicate.save(output_file)
 
 def main():
@@ -145,7 +150,7 @@ def main():
     first_keyword = script_data[0].get("search_keyword", "mysterious place") if script_data else "mysterious place"
 
     audio_path = os.path.join(TEMP_AUDIO_DIR, "narration.mp3")
-    print("🎙️ Generating Natural Voiceover...")
+    print("🎙️ Generating Natural Continuous Voiceover...")
     asyncio.run(generate_voiceover(full_narration, audio_path))
 
     video_path = os.path.join(TEMP_VIDEO_DIR, "broll.mp4")
