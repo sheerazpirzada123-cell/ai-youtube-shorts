@@ -4,48 +4,40 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
+from google.oauth2.credentials import Credentials
 
-# YouTube API scopes
 SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
 
-def get_youtube_service():
-    """
-    Authenticates and returns the YouTube API service object.
-    Checks environment variables first (for GitHub Actions), then local files.
-    """
+def get_youtube_service(client_id=None, client_secret=None, refresh_token=None):
     creds = None
 
-    # GitHub Actions environment variables check
-    client_id = os.getenv("YOUTUBE_CLIENT_ID")
-    client_secret = os.getenv("YOUTUBE_CLIENT_SECRET")
-    refresh_token = os.getenv("YOUTUBE_REFRESH_TOKEN")
+    # Priority 1: Main.py se aaye huye credentials ya Environment variables
+    c_id = client_id or os.getenv("YOUTUBE_CLIENT_ID")
+    c_secret = client_secret or os.getenv("YOUTUBE_CLIENT_SECRET")
+    r_token = refresh_token or os.getenv("YOUTUBE_REFRESH_TOKEN")
 
-    print(f"✓ YOUTUBE_CLIENT_ID exists: {bool(client_id)}")
-    print(f"✓ YOUTUBE_CLIENT_SECRET exists: {bool(client_secret)}")
-    print(f"✓ YOUTUBE_REFRESH_TOKEN exists: {bool(refresh_token)}")
+    print(f"✓ YOUTUBE_CLIENT_ID exists: {bool(c_id)}")
+    print(f"✓ YOUTUBE_CLIENT_SECRET exists: {bool(c_secret)}")
+    print(f"✓ YOUTUBE_REFRESH_TOKEN exists: {bool(r_token)}")
 
-    if client_id and client_secret and refresh_token:
-        from google.oauth2.credentials import Credentials
+    if c_id and c_secret and r_token:
         creds = Credentials(
             token=None,
-            refresh_token=refresh_token,
-            client_id=client_id,
-            client_secret=client_secret,
+            refresh_token=r_token,
+            client_id=c_id,
+            client_secret=c_secret,
             token_uri="https://oauth2.googleapis.com/token",
             scopes=SCOPES
         )
         try:
-            # Force refresh to get a valid access token from refresh token
             creds.refresh(Request())
         except Exception as e:
             print(f"⚠️ Token refresh warning: {e}")
     else:
-        # Fallback for local token file if running locally
         if os.path.exists("token.pickle"):
             with open("token.pickle", "rb") as token:
                 creds = pickle.load(token)
 
-    # Refresh or prompt login if credentials are still invalid/expired
     if not creds or not creds.valid:
         if creds and creds.refresh_token:
             try:
@@ -66,14 +58,12 @@ def get_youtube_service():
 
     return build("youtube", "v3", credentials=creds)
 
-def upload_video(video_path, title, description, tags=None, category_id="22", privacy_status="public"):
-    """
-    Uploads a video to YouTube.
-    """
+def upload_video(video_path, title, description, tags=None, category_id="22", privacy_status="public", client_id=None, client_secret=None, refresh_token=None):
     if tags is None:
         tags = ["shorts", "youtubeshorts"]
 
-    youtube = get_youtube_service()
+    # Youtube service call with credentials
+    youtube = get_youtube_service(client_id, client_secret, refresh_token)
 
     body = {
         "snippet": {
