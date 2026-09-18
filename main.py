@@ -7,22 +7,18 @@ import edge_tts
 import google.generativeai as genai
 from google.api_core.exceptions import ResourceExhausted
 
-# Modules folder se imports
 from modules.composer import ShortsComposer
 from modules.youtube_uploader import upload_video
 
-# Setup API Keys & GitHub Secrets
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 PEXELS_API_KEY = os.getenv("PEXELS_API_KEY")
 
-# YouTube API Secrets
 YOUTUBE_CLIENT_ID = os.getenv("YOUTUBE_CLIENT_ID")
 YOUTUBE_CLIENT_SECRET = os.getenv("YOUTUBE_CLIENT_SECRET")
 YOUTUBE_REFRESH_TOKEN = os.getenv("YOUTUBE_REFRESH_TOKEN")
 
 genai.configure(api_key=GEMINI_API_KEY)
 
-# Directories setup
 ASSETS_DIR = "assets"
 TEMP_VIDEO_DIR = os.path.join(ASSETS_DIR, "video_clips")
 TEMP_AUDIO_DIR = os.path.join(ASSETS_DIR, "audio_clips")
@@ -31,7 +27,6 @@ OUTPUT_DIR = os.path.join(ASSETS_DIR, "final")
 for directory in [TEMP_VIDEO_DIR, TEMP_AUDIO_DIR, OUTPUT_DIR]:
     os.makedirs(directory, exist_ok=True)
 
-# 1. Custom Keywords Mapping
 KEYWORD_MAP = {
     "blood falls": "Antarctica red waterfall blood falls glacier",
     "dancing forest": "Kaliningrad curved twisted pine trees forest",
@@ -48,7 +43,6 @@ def get_optimized_search_query(text):
             return search_term
     return text
 
-# 2. Script Generation
 def generate_script(max_retries=3, base_wait=20):
     prompt = """
     Create an engaging, mysterious YouTube Short script in Hindi/Urdu.
@@ -93,7 +87,6 @@ def generate_script(max_retries=3, base_wait=20):
 
     return []
 
-# 3. Fetch & Download Stock Video from Pexels API
 def download_broll_video(query, save_path):
     optimized_query = get_optimized_search_query(query)
     headers = {"Authorization": PEXELS_API_KEY}
@@ -119,7 +112,6 @@ def download_broll_video(query, save_path):
     print(f"No video found for: {optimized_query}")
     return False
 
-# 4. Generate Voiceover via Edge-TTS
 async def generate_voiceover(text, output_file):
     voice = "ur-PK-AsadNeural"
     communicate = edge_tts.Communicate(text, voice)
@@ -128,7 +120,6 @@ async def generate_voiceover(text, output_file):
 def main():
     print("🚀 Starting Automated Short Pipeline...")
     
-    # 1. Script Generation
     print("Generating 30-45s Short script...")
     script_data = generate_script()
     
@@ -139,12 +130,10 @@ def main():
     full_narration = " ".join([scene.get("narration", "") for scene in script_data])
     first_keyword = script_data[0].get("search_keyword", "mysterious place") if script_data else "mysterious place"
 
-    # 2. Voiceover Generation
     audio_path = os.path.join(TEMP_AUDIO_DIR, "narration.mp3")
     print("🎙️ Generating Voiceover...")
     asyncio.run(generate_voiceover(full_narration, audio_path))
 
-    # 3. Stock Footage Download
     video_path = os.path.join(TEMP_VIDEO_DIR, "broll.mp4")
     print("🎥 Downloading Stock Video...")
     success = download_broll_video(first_keyword, video_path)
@@ -153,10 +142,8 @@ def main():
         print("❌ Video download failed.")
         return
 
-    # 4. Combine Video & Audio
     print("🎬 Merging Video & Audio...")
     composer = ShortsComposer(output_dir=OUTPUT_DIR)
-    
     bg_music_path = os.path.join("modules", "bg_music.mp3")
     
     final_video_path = composer.create_short(
@@ -166,7 +153,6 @@ def main():
         bg_music_path=bg_music_path
     )
 
-    # 5. Upload to YouTube
     if os.path.exists(final_video_path):
         print("⬆️ Uploading Video to YouTube...")
         title = f"Unbelievable Mystery Revealed! #Shorts #{first_keyword.replace(' ', '')}"
