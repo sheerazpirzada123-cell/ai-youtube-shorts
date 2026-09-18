@@ -1,11 +1,10 @@
 import os
-import random
 from moviepy.editor import (
     VideoFileClip,
     AudioFileClip,
     CompositeAudioClip,
     concatenate_audioclips,
-    afx
+    vfx
 )
 
 class ShortsComposer:
@@ -15,42 +14,39 @@ class ShortsComposer:
             os.makedirs(self.output_dir)
 
     def create_short(self, video_path, voiceover_path, output_filename="final_short.mp4", bg_music_path="bg_music.mp3"):
-        """
-        Combines background video, voiceover audio, and background music together.
-        """
         print("🎬 Video composition start ho rahi hai...")
         
-        # 1. Load Video Clip
-        video_clip = VideoFileClip(video_path)
-        video_duration = video_clip.duration
-
-        # 2. Load Voiceover Audio
+        # 1. Load Voiceover Audio first (Voiceover is main priority)
         voiceover_clip = AudioFileClip(voiceover_path)
+        final_duration = voiceover_clip.duration  # Full voiceover length
+
+        # 2. Load & Adjust Video Clip to match full voiceover
+        video_clip = VideoFileClip(video_path)
         
-        # Video length ko voiceover ke barabar trim karna
-        final_duration = min(video_duration, voiceover_clip.duration)
-        video_clip = video_clip.subclip(0, final_duration)
-        voiceover_clip = voiceover_clip.subclip(0, final_duration)
+        # Agar video voiceover se choti hai, toh loop karein
+        if video_clip.duration < final_duration:
+            loop_count = int(final_duration // video_clip.duration) + 1
+            video_clip = video_clip.fx(vfx.loop, duration=final_duration)
+        else:
+            video_clip = video_clip.subclip(0, final_duration)
 
         audio_tracks = [voiceover_clip]
 
-        # 3. Add Background Music (If File Exists)
+        # 3. Add Background Music (Low volume)
         if os.path.exists(bg_music_path):
             print(f"🎵 Background music mil gaya: {bg_music_path}")
             bg_music = AudioFileClip(bg_music_path)
             
-            # Agar BG Music video se chota hai, toh loop karein
             if bg_music.duration < final_duration:
                 loop_count = int(final_duration // bg_music.duration) + 1
                 bg_music = concatenate_audioclips([bg_music] * loop_count)
             
-            # BG Music ko video ki length jitna katein aur volume low karein (12%)
             bg_music = bg_music.subclip(0, final_duration)
-            bg_music = bg_music.volumex(0.12)  # Voiceover saaf sunane ke liye 0.12 volume
+            bg_music = bg_music.volumex(0.05)  # Background volume 5% par kar diya gaya hai
             
             audio_tracks.append(bg_music)
         else:
-            print("⚠️ Warning: bg_music.mp3 nahi mila. Video bina BG music ke banegi.")
+            print("⚠️ Warning: bg_music.mp3 nahi mila.")
 
         # 4. Mix Voiceover & BG Music
         final_audio = CompositeAudioClip(audio_tracks)
@@ -66,7 +62,6 @@ class ShortsComposer:
             preset="ultrafast"
         )
         
-        # Closes memory channels
         video_clip.close()
         voiceover_clip.close()
         if 'bg_music' in locals():
