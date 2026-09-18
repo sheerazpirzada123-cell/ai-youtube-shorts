@@ -1,4 +1,5 @@
 google-genai
+google-generativeai
 requests
 # Pinned: moviepy 2.x removed the moviepy.editor module and changed the whole
 # effects/method API, which composer.py/audio.py are not written for. 1.0.3 is
