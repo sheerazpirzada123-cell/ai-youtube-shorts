@@ -1,6 +1,7 @@
 import os
 import json
 import time
+import re
 import requests
 import asyncio
 import edge_tts
@@ -63,7 +64,7 @@ def generate_script(max_retries=3, base_wait=20):
         "search_keyword": "New York eternal flame waterfall cavern cave fire"
       },
       {
-        "narration": "Log ise Eternal Flame Falls kehte hain. Scientists ke mutabiq zameen ke neeche se nikalne wali gas is aag ko kabhie bujhne nahi deti.",
+        "narration": "Log isey Eternal Flame Falls kehte hain. Scientists ke mutabiq zameen ke neeche se nikalne wali gas is aag ko kabhie bujhne nahi deti.",
         "search_keyword": "Eternal flame falls cave fire natural gas"
       }
     ]
@@ -116,9 +117,18 @@ def download_broll_video(query, save_path):
     print(f"No video found for: {optimized_query}")
     return False
 
+# Edge-TTS Text Cleaning for Natural Voice Pronunciation
+def clean_text_for_tts(text):
+    text = re.sub(r'\bise\b', 'isey', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bI\.S\.E\b', 'isey', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bjise\b', 'jisey', text, flags=re.IGNORECASE)
+    text = re.sub(r'\buse\b', 'usey', text, flags=re.IGNORECASE)
+    return text
+
 async def generate_voiceover(text, output_file):
     voice = "hi-IN-MadhurNeural"
-    communicate = edge_tts.Communicate(text, voice, rate="+0%")
+    cleaned_text = clean_text_for_tts(text)
+    communicate = edge_tts.Communicate(cleaned_text, voice, rate="-2%")
     await communicate.save(output_file)
 
 def main():
