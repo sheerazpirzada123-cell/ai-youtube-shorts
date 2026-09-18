@@ -16,23 +16,21 @@ class ShortsComposer:
     def create_short(self, video_path, voiceover_path, output_filename="final_short.mp4", bg_music_path="bg_music.mp3"):
         print("🎬 Video composition start ho rahi hai...")
         
-        # 1. Load Voiceover Audio first (Voiceover is main priority)
+        # 1. Load Voiceover Audio (Full length target)
         voiceover_clip = AudioFileClip(voiceover_path)
-        final_duration = voiceover_clip.duration  # Full voiceover length
+        final_duration = voiceover_clip.duration
 
-        # 2. Load & Adjust Video Clip to match full voiceover
+        # 2. Load Video & Loop if needed
         video_clip = VideoFileClip(video_path)
         
-        # Agar video voiceover se choti hai, toh loop karein
         if video_clip.duration < final_duration:
-            loop_count = int(final_duration // video_clip.duration) + 1
             video_clip = video_clip.fx(vfx.loop, duration=final_duration)
         else:
             video_clip = video_clip.subclip(0, final_duration)
 
         audio_tracks = [voiceover_clip]
 
-        # 3. Add Background Music (Low volume)
+        # 3. Add Background Music (Low Volume - 5%)
         if os.path.exists(bg_music_path):
             print(f"🎵 Background music mil gaya: {bg_music_path}")
             bg_music = AudioFileClip(bg_music_path)
@@ -42,17 +40,17 @@ class ShortsComposer:
                 bg_music = concatenate_audioclips([bg_music] * loop_count)
             
             bg_music = bg_music.subclip(0, final_duration)
-            bg_music = bg_music.volumex(0.05)  # Background volume 5% par kar diya gaya hai
+            bg_music = bg_music.volumex(0.05)  # 5% volume for clear narration
             
             audio_tracks.append(bg_music)
         else:
-            print("⚠️ Warning: bg_music.mp3 nahi mila.")
+            print("⚠️ Warning: bg_music.mp3 nahi mila. Video bina BG music ke banegi.")
 
-        # 4. Mix Voiceover & BG Music
+        # 4. Mix Audio & Set to Video
         final_audio = CompositeAudioClip(audio_tracks)
         video_clip = video_clip.set_audio(final_audio)
 
-        # 5. Export Final Video
+        # 5. Export Video
         output_path = os.path.join(self.output_dir, output_filename)
         video_clip.write_videofile(
             output_path,
