@@ -7,13 +7,18 @@ import edge_tts
 import google.generativeai as genai
 from google.api_core.exceptions import ResourceExhausted
 
-# Modules folder se imports (Fix for ModuleNotFoundError)
+# Modules folder se imports
 from modules.composer import ShortsComposer
 from modules.youtube_uploader import upload_video
 
-# Setup Gemini API
+# Setup API Keys & GitHub Secrets
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 PEXELS_API_KEY = os.getenv("PEXELS_API_KEY")
+
+# YouTube API Secrets
+YOUTUBE_CLIENT_ID = os.getenv("YOUTUBE_CLIENT_ID")
+YOUTUBE_CLIENT_SECRET = os.getenv("YOUTUBE_CLIENT_SECRET")
+YOUTUBE_REFRESH_TOKEN = os.getenv("YOUTUBE_REFRESH_TOKEN")
 
 genai.configure(api_key=GEMINI_API_KEY)
 
@@ -98,7 +103,6 @@ def download_broll_video(query, save_path):
     if response.status_code == 200:
         data = response.json()
         if data.get("videos"):
-            # Sabse lambi duration wali video select karein
             videos = data["videos"]
             selected_video = max(videos, key=lambda v: v.get("duration", 0))
             video_files = selected_video["video_files"]
@@ -174,7 +178,10 @@ def main():
                 title=title[:100],
                 description=description,
                 tags=["shorts", "mysteries", "facts", "youtubeshorts"],
-                privacy_status="public"
+                privacy_status="public",
+                client_id=YOUTUBE_CLIENT_ID,
+                client_secret=YOUTUBE_CLIENT_SECRET,
+                refresh_token=YOUTUBE_REFRESH_TOKEN
             )
             print(f"🎉 Process Complete! Video uploaded successfully with ID: {video_id}")
         except Exception as e:
