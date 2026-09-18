@@ -2,14 +2,11 @@ name: Auto Generate and Post YouTube Shorts
 
 on:
   schedule:
-    # Schedule (UTC Time according to Indian/Pakistan Standard Time):
-    # 03:00 UTC = 8:00 AM PKT / 8:30 AM IST (Morning Slot)
-    # 08:00 UTC = 1:00 PM PKT / 1:30 PM IST (Midday Slot)
-    # 15:00 UTC = 8:00 PM PKT / 8:30 PM IST (Evening Prime Slot)
+    # Daily 3 times schedule (UTC Time)
     - cron: '0 3 * * *'
     - cron: '0 8 * * *'
     - cron: '0 15 * * *'
-  workflow_dispatch: # Manual test run button
+  workflow_dispatch:
 
 jobs:
   build-and-run:
@@ -24,14 +21,14 @@ jobs:
       with:
         python-version: '3.12'
 
-    - name: Install System Dependencies (FFmpeg)
+    - name: Install System Dependencies (FFmpeg & Image Libraries)
       run: |
         sudo apt-get update
-        sudo apt-get install -y ffmpeg
+        sudo apt-get install -y ffmpeg libjpeg-dev zlib1g-dev libpng-dev libfreetype6-dev
 
     - name: Install Python Dependencies
       run: |
-        python -m pip install --upgrade pip
+        python -m pip install --upgrade pip setuptools wheel
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
     - name: Run Auto-Generation & Auto-Posting Script
