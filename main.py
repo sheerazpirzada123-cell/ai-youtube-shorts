@@ -43,142 +43,139 @@ def get_optimized_search_query(text):
             return search_term
     return text
 
-# 1. Natural Script Prompt (Simple Hindi/Urdu + Everyday English Words)
 def generate_script(max_retries=3, base_wait=20):
- prompt = """
- Write a smooth, engaging YouTube Short script in simple spoken Hindi/Urdu mixed with common English words.
+    prompt = """
+    Write a smooth, engaging YouTube Short script in simple spoken Hindi/Urdu mixed with common English words.
 
- STRICT LANGUAGE & STYLE RULES:
- 1. NO hard or formal Hindi words (Strictly avoid words like: prakriti, chattaan, rahasya, adbhut, drishya, etc.).
- 2. Use simple daily conversational Hindi/Urdu with simple English words naturally mixed in (e.g., waterfall, fire, mystery, natural gas, place, dangerous, scientists).
- 3. Script MUST sound like a real person talking naturally to a friend.
- 
- DURATION & STRUCTURAL RULES:
- 1. Total length MUST be 30 to 40 seconds long (70-80 words total).
- 2. Return ONLY a valid JSON list of objects containing "narration" and "search_keyword".
+    STRICT LANGUAGE & STYLE RULES:
+    1. NO hard or formal Hindi words (Strictly avoid words like: prakriti, chattaan, rahasya, adbhut, drishya, etc.).
+    2. Use simple daily conversational Hindi/Urdu with simple English words naturally mixed in (e.g., waterfall, fire, mystery, natural gas, place, dangerous, scientists).
+    3. Script MUST sound like a real person talking naturally to a friend.
+    
+    DURATION & STRUCTURAL RULES:
+    1. Total length MUST be 30 to 40 seconds long (70-80 words total).
+    2. Return ONLY a valid JSON list of objects containing "narration" and "search_keyword".
 
- Example JSON Output Format:
- [
- {
- "narration": "Kya aapne kabhi waterfall ke bilkul neeche aag jalti dekhi hai? New York mein ek aisi jagah hai jahan pani ke andar bhi natural fire hamesha jalti rehti hai.",
- "search_keyword": "New York eternal flame waterfall cavern cave fire"
- },
- {
- "narration": "Log ise Eternal Flame Falls kehte hain. Scientists ke mutabiq zameen ke neeche se nikalne wali gas is aag ko kabhie bujhne nahi deti.",
- "search_keyword": "Eternal flame falls cave fire natural gas"
- }
- ]
- """
+    Example JSON Output Format:
+    [
+      {
+        "narration": "Kya aapne kabhi waterfall ke bilkul neeche aag jalti dekhi hai? New York mein ek aisi jagah hai jahan pani ke andar bhi natural fire hamesha jalti rehti hai.",
+        "search_keyword": "New York eternal flame waterfall cavern cave fire"
+      },
+      {
+        "narration": "Log ise Eternal Flame Falls kehte hain. Scientists ke mutabiq zameen ke neeche se nikalne wali gas is aag ko kabhie bujhne nahi deti.",
+        "search_keyword": "Eternal flame falls cave fire natural gas"
+      }
+    ]
+    """
 
- model = genai.GenerativeModel("gemini-2.5-flash")
+    model = genai.GenerativeModel("gemini-2.5-flash")
 
- for attempt in range(1, max_retries + 1):
- try:
- response = model.generate_content(prompt)
- clean_json = response.text.replace("```json", "").replace("```", "").strip()
- script_data = json.loads(clean_json)
- return script_data
- except ResourceExhausted as e:
- wait_time = base_wait * attempt
- print(f"[Attempt {attempt}/{max_retries}] Quota limit hit (429). Retrying in {wait_time}s...")
- if attempt < max_retries:
- time.sleep(wait_time)
- else:
- print("Max retries reached. Giving up on script generation.")
- return []
- except Exception as e:
- print(f"Error parsing script JSON: {e}")
- return []
+    for attempt in range(1, max_retries + 1):
+        try:
+            response = model.generate_content(prompt)
+            clean_json = response.text.replace("```json", "").replace("```", "").strip()
+            script_data = json.loads(clean_json)
+            return script_data
+        except ResourceExhausted as e:
+            wait_time = base_wait * attempt
+            print(f"[Attempt {attempt}/{max_retries}] Quota limit hit (429). Retrying in {wait_time}s...")
+            if attempt < max_retries:
+                time.sleep(wait_time)
+            else:
+                print("Max retries reached. Giving up on script generation.")
+                return []
+        except Exception as e:
+            print(f"Error parsing script JSON: {e}")
+            return []
 
- return []
+    return []
 
 def download_broll_video(query, save_path):
- optimized_query = get_optimized_search_query(query)
- headers = {"Authorization": PEXELS_API_KEY}
- url = f"https://api.pexels.com/videos/search?query={optimized_query}&per_page=5&orientation=portrait"
- 
- response = requests.get(url, headers=headers)
- if response.status_code == 200:
- data = response.json()
- if data.get("videos"):
- videos = data["videos"]
- selected_video = max(videos, key=lambda v: v.get("duration", 0))
- video_files = selected_video["video_files"]
- video_url = video_files[0]["link"]
- 
- v_res = requests.get(video_url, stream=True)
- if v_res.status_code == 200:
- with open(save_path, "wb") as f:
- for chunk in v_res.iter_content(chunk_size=1024*1024):
- if chunk:
- f.write(chunk)
- return True
+    optimized_query = get_optimized_search_query(query)
+    headers = {"Authorization": PEXELS_API_KEY}
+    url = f"https://api.pexels.com/videos/search?query={optimized_query}&per_page=5&orientation=portrait"
+    
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        if data.get("videos"):
+            videos = data["videos"]
+            selected_video = max(videos, key=lambda v: v.get("duration", 0))
+            video_files = selected_video["video_files"]
+            video_url = video_files[0]["link"]
+            
+            v_res = requests.get(video_url, stream=True)
+            if v_res.status_code == 200:
+                with open(save_path, "wb") as f:
+                    for chunk in v_res.iter_content(chunk_size=1024*1024):
+                        if chunk:
+                            f.write(chunk)
+                return True
 
- print(f"No video found for: {optimized_query}")
- return False
+    print(f"No video found for: {optimized_query}")
+    return False
 
-# 2. Natural Edge-TTS Voice Config (hi-IN-MadhurNeural)
 async def generate_voiceover(text, output_file):
- voice = "hi-IN-MadhurNeural"
- # Rate set to normal speed for human-like flow
- communicate = edge_tts.Communicate(text, voice, rate="+0%")
- await communicate.save(output_file)
+    voice = "hi-IN-MadhurNeural"
+    communicate = edge_tts.Communicate(text, voice, rate="+0%")
+    await communicate.save(output_file)
 
 def main():
- print("🚀 Starting Automated Short Pipeline...")
- 
- print("Generating 30-40s Short script...")
- script_data = generate_script()
- 
- if not script_data:
- print("❌ Script generation failed.")
- return
+    print("🚀 Starting Automated Short Pipeline...")
+    
+    print("Generating 30-40s Short script...")
+    script_data = generate_script()
+    
+    if not script_data:
+        print("❌ Script generation failed.")
+        return
 
- full_narration = " ".join([scene.get("narration", "") for scene in script_data])
- first_keyword = script_data[0].get("search_keyword", "mysterious place") if script_data else "mysterious place"
+    full_narration = " ".join([scene.get("narration", "") for scene in script_data])
+    first_keyword = script_data[0].get("search_keyword", "mysterious place") if script_data else "mysterious place"
 
- audio_path = os.path.join(TEMP_AUDIO_DIR, "narration.mp3")
- print("🎙️ Generating Natural Voiceover...")
- asyncio.run(generate_voiceover(full_narration, audio_path))
+    audio_path = os.path.join(TEMP_AUDIO_DIR, "narration.mp3")
+    print("🎙️ Generating Natural Voiceover...")
+    asyncio.run(generate_voiceover(full_narration, audio_path))
 
- video_path = os.path.join(TEMP_VIDEO_DIR, "broll.mp4")
- print("🎥 Downloading Stock Video...")
- success = download_broll_video(first_keyword, video_path)
- 
- if not success:
- print("❌ Video download failed.")
- return
+    video_path = os.path.join(TEMP_VIDEO_DIR, "broll.mp4")
+    print("🎥 Downloading Stock Video...")
+    success = download_broll_video(first_keyword, video_path)
+    
+    if not success:
+        print("❌ Video download failed.")
+        return
 
- print("🎬 Merging Video & Audio...")
- composer = ShortsComposer(output_dir=OUTPUT_DIR)
- bg_music_path = os.path.join("modules", "bg_music.mp3")
- 
- final_video_path = composer.create_short(
- video_path=video_path,
- voiceover_path=audio_path,
- output_filename="final_short.mp4",
- bg_music_path=bg_music_path
- )
+    print("🎬 Merging Video & Audio...")
+    composer = ShortsComposer(output_dir=OUTPUT_DIR)
+    bg_music_path = os.path.join("modules", "bg_music.mp3")
+    
+    final_video_path = composer.create_short(
+        video_path=video_path,
+        voiceover_path=audio_path,
+        output_filename="final_short.mp4",
+        bg_music_path=bg_music_path
+    )
 
- if os.path.exists(final_video_path):
- print("⬆️ Uploading Video to YouTube...")
- title = f"Unbelievable Mystery Revealed! #Shorts #{first_keyword.replace(' ', '')}"
- description = f"{full_narration}\n\n#Shorts #Viral #Mysteries"
- 
- try:
- video_id = upload_video(
- video_path=final_video_path,
- title=title[:100],
- description=description,
- tags=["shorts", "mysteries", "facts", "youtubeshorts"],
- privacy_status="public",
- client_id=YOUTUBE_CLIENT_ID,
- client_secret=YOUTUBE_CLIENT_SECRET,
- refresh_token=YOUTUBE_REFRESH_TOKEN
- )
- print(f"🎉 Process Complete! Video uploaded successfully with ID: {video_id}")
- except Exception as e:
- print(f"❌ YouTube Upload Failed: {e}")
+    if os.path.exists(final_video_path):
+        print("⬆️ Uploading Video to YouTube...")
+        title = f"Unbelievable Mystery Revealed! #Shorts #{first_keyword.replace(' ', '')}"
+        description = f"{full_narration}\n\n#Shorts #Viral #Mysteries"
+        
+        try:
+            video_id = upload_video(
+                video_path=final_video_path,
+                title=title[:100],
+                description=description,
+                tags=["shorts", "mysteries", "facts", "youtubeshorts"],
+                privacy_status="public",
+                client_id=YOUTUBE_CLIENT_ID,
+                client_secret=YOUTUBE_CLIENT_SECRET,
+                refresh_token=YOUTUBE_REFRESH_TOKEN
+            )
+            print(f"🎉 Process Complete! Video uploaded successfully with ID: {video_id}")
+        except Exception as e:
+            print(f"❌ YouTube Upload Failed: {e}")
 
 if __name__ == "__main__":
- main()
+    main()
