@@ -117,22 +117,18 @@ def download_broll_video(query, save_path):
     print(f"No video found for: {optimized_query}")
     return False
 
-# Edge-TTS Text Cleaning for Natural Voice Pronunciation & Zero Pause Gaps
 def clean_text_for_tts(text):
     text = re.sub(r'\bise\b', 'isey', text, flags=re.IGNORECASE)
     text = re.sub(r'\bI\.S\.E\b', 'isey', text, flags=re.IGNORECASE)
     text = re.sub(r'\bjise\b', 'jisey', text, flags=re.IGNORECASE)
     text = re.sub(r'\buse\b', 'usey', text, flags=re.IGNORECASE)
-    # Remove punctuations that create artificial long silences/pauses
     text = text.replace(".", " ").replace("?", " ").replace("!", " ").replace(",", " ")
-    # Clean extra spaces
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 
 async def generate_voiceover(text, output_file):
     voice = "hi-IN-MadhurNeural"
     cleaned_text = clean_text_for_tts(text)
-    # Rate set to +5% for fast-flowing continuous audio
     communicate = edge_tts.Communicate(cleaned_text, voice, rate="+5%")
     await communicate.save(output_file)
 
@@ -174,13 +170,14 @@ def main():
 
     if os.path.exists(final_video_path):
         print("⬆️ Uploading Video to YouTube...")
-        title = f"Unbelievable Mystery Revealed! #Shorts #{first_keyword.replace(' ', '')}"
+        clean_tag = re.sub(r'[^a-zA-Z0-9]', '', first_keyword)
+        title = f"Unbelievable Mystery Revealed! #Shorts #{clean_tag}"[:100]
         description = f"{full_narration}\n\n#Shorts #Viral #Mysteries"
         
         try:
             video_id = upload_video(
                 video_path=final_video_path,
-                title=title[:100],
+                title=title,
                 description=description,
                 tags=["shorts", "mysteries", "facts", "youtubeshorts"],
                 privacy_status="public",
