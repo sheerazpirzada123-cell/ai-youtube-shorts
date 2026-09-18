@@ -1,7 +1,9 @@
 import os
 import json
+import time
 import requests
 import google.generativeai as genai
+from google.api_core.exceptions import ResourceExhausted
 
 # Setup Gemini API
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -27,7 +29,7 @@ def get_optimized_search_query(text):
     return text
 
 # 2. Strict Script Generation Prompt
-def generate_script():
+def generate_script(max_retries=3, base_wait=20):
     prompt = """
     Create an engaging, mysterious YouTube Short script in Hindi/Urdu.
     
@@ -48,18 +50,28 @@ def generate_script():
       }
     ]
     """
-    
+
     model = genai.GenerativeModel("gemini-2.5-flash")
-    response = model.generate_content(prompt)
-    
-    try:
-        # Clean response text in case markdown formatting is included
-        clean_json = response.text.replace("```json", "").replace("```", "").strip()
-        script_data = json.loads(clean_json)
-        return script_data
-    except Exception as e:
-        print(f"Error parsing script JSON: {e}")
-        return []
+
+    for attempt in range(1, max_retries + 1):
+        try:
+            response = model.generate_content(prompt)
+            clean_json = response.text.replace("```json", "").replace("```", "").strip()
+            script_data = json.loads(clean_json)
+            return script_data
+        except ResourceExhausted as e:
+            wait_time = base_wait * attempt
+            print(f"[Attempt {attempt}/{max_retries}] Quota limit hit (429). Retrying in {wait_time}s...")
+            if attempt < max_retries:
+                time.sleep(wait_time)
+            else:
+                print("Max retries reached. Giving up on script generation for this run.")
+                return []
+        except Exception as e:
+            print(f"Error parsing script JSON: {e}")
+            return []
+
+    return []
 
 # 3. Fetch Stock Video from Pexels API
 def fetch_broll_video(query):
