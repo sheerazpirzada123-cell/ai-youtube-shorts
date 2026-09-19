@@ -2,10 +2,12 @@ import os
 import json
 import time
 import re
+import random
 import requests
 import asyncio
 import edge_tts
 from google import genai
+from google.genai import types
 from google.genai.errors import APIError
 
 from modules.composer import ShortsComposer
@@ -38,6 +40,50 @@ KEYWORD_MAP = {
     "surtsey island": "volcano island emergence sea ocean lava"
 }
 
+# Har run par naya topic chuna jata hai. Pehle prompt fixed tha aur uska example
+# bhi "Eternal Flame Falls" wala tha, is liye Gemini bar bar wohi script de raha
+# tha. Ab topic + angle random hote hain aur temperature bhi upar hai.
+TOPIC_POOL = [
+    "duniya ki sabse ajeeb jagah jahan science bhi confuse ho jata hai",
+    "samundar ke andar chupi hui koi hairan kar dene wali cheez",
+    "koi aisa island jahan jana mana hai",
+    "space aur planets ke bare mein koi weird fact",
+    "insani jism ka koi aisa fact jo zyadatar log nahi jante",
+    "koi purani civilization ka aisa raaz jo aaj tak solve nahi hua",
+    "jaanwaron ki koi aisi power jo bilkul unbelievable hai",
+    "duniya ka sabse khatarnak natural phenomenon",
+    "koi aisi jagah jahan waqt ya gravity ajeeb behave karti hai",
+    "abandoned city ya ghost town ki kahani",
+    "koi aisi purani technology jo apne waqt se decades aage thi",
+    "desert, glacier ya volcano se juda koi shocking fact",
+    "koi aisa plant ya khana jo duniya ka sabse ajeeb hai",
+    "deep sea creatures aur unki ajeeb duniya",
+    "mausam ka koi aisa record jo sunn kar yaqeen na aaye",
+    "koi aam cheez jiski asli kahani hairan kar deti hai",
+    "dimagh aur memory se juda koi mind blowing fact",
+    "kisi mashhoor jagah ke peeche chupa hua ajeeb sach",
+]
+
+ANGLE_POOL = [
+    "ek seedhe sawal se shuru karo",
+    "ek shocking statement se shuru karo",
+    "'zara socho' wale andaz mein samjhao",
+    "pehle mystery batao phir scientists ka jawab",
+    "ek chhoti si kahani ki tarah sunao",
+    "'zyadatar log samajhte hain lekin asal mein' wala twist do",
+]
+
+TITLE_POOL = [
+    "Unbelievable Mystery Revealed!",
+    "You Won't Believe This Exists!",
+    "This Place Broke Science!",
+    "Nobody Can Explain This!",
+    "The Craziest Fact Ever!",
+    "Scientists Are Still Confused!",
+    "This Sounds Fake But It's Real!",
+    "Wait Till You See This!",
+]
+
 def get_optimized_search_query(text):
     text_lower = text.lower()
     for key, search_term in KEYWORD_MAP.items():
@@ -46,8 +92,25 @@ def get_optimized_search_query(text):
     return text
 
 def generate_script(max_retries=3, base_wait=20):
-    prompt = """
+    topic = random.choice(TOPIC_POOL)
+    angle = random.choice(ANGLE_POOL)
+    run_seed = f"{int(time.time())}-{random.randint(100000, 999999)}"
+    print(f"🎲 Run topic: {topic} | angle: {angle} | seed: {run_seed}")
+
+    prompt = f"""
     Write a smooth, fast-paced engaging YouTube Short script in simple spoken Hindi/Urdu mixed with common English words.
+
+    TOPIC FOR THIS SCRIPT (must be about this, pick ONE specific real example of it):
+    {topic}
+
+    STYLE ANGLE FOR THIS SCRIPT: {angle}
+
+    FRESHNESS RULES (VERY IMPORTANT):
+    1. The JSON example below is ONLY a format sample. DO NOT write about Eternal Flame Falls,
+       New York, or any topic shown in the example.
+    2. Pick a specific, concrete subject that fits the topic above and build the whole script on it.
+    3. Uniqueness seed (do not mention it in the output, just make sure the wording and the chosen
+       subject are different from any previous script): {run_seed}
 
     STRICT LANGUAGE & STYLE RULES:
     1. NO hard or formal Hindi words (Strictly avoid: prakriti, chattaan, rahasya, adbhut, drishya, etc.).
@@ -57,17 +120,18 @@ def generate_script(max_retries=3, base_wait=20):
     DURATION & STRUCTURAL RULES:
     1. Total length MUST be 30 to 40 seconds long (70-80 words total).
     2. Return ONLY a valid JSON list of objects containing "narration" and "search_keyword".
+    3. "search_keyword" must be English stock-footage search words that match YOUR chosen subject.
 
-    Example JSON Output Format:
+    Example JSON Output Format (FORMAT ONLY - do not reuse this content):
     [
-      {
+      {{
         "narration": "Kya aapne kabhi waterfall ke bilkul neeche aag jalti dekhi hai New York mein ek aisi jagah hai jahan pani ke andar bhi natural fire hamesha jalti rehti hai",
         "search_keyword": "New York eternal flame waterfall cavern cave fire"
-      },
-      {
+      }},
+      {{
         "narration": "Log isey Eternal Flame Falls kehte hain Scientists ke mutabiq zameen ke neeche se nikalne wali gas is aag ko kabhie bujhne nahi deti",
         "search_keyword": "Eternal flame falls cave fire natural gas"
-      }
+      }}
     ]
     """
 
@@ -77,6 +141,12 @@ def generate_script(max_retries=3, base_wait=20):
             response = client.models.generate_content(
                 model='gemini-2.5-flash',
                 contents=prompt,
+                # Default sampling was too deterministic and kept returning the
+                # same script every run.
+                config=types.GenerateContentConfig(
+                    temperature=1.3,
+                    top_p=0.95,
+                ),
             )
             clean_json = re.sub(r'```(?:json)?\s*([\s\S]*?)\s*```', r'\1', response.text).strip()
             script_data = json.loads(clean_json)
@@ -178,7 +248,7 @@ def main():
         clean_tag = re.sub(r'[^a-zA-Z0-9]', '', first_keyword)
         if not clean_tag:
             clean_tag = "Mystery"
-        title = f"Unbelievable Mystery Revealed! #Shorts #{clean_tag}"[:100]
+        title = f"{random.choice(TITLE_POOL)} #Shorts #{clean_tag}"[:100]
         description = f"{full_narration}\n\n#Shorts #Viral #Mysteries"
         
         try:
