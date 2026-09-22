@@ -10,35 +10,30 @@ from moviepy.editor import (
     concatenate_audioclips
 )
 
-# Chhota sa natural breathing gap jab do scenes ke voiceover jode jate hain.
-# Bilkul zero gap ek doosre mein "mashed" laga sakta hai, lekin bade gaps
-# "reading" wala feel dete hain - ye beech ka balance hai.
-INTER_SCENE_PAUSE = 0.05
+# Minimal natural breathing gap jab do scenes ke voiceover jode jate hain.
+# Keep it super tight taake bilkul natural conversation flow ho, no "reading" feel.
+# Zyada pause = sounds like reading; kam pause = natural speech flow.
+INTER_SCENE_PAUSE = 0.01
 
 
-# Natural Hindi male neural voice. hi-IN-MadhurNeural is currently the only
-# male neural voice Edge TTS ships for Hindi - it defaults to a fairly deep,
-# "announcer" style read. Nudging the pitch up a touch and speeding the rate
-# up a bit makes it land closer to an energetic, natural adult guy's voice
-# instead of a slow deep robotic AI read.
+# Natural Hindi male neural voice - Madhur but with aggressive tuning.
+# Pehle deep aur robotic tha, ab conversational aur energetic banaya hai.
+# Faster speed + lower silence = bilkul natural Hinglish male voice feel.
 VOICE = "hi-IN-MadhurNeural"
 
-# Faster, energetic pace - like a real human excitedly telling you a fact,
-# not a slow narrator reading it out.
-VOICE_RATE = "+18%"
+# Much faster, casual conversation pace - energetic aur natural.
+# Jaise koi young guy excitedly bol raha ho, not boring announcer.
+VOICE_RATE = "+32%"
 
-# Slightly higher pitch than default = sounds like a younger/natural adult
-# male instead of the very deep default AI read. Tweak between "+0Hz" and
-# "+8Hz" to taste if it still sounds too deep or gets too "chipmunky".
-VOICE_PITCH = "+5Hz"
+# Lower pitch to avoid that deep robotic announcer feel.
+# Natural conversational male voice tone.
+VOICE_PITCH = "-1Hz"
 
 # How much silence to trim off the start/end of every per-scene voiceover
-# clip. Edge TTS leaves a small pause on each clip; when several of these
-# get stitched together back-to-back it adds up into noticeable dead air
-# between sentences, which is exactly what makes it sound like someone
-# "reading" instead of speaking naturally. Threshold is a bit more
-# aggressive now to squeeze out more of that dead air.
-SILENCE_TRIM_DB = "-30dB"
+# clip. Edge TTS leaves artificial pauses; jab clips milte hain to woh pauses
+# add up aur "reading" feel deta hai. Abhi aggressive setting use kar rahe ho
+# taake bilkul dead air na rahe - natural speech flow banay.
+SILENCE_TRIM_DB = "-20dB"
 
 
 async def generate_tts_async(text, output_path):
