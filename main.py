@@ -567,4 +567,22 @@ def main():
         # Playlist mein add karo
         if YOUTUBE_PLAYLIST_ID:
             try:
-                add_to_playlist(video_id, YOUTUBE_PLAYLIST_ID, YOUTUBE_CLIENT_ID, YOUTUBE_CLIENT_SECRET, YOUTUBE_RE
+                add_to_playlist(video_id, YOUTUBE_PLAYLIST_ID, YOUTUBE_CLIENT_ID, YOUTUBE_CLIENT_SECRET, YOUTUBE_REFRESH_TOKEN)
+                print("✅ Added to playlist")
+            except Exception as e:
+                print(f"⚠️ Playlist add failed: {e}")
+
+        elapsed = time.time() - start_time
+        notify_telegram(
+            f"✅ Video uploaded!\n"
+            f"📹 {title}\n"
+            f"🔗 https://youtube.com/shorts/{video_id}\n"
+            f"⏱️ {elapsed:.0f}s"
+        )
+    except Exception as e:
+        print(f"❌ YouTube Upload Failed: {e}")
+        notify_telegram(f"❌ YouTube upload failed: {e}")
+
+
+if __name__ == "__main__":
+    main()
