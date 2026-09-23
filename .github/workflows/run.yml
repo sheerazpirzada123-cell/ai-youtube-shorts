@@ -2,15 +2,19 @@ name: Auto Generate and Post YouTube Shorts
 
 on:
   schedule:
-    # Daily 3 times schedule (UTC Time)
-    - cron: '0 3 * * *'
-    - cron: '0 8 * * *'
-    - cron: '0 15 * * *'
+    # 3x daily — India prime time ke hisaab se set kiya
+    # 3 AM UTC = 8:30 AM IST (morning commute)
+    # 8 AM UTC = 1:30 PM IST (lunch break)
+    # 15 AM UTC = 8:30 PM IST (prime time)
+    - cron: '30 2 * * *'
+    - cron: '30 7 * * *'
+    - cron: '30 14 * * *'
   workflow_dispatch:
 
 jobs:
   build-and-run:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
     - name: Checkout Code
@@ -21,10 +25,18 @@ jobs:
       with:
         python-version: '3.12'
 
-    - name: Install System Dependencies (FFmpeg & Image Libraries)
+    - name: Cache used topics
+      uses: actions/cache@v4
+      with:
+        path: used_topics.json
+        key: used-topics-${{ github.run_id }}
+        restore-keys: |
+          used-topics-
+
+    - name: Install System Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y ffmpeg libjpeg-dev zlib1g-dev libpng-dev libfreetype6-dev
+        sudo apt-get install -y ffmpeg libjpeg-dev zlib1g-dev libpng-dev libfreetype6-dev fonts-deva fonts-noto
 
     - name: Install Python Dependencies
       run: |
@@ -39,4 +51,23 @@ jobs:
         YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
         YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
         YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        YOUTUBE_PLAYLIST_ID: ${{ secrets.YOUTUBE_PLAYLIST_ID }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
       run: python main.py
+
+    - name: Save used topics cache
+      if: always()
+      uses: actions/cache/save@v4
+      with:
+        path: used_topics.json
+        key: used-topics-${{ github.run_id }}
+
+    - name: Notify failure on Telegram
+      if: failure()
+      run: |
+        if [ -n "$TELEGRAM_BOT_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ]; then
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d chat_id="${TELEGRAM_CHAT_ID}" \
+            -d text="❌ AutoShorts pipeline failed on run ${{ github.run_id }}. Check logs."
+        fi
