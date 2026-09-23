@@ -4,18 +4,20 @@ import time
 import re
 import random
 import shutil
-import hashlib
 import requests
 import asyncio
 import edge_tts
 from datetime import datetime, timedelta
-from pathlib import Path
 from google import genai
 from google.genai import types
 from google.genai.errors import APIError
 
 from modules.composer import ShortsComposer
-from modules.youtube_uploader import upload_video, set_thumbnail, add_to_playlist
+from modules.youtube_uploader import (
+    upload_video,
+    set_thumbnail,
+    add_to_playlist,
+)
 from modules.asset_manager import fetch_scene_video, prepare_background_audio
 from modules.audio import _trim_silence
 
@@ -24,6 +26,7 @@ from modules.audio import _trim_silence
 # ---------------------------------------------------------------
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 PEXELS_API_KEY = os.getenv("PEXELS_API_KEY")
+PIXABAY_API_KEY = os.getenv("PIXABAY_API_KEY")
 
 YOUTUBE_CLIENT_ID = os.getenv("YOUTUBE_CLIENT_ID")
 YOUTUBE_CLIENT_SECRET = os.getenv("YOUTUBE_CLIENT_SECRET")
@@ -34,7 +37,7 @@ TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 USED_TOPICS_FILE = "used_topics.json"
-TOPIC_COOLDOWN_DAYS = 21  # 21 din tak same topic repeat nahi
+TOPIC_COOLDOWN_DAYS = 21  # 21 din tak same topic repeat nahi hoga
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 
@@ -48,7 +51,22 @@ for directory in [TEMP_VIDEO_DIR, TEMP_AUDIO_DIR, SCENE_CLIP_DIR, OUTPUT_DIR]:
     os.makedirs(directory, exist_ok=True)
 
 # ---------------------------------------------------------------
-# Topic Pool (expanded)
+# Keyword map (specific keywords ke liye better stock footage)
+# ---------------------------------------------------------------
+KEYWORD_MAP = {
+    "blood falls": "Antarctica red waterfall glacier",
+    "dancing forest": "Kaliningrad twisted pine trees forest",
+    "eternal flame": "New York eternal flame waterfall cave",
+    "antarctica": "antarctica glacier ice landscape",
+    "bermuda triangle": "bermuda triangle ocean storm dark",
+    "surtsey island": "volcano island sea ocean lava",
+    "puma punku": "ancient stone ruins temple",
+    "sphinx": "ancient egypt pyramid statue desert",
+    "bermuda": "ocean storm dark water aerial",
+}
+
+# ---------------------------------------------------------------
+# Topic Pool (expanded — 20 unique topics)
 # ---------------------------------------------------------------
 TOPIC_POOL = [
     "duniya ki sabse ajeeb jagah jahan science bhi confuse ho jata hai",
@@ -111,9 +129,10 @@ MIN_SCENES = 7  # 7-9 scenes = 3-4 sec per scene, fast paced
 
 
 # ---------------------------------------------------------------
-# Notification helpers
+# Telegram notifications
 # ---------------------------------------------------------------
 def notify_telegram(message: str):
+    """Telegram par message bhejo (agar token + chat id set ho)."""
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
         return
     try:
@@ -123,7 +142,7 @@ def notify_telegram(message: str):
             timeout=15,
         )
     except Exception as e:
-        print(f"Telegram notify failed: {e}")
+        print(f"⚠️ Telegram notify failed: {e}")
 
 
 # ---------------------------------------------------------------
@@ -140,8 +159,11 @@ def load_used_topics() -> dict:
 
 
 def save_used_topics(data: dict):
-    with open(USED_TOPICS_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+    try:
+        with open(USED_TOPICS_FILE, "w") as f:
+            json.dump(data, f, indent=2)
+    except Exception as e:
+        print(f"⚠️ used_topics save failed: {e}")
 
 
 def pick_fresh_topic() -> str:
@@ -149,10 +171,17 @@ def pick_fresh_topic() -> str:
     used = load_used_topics()
     cutoff = (datetime.utcnow() - timedelta(days=TOPIC_COOLDOWN_DAYS)).isoformat()
 
-    fresh = [t for t in TOPIC_POOL if used.get(t, {}).get("last_used", "0") < cutoff]
+    fresh = [
+        t for t in TOPIC_POOL
+        if used.get(t, {}).get("last_used", "0") < cutoff
+    ]
+
     if not fresh:
-        # Sab topics used — sabse purana wala uthao
-        fresh = sorted(TOPIC_POOL, key=lambda t: used.get(t, {}).get("last_used", "0"))[:5]
+        # Sab topics used — sabse purane 5 mein se random pick karo
+        fresh = sorted(
+            TOPIC_POOL,
+            key=lambda t: used.get(t, {}).get("last_used", "0"),
+        )[:5]
 
     return random.choice(fresh)
 
@@ -167,15 +196,22 @@ def mark_topic_used(topic: str):
 
 
 # ---------------------------------------------------------------
-# Script generation
+# Search query optimization
 # ---------------------------------------------------------------
 def get_optimized_search_query(text):
-    """Keyword ko stock-site friendly banao."""
-    # Agar specific keyword diya hai to use karo, warna narration se extract karo
-    return text if text else "nature landscape"
+    """Specific keyword ko better stock search term mein convert karo."""
+    text_lower = text.lower()
+    for key, search_term in KEYWORD_MAP.items():
+        if key in text_lower:
+            return search_term
+    return text
 
 
+# ---------------------------------------------------------------
+# Script normalization
+# ---------------------------------------------------------------
 def normalize_script(data):
+    """Gemini output (dict ya list) ko standard dict mein badlo."""
     if isinstance(data, list):
         data = {"scenes": data}
     if not isinstance(data, dict):
@@ -188,11 +224,17 @@ def normalize_script(data):
         narration = str(scene.get("narration", "")).strip()
         if not narration:
             continue
-        keyword = str(scene.get("search_keyword") or scene.get("visual_keyword") or "").strip()
+        keyword = str(
+            scene.get("search_keyword")
+            or scene.get("visual_keyword")
+            or ""
+        ).strip()
         scenes.append({"narration": narration, "search_keyword": keyword})
 
     if len(scenes) < MIN_SCENES:
-        raise ValueError(f"Sirf {len(scenes)} scenes mile, kam az kam {MIN_SCENES} chahiye")
+        raise ValueError(
+            f"Sirf {len(scenes)} scenes mile, kam az kam {MIN_SCENES} chahiye"
+        )
 
     tags = data.get("tags") or []
     if not isinstance(tags, list):
@@ -206,13 +248,19 @@ def normalize_script(data):
     }
 
 
+# ---------------------------------------------------------------
+# Script generation
+# ---------------------------------------------------------------
 def generate_script(max_retries=3, base_wait=20):
     topic = pick_fresh_topic()
     mark_topic_used(topic)
     angle = random.choice(ANGLE_POOL)
     hook_style = random.choice(HOOK_POOL)
     run_seed = f"{int(time.time())}-{random.randint(100000, 999999)}"
-    print(f"🎲 Run topic: {topic} | angle: {angle} | hook: {hook_style} | seed: {run_seed}")
+    print(f"🎲 Run topic: {topic}")
+    print(f"   angle: {angle}")
+    print(f"   hook: {hook_style}")
+    print(f"   seed: {run_seed}")
 
     prompt = f"""
     Write a smooth, fast-paced, VIRAL YouTube Short script in simple spoken Hindi/Urdu (written in Roman letters) mixed with common English words.
@@ -294,52 +342,69 @@ def generate_script(max_retries=3, base_wait=20):
     for attempt in range(1, max_retries + 1):
         try:
             response = client.models.generate_content(
-                model='gemini-2.5-flash',
+                model="gemini-2.5-flash",
                 contents=prompt,
                 config=types.GenerateContentConfig(
-                    temperature=1.0,          # 1.3 se kam — hallucination control
+                    temperature=1.0,   # 1.3 se kam — hallucination control
                     top_p=0.9,
                     top_k=40,
                     response_mime_type="application/json",
                 ),
             )
-            clean_json = re.sub(r'```(?:json)?\s*([\s\S]*?)\s*```', r'\1', response.text).strip()
+            clean_json = re.sub(
+                r"```(?:json)?\s*([\s\S]*?)\s*```", r"\1", response.text
+            ).strip()
             return normalize_script(json.loads(clean_json))
         except APIError as e:
             wait_time = base_wait * attempt
-            print(f"[Attempt {attempt}/{max_retries}] API Error: {e}. Retrying in {wait_time}s...")
+            print(
+                f"[Attempt {attempt}/{max_retries}] API Error: {e}. "
+                f"Retrying in {wait_time}s..."
+            )
             if attempt < max_retries:
                 time.sleep(wait_time)
             else:
                 print("Max retries reached. Giving up on script generation.")
-                notify_telegram(f"❌ Script generation failed after {max_retries} attempts: {e}")
+                notify_telegram(
+                    f"❌ Script generation failed after {max_retries} attempts: {e}"
+                )
                 return None
         except Exception as e:
-            print(f"[Attempt {attempt}/{max_retries}] Error parsing script JSON: {e}")
+            print(
+                f"[Attempt {attempt}/{max_retries}] Error parsing script JSON: {e}"
+            )
             if attempt < max_retries:
                 time.sleep(5)
 
     return None
 
 
+# ---------------------------------------------------------------
+# TTS text cleanup
+# ---------------------------------------------------------------
 def clean_text_for_tts(text):
-    text = re.sub(r'\bise\b', 'isey', text, flags=re.IGNORECASE)
-    text = re.sub(r'\bI\.S\.E\b', 'isey', text, flags=re.IGNORECASE)
-    text = re.sub(r'\bjise\b', 'jisey', text, flags=re.IGNORECASE)
-    text = re.sub(r'\buse\b', 'usey', text, flags=re.IGNORECASE)
+    text = re.sub(r"\bise\b", "isey", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bI\.S\.E\b", "isey", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bjise\b", "jisey", text, flags=re.IGNORECASE)
+    text = re.sub(r"\buse\b", "usey", text, flags=re.IGNORECASE)
     text = text.replace(".", " ").replace("?", " ").replace("!", " ").replace(",", " ")
-    text = re.sub(r'\s+', ' ', text).strip()
+    text = re.sub(r"\s+", " ", text).strip()
     return text
 
 
 async def generate_voiceover(text, output_file):
     voice = "hi-IN-MadhurNeural"
     cleaned_text = clean_text_for_tts(text)
-    communicate = edge_tts.Communicate(cleaned_text, voice, rate="+14%")  # 5% se 14% — energetic but natural
+    # +5% se +14% — energetic but natural
+    communicate = edge_tts.Communicate(cleaned_text, voice, rate="+14%")
     await communicate.save(output_file)
 
 
+# ---------------------------------------------------------------
+# Scene-wise voiceovers
+# ---------------------------------------------------------------
 def build_scene_voiceovers(scenes):
+    """Har scene ki apni voice file (taake clip length voice se match ho)."""
     paths = []
     for index, scene in enumerate(scenes, start=1):
         path = os.path.join(TEMP_AUDIO_DIR, f"scene_{index:02d}.mp3")
@@ -355,14 +420,20 @@ def build_scene_voiceovers(scenes):
                 print(f"[Voice scene {index}] attempt {attempt} failed: {e}")
                 time.sleep(2)
         else:
-            raise RuntimeError(f"Scene {index} ki voiceover generate nahi ho saki.")
+            raise RuntimeError(
+                f"Scene {index} ki voiceover generate nahi ho saki."
+            )
 
-        _trim_silence(path)
+        _trim_silence(path)  # scene start/end ki extra khamoshi hatao
         paths.append(path)
     return paths
 
 
+# ---------------------------------------------------------------
+# Scene-wise video clips
+# ---------------------------------------------------------------
 def build_scene_clips(scenes):
+    """Har scene ke liye alag stock clip (Pexels -> Pixabay -> AI fallback)."""
     shutil.rmtree(SCENE_CLIP_DIR, ignore_errors=True)
     os.makedirs(SCENE_CLIP_DIR, exist_ok=True)
 
@@ -380,20 +451,27 @@ def build_scene_clips(scenes):
             print(f"⚠️ Scene {index} ka clip nahi mila: {e}")
             if not paths:
                 raise
+            # Pichla clip dobara use karo (composer alag hissa lega)
             paths.append(paths[-1])
     return paths
 
 
+# ---------------------------------------------------------------
+# YouTube metadata builder
+# ---------------------------------------------------------------
 def build_metadata(script, full_narration):
-    title_core = re.sub(r'#\S+', '', script.get("title", "")).strip()
+    """Title, description (keywords + hashtags) aur tags tayyar karo."""
+    title_core = re.sub(r"#\S+", "", script.get("title", "")).strip()
     if not title_core:
         title_core = random.choice(TITLE_POOL)
-    # YouTube Shorts title limit 100 chars, but 60 best for mobile
+
+    # YouTube title limit 100 chars, but mobile ke liye 60 best
     title = f"{title_core[:75].strip()} #Shorts"[:95]
 
+    # Tags: Gemini ke topic tags + base tags (dedupe, total 450 chars se kam)
     tags, seen, total_chars = [], set(), 0
     for tag in script.get("tags", []) + BASE_TAGS:
-        tag = re.sub(r'[#,<>]', '', tag).strip().lower()
+        tag = re.sub(r"[#,<>]", "", tag).strip().lower()
         if not tag or tag in seen:
             continue
         if total_chars + len(tag) + 1 > 450:
@@ -402,10 +480,14 @@ def build_metadata(script, full_narration):
         tags.append(tag)
         total_chars += len(tag) + 1
 
+    # Hashtags: YouTube 15 se zyada ignore karta hai, isliye max 10
     hashtags, seen_h = [], set()
-    for candidate in ["#Shorts", "#Facts", "#HindiFacts", "#UrduFacts", "#AmazingFacts"] + [
-        "#" + re.sub(r'[^0-9a-zA-Z]', '', t) for t in script.get("tags", [])
-    ]:
+    candidates = ["#Shorts", "#Facts", "#HindiFacts", "#UrduFacts", "#AmazingFacts"]
+    candidates += [
+        "#" + re.sub(r"[^0-9a-zA-Z]", "", t)
+        for t in script.get("tags", [])
+    ]
+    for candidate in candidates:
         key = candidate.lower()
         if len(candidate) < 3 or key in seen_h:
             continue
@@ -421,40 +503,65 @@ def build_metadata(script, full_narration):
 
 
 # ---------------------------------------------------------------
-# Thumbnail generation
+# Thumbnail generation (FFmpeg)
 # ---------------------------------------------------------------
 def generate_thumbnail(video_path: str, output_path: str, title_text: str):
     """
     Video ke 1-second frame se thumbnail banao aur title text overlay karo.
+    Roman text ke liye DejaVu font use karta hai.
     """
     import subprocess
-    # Pehle frame extract karo
-    frame_path = output_path + ".frame.jpg"
-    subprocess.run([
-        "ffmpeg", "-y", "-ss", "1", "-i", video_path,
-        "-frames:v", "1", "-q:v", "2", frame_path
-    ], capture_output=True)
 
-    if not os.path.exists(frame_path):
+    if not os.path.exists(video_path):
         return None
 
-    # Safe title text (no quotes, no colons)
-    safe_title = re.sub(r'[":\'\\]', '', title_text)[:40]
+    # Pehle frame extract karo
+    frame_path = output_path + ".frame.jpg"
+    subprocess.run(
+        [
+            "ffmpeg", "-y", "-ss", "1", "-i", video_path,
+            "-frames:v", "1", "-q:v", "2", frame_path,
+        ],
+        capture_output=True,
+    )
 
-    # Drawtext with box background
+    if not os.path.exists(frame_path):
+        print("⚠️ Thumbnail frame extract nahi ho paya.")
+        return None
+
+    # Safe title text (no quotes, no colons, no special chars)
+    safe_title = re.sub(r'[":\'\\\n\r]', "", title_text)[:40].strip()
+    if not safe_title:
+        safe_title = "Amazing Fact"
+
+    # Font file dhoondo
+    font_candidates = [
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+    ]
+    font_file = next((f for f in font_candidates if os.path.exists(f)), None)
+
+    vf_parts = [
+        "scale=1080:1920:force_original_aspect_ratio=increase",
+        "crop=1080:1920",
+    ]
+
+    if font_file:
+        vf_parts.append(
+            f"drawtext=text='{safe_title}':"
+            f"fontcolor=white:fontsize=72:"
+            f"box=1:boxcolor=black@0.7:boxborderw=20:"
+            f"x=(w-text_w)/2:y=h*0.75:"
+            f"fontfile={font_file}"
+        )
+
     cmd = [
         "ffmpeg", "-y", "-i", frame_path,
-        "-vf",
-        f"scale=1080:1920:force_original_aspect_ratio=increase,"
-        f"crop=1080:1920,"
-        f"drawtext=text='{safe_title}':"
-        f"fontcolor=white:fontsize=72:"
-        f"box=1:boxcolor=black@0.7:boxborderw=20:"
-        f"x=(w-text_w)/2:y=h*0.75:"
-        f"fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "-vf", ",".join(vf_parts),
         "-frames:v", "1", "-q:v", "2",
-        output_path
+        output_path,
     ]
+
     result = subprocess.run(cmd, capture_output=True, text=True)
 
     if os.path.exists(frame_path):
@@ -462,29 +569,32 @@ def generate_thumbnail(video_path: str, output_path: str, title_text: str):
 
     if result.returncode == 0 and os.path.exists(output_path):
         return output_path
+
+    print(f"⚠️ Thumbnail generate nahi hua: {result.stderr[-300:]}")
     return None
 
 
 # ---------------------------------------------------------------
-# Main
+# Main pipeline
 # ---------------------------------------------------------------
 def main():
     print("🚀 Starting Automated Short Pipeline...")
     start_time = time.time()
 
-    print("Generating 30-40s Short script...")
+    # 1. Script generate karo
+    print("\n📝 Generating 30-40s Short script...")
     script = generate_script()
-
     if not script:
         print("❌ Script generation failed.")
         notify_telegram("❌ Pipeline failed: script generation returned None")
         return
 
     scenes = script["scenes"]
-    full_narration = " ".join(scene["narration"] for scene in scenes)
+    full_narration = " ".join(s["narration"] for s in scenes)
     print(f"📝 {len(scenes)} scenes | Hook: {scenes[0]['narration']}")
 
-    print("🎙️ Generating scene-wise Voiceover...")
+    # 2. Voiceovers
+    print("\n🎙️ Generating scene-wise Voiceover...")
     try:
         voice_paths = build_scene_voiceovers(scenes)
     except Exception as e:
@@ -492,7 +602,8 @@ def main():
         notify_telegram(f"❌ Voiceover generation failed: {e}")
         return
 
-    print("🎥 Downloading a different Stock Video for every scene...")
+    # 3. Video clips
+    print("\n🎥 Downloading a different Stock Video for every scene...")
     try:
         clip_paths = build_scene_clips(scenes)
     except Exception as e:
@@ -500,22 +611,28 @@ def main():
         notify_telegram(f"❌ Video download failed: {e}")
         return
 
-    print("🎬 Merging Video & Audio...")
+    # 4. Compose final video
+    print("\n🎬 Merging Video & Audio...")
     composer = ShortsComposer(output_dir=OUTPUT_DIR)
 
-    # Background music path resolution
+    # BG music path resolution
     bg_music_path = None
     for candidate in [
         os.path.join("assets", "bgm"),
         os.path.join("modules", "bg_music.mp3"),
     ]:
         if os.path.isdir(candidate):
-            files = [f for f in os.listdir(candidate) if f.lower().endswith(".mp3")]
+            files = [
+                f for f in os.listdir(candidate)
+                if f.lower().endswith(".mp3")
+            ]
             if files:
                 bg_music_path = os.path.join(candidate, random.choice(files))
+                print(f"🎵 BG music: {bg_music_path}")
                 break
         elif os.path.isfile(candidate):
             bg_music_path = candidate
+            print(f"🎵 BG music: {bg_music_path}")
             break
 
     try:
@@ -523,7 +640,7 @@ def main():
             clip_paths=clip_paths,
             voiceover_paths=voice_paths,
             output_filename="final_short.mp4",
-            bg_music_path=bg_music_path
+            bg_music_path=bg_music_path,
         )
     except Exception as e:
         print(f"❌ Composition failed: {e}")
@@ -531,17 +648,24 @@ def main():
         return
 
     if not os.path.exists(final_video_path):
+        print("❌ Final video file create nahi hui.")
         notify_telegram("❌ Final video file not created")
         return
 
-    # Thumbnail
-    print("🖼️ Generating thumbnail...")
+    # 5. Thumbnail generate karo
+    print("\n🖼️ Generating thumbnail...")
     thumb_path = os.path.join(OUTPUT_DIR, "thumbnail.jpg")
-    generate_thumbnail(final_video_path, thumb_path, script.get("title", "Amazing Fact"))
+    generate_thumbnail(
+        final_video_path,
+        thumb_path,
+        script.get("title", "Amazing Fact"),
+    )
 
-    print("⬆️ Uploading Video to YouTube...")
+    # 6. YouTube upload
+    print("\n⬆️ Uploading Video to YouTube...")
     title, description, tags = build_metadata(script, full_narration)
-    print(f"Title: {title}")
+    print(f"📹 Title: {title}")
+    print(f"🏷️ Tags: {len(tags)} tags")
 
     try:
         video_id = upload_video(
@@ -552,25 +676,32 @@ def main():
             privacy_status="public",
             client_id=YOUTUBE_CLIENT_ID,
             client_secret=YOUTUBE_CLIENT_SECRET,
-            refresh_token=YOUTUBE_REFRESH_TOKEN
+            refresh_token=YOUTUBE_REFRESH_TOKEN,
         )
         print(f"🎉 Video uploaded! ID: {video_id}")
+        print(f"🔗 https://youtube.com/shorts/{video_id}")
 
-        # Thumbnail set karo
+        # Thumbnail set karo (optional — scope nahi hai to skip ho jayega)
         if os.path.exists(thumb_path):
-            try:
-                set_thumbnail(video_id, thumb_path, YOUTUBE_CLIENT_ID, YOUTUBE_CLIENT_SECRET, YOUTUBE_REFRESH_TOKEN)
-                print("✅ Thumbnail set")
-            except Exception as e:
-                print(f"⚠️ Thumbnail set failed: {e}")
+            print("\n🖼️ Setting thumbnail...")
+            set_thumbnail(
+                video_id,
+                thumb_path,
+                YOUTUBE_CLIENT_ID,
+                YOUTUBE_CLIENT_SECRET,
+                YOUTUBE_REFRESH_TOKEN,
+            )
 
-        # Playlist mein add karo
+        # Playlist mein add karo (optional)
         if YOUTUBE_PLAYLIST_ID:
-            try:
-                add_to_playlist(video_id, YOUTUBE_PLAYLIST_ID, YOUTUBE_CLIENT_ID, YOUTUBE_CLIENT_SECRET, YOUTUBE_REFRESH_TOKEN)
-                print("✅ Added to playlist")
-            except Exception as e:
-                print(f"⚠️ Playlist add failed: {e}")
+            print("\n📂 Adding to playlist...")
+            add_to_playlist(
+                video_id,
+                YOUTUBE_PLAYLIST_ID,
+                YOUTUBE_CLIENT_ID,
+                YOUTUBE_CLIENT_SECRET,
+                YOUTUBE_REFRESH_TOKEN,
+            )
 
         elapsed = time.time() - start_time
         notify_telegram(
@@ -579,9 +710,14 @@ def main():
             f"🔗 https://youtube.com/shorts/{video_id}\n"
             f"⏱️ {elapsed:.0f}s"
         )
+
     except Exception as e:
         print(f"❌ YouTube Upload Failed: {e}")
         notify_telegram(f"❌ YouTube upload failed: {e}")
+        return
+
+    elapsed = time.time() - start_time
+    print(f"\n✨ Pipeline complete in {elapsed:.0f}s")
 
 
 if __name__ == "__main__":
