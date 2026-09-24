@@ -18,6 +18,7 @@ from modules.youtube_uploader import (
     set_thumbnail,
     add_to_playlist,
 )
+from modules.tiktok_uploader import upload_to_tiktok
 from modules.asset_manager import fetch_scene_video, prepare_background_audio
 from modules.audio import _trim_silence
 
@@ -32,6 +33,10 @@ YOUTUBE_CLIENT_ID = os.getenv("YOUTUBE_CLIENT_ID")
 YOUTUBE_CLIENT_SECRET = os.getenv("YOUTUBE_CLIENT_SECRET")
 YOUTUBE_REFRESH_TOKEN = os.getenv("YOUTUBE_REFRESH_TOKEN")
 YOUTUBE_PLAYLIST_ID = os.getenv("YOUTUBE_PLAYLIST_ID", "")
+
+TIKTOK_CLIENT_KEY = os.getenv("TIKTOK_CLIENT_KEY")
+TIKTOK_CLIENT_SECRET = os.getenv("TIKTOK_CLIENT_SECRET")
+TIKTOK_REFRESH_TOKEN = os.getenv("TIKTOK_REFRESH_TOKEN")
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
@@ -667,6 +672,7 @@ def main():
     print(f"📹 Title: {title}")
     print(f"🏷️ Tags: {len(tags)} tags")
 
+    video_id = None
     try:
         video_id = upload_video(
             video_path=final_video_path,
@@ -714,7 +720,35 @@ def main():
     except Exception as e:
         print(f"❌ YouTube Upload Failed: {e}")
         notify_telegram(f"❌ YouTube upload failed: {e}")
-        return
+        # YouTube fail ho gaya, lekin TikTok try karo
+
+    # ─────────────────────────────────────────────────────────
+    # 7. TikTok upload (draft mode — sandbox)
+    # ─────────────────────────────────────────────────────────
+    if TIKTOK_CLIENT_KEY and TIKTOK_CLIENT_SECRET and TIKTOK_REFRESH_TOKEN:
+        print("\n⬆️ Uploading Video to TikTok (draft)...")
+        try:
+            tiktok_publish_id = upload_to_tiktok(
+                video_path=final_video_path,
+                title=title,
+                client_key=TIKTOK_CLIENT_KEY,
+                client_secret=TIKTOK_CLIENT_SECRET,
+                refresh_token=TIKTOK_REFRESH_TOKEN,
+            )
+            print(f"🎉 TikTok upload complete! Publish ID: {tiktok_publish_id}")
+            print(f"📱 Open TikTok app to manually post the draft")
+
+            notify_telegram(
+                f"✅ TikTok draft uploaded!\n"
+                f"📹 {title}\n"
+                f"🆔 Publish ID: {tiktok_publish_id}\n"
+                f"📱 Open TikTok app to post manually"
+            )
+        except Exception as e:
+            print(f"❌ TikTok Upload Failed: {e}")
+            notify_telegram(f"❌ TikTok upload failed: {e}")
+    else:
+        print("\n⚠️ TikTok credentials missing — skipping TikTok upload.")
 
     elapsed = time.time() - start_time
     print(f"\n✨ Pipeline complete in {elapsed:.0f}s")
