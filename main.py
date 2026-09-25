@@ -82,7 +82,6 @@ KEYWORD_MAP = {
 
 # ---------------------------------------------------------------
 # TOPIC POOL — 100% crazy + mass appeal
-# Rule: har topic aisa ho jise dekh kar koi bhi soche "ye kaise possible hai?"
 # ---------------------------------------------------------------
 TOPIC_POOL = [
     "aisi jagah jahan insaan ne jaana chhor diya aur phir gayab ho gayi",
@@ -264,7 +263,7 @@ def normalize_script(data):
 
 
 # ---------------------------------------------------------------
-# Script generation — HOOK par poora focus
+# Script generation
 # ---------------------------------------------------------------
 def generate_script(max_retries=3, base_wait=20):
     topic = pick_fresh_topic()
@@ -301,7 +300,7 @@ def generate_script(max_retries=3, base_wait=20):
 
     Hook aisa hona chahiye jo turant SHOCK ya CURIOSITY paida kare.
 
-    YE HOOKS BILKUL MAT LIKHNA (in se viewer turant swipe kar deta hai):
+    YE HOOKS BILKUL MAT LIKHNA:
     - "Kya aapko pata hai..." — bahut slow, bahut common
     - "Aaj hum baat karenge..." — boring, koi curiosity nahi
     - "Duniya mein ek jagah hai..." — bahut vague, koi shock nahi
@@ -317,10 +316,10 @@ def generate_script(max_retries=3, base_wait=20):
 
     Hook aisa hona chahiye ke viewer soche: "WAIT WHAT? MUJHE AUR JAANNA HAI!"
 
-    Scene 2 turant hook ka jawab dena shuru kare. Koi deri nahi. Koi extra context nahi.
+    Scene 2 turant hook ka jawab dena shuru kare.
 
     ============================================================
-    VISUAL AVAILABILITY RULE (stock video clips ke liye)
+    VISUAL AVAILABILITY RULE
     ============================================================
     Pexels/Pixabay par sirf BROAD, COMMON subjects ki footage hoti hai:
     space, ocean, forest, mountains, desert, city, common animals (dog/cat/lion/shark/bird),
@@ -329,7 +328,6 @@ def generate_script(max_retries=3, base_wait=20):
 
     search_keyword mein kabhi specific species name, flower name, fish name mat likhna.
     Agar asli subject narrow hai, to closest broad category use karo.
-    Example: specific deep sea fish ke fact ke liye → "deep sea underwater dark"
 
     ============================================================
     LANGUAGE RULES
@@ -337,7 +335,6 @@ def generate_script(max_retries=3, base_wait=20):
     1. Simple spoken Hindi/Urdu with common English words.
     2. NO formal Hindi words (prakriti, chattaan, rahasya, adbhut).
     3. Narration ke andar NO full stops (.), question marks (?), ya commas (,).
-       Har scene ek hi connected sentence ho, koi pause nahi.
 
     ============================================================
     SCENE & DURATION RULES
@@ -346,13 +343,12 @@ def generate_script(max_retries=3, base_wait=20):
        Scene 1 = hook (MAX 8 words).
     2. Total: 30-38 seconds (75-90 words total).
     3. Har scene ka search_keyword ALAG ho (2-4 words, English).
-    4. Hook scene ka search_keyword visually dramatic ho: "storm ocean dark", "volcano eruption closeup", "fire explosion slow motion".
+    4. Hook scene ka search_keyword visually dramatic ho.
 
     ============================================================
     YOUTUBE METADATA RULES
     ============================================================
     1. "title": MAX 55 characters, curiosity-based, ek emoji, NO hashtags.
-       Aisa ho ke log click karne ko majboor ho jayein. Example: "Ye Kaise Possible Hai? 😱"
     2. "description": 2-3 short lines with search keywords. No hashtags.
     3. "tags": 15-20 lowercase keywords without #.
 
