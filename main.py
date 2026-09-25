@@ -42,7 +42,7 @@ TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 USED_TOPICS_FILE = "used_topics.json"
-TOPIC_COOLDOWN_DAYS = 21  # 21 din tak same topic repeat nahi hoga
+TOPIC_COOLDOWN_DAYS = 21
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 
@@ -56,23 +56,17 @@ for directory in [TEMP_VIDEO_DIR, TEMP_AUDIO_DIR, SCENE_CLIP_DIR, OUTPUT_DIR]:
     os.makedirs(directory, exist_ok=True)
 
 # ---------------------------------------------------------------
-# Keyword map (specific keywords ke liye better stock footage)
-# Specific species/flower/plant terms ko broad stock categories
-# par map karta hai taake Pexels/Pixabay par clips mil jayein.
+# Keyword map — broad categories only
 # ---------------------------------------------------------------
 KEYWORD_MAP = {
-    # Places / phenomena
     "blood falls": "antarctica red waterfall glacier",
     "dancing forest": "twisted pine trees forest",
     "eternal flame": "waterfall cave fire",
     "antarctica": "antarctica glacier ice landscape",
     "bermuda triangle": "ocean storm dark",
     "surtsey island": "volcano island sea ocean lava",
-    "puma punku": "ancient stone ruins temple",
     "sphinx": "ancient egypt pyramid statue desert",
     "bermuda": "ocean storm dark water aerial",
-
-    # Specific species -> broad category (clips easily mil jayengi)
     "mantis shrimp": "ocean underwater colorful",
     "pistol shrimp": "ocean underwater colorful",
     "axolotl": "underwater aquarium fish",
@@ -80,107 +74,84 @@ KEYWORD_MAP = {
     "anglerfish": "deep sea underwater dark",
     "corpse flower": "tropical jungle plant",
     "rafflesia": "tropical jungle flower",
-    "venus flytrap": "tropical jungle plant",
     "box jellyfish": "underwater jellyfish ocean",
     "immortal jellyfish": "underwater jellyfish ocean",
-    "mimic octopus": "underwater octopus ocean",
     "blue whale": "ocean whale underwater",
     "giant squid": "deep sea underwater dark",
-    "narwhal": "arctic ice ocean",
-    "pangolin": "wildlife animal closeup",
-    "okapi": "forest wildlife animal",
-    "saiga antelope": "wildlife animal desert",
-    "goblin shark": "deep sea underwater dark",
-    "vampire squid": "deep sea underwater dark",
-    "glass frog": "rainforest wildlife closeup",
-    "poison dart frog": "rainforest wildlife closeup",
-    "leafcutter ant": "insect macro jungle",
-    "honey badger": "wildlife animal savanna",
-    "komodo dragon": "wildlife reptile lizard",
-    "peregrine falcon": "bird flying sky",
-    "hummingbird": "bird flying flower",
-    "peacock spider": "insect macro colorful",
-    "bombardier beetle": "insect macro jungle",
 }
 
 # ---------------------------------------------------------------
-# Topic Pool (visual-friendly — broad categories only)
-# Sirf aise topics jo broad stock categories se represent ho sakein
+# TOPIC POOL — 100% crazy + mass appeal
+# Rule: har topic aisa ho jise dekh kar koi bhi soche "ye kaise possible hai?"
 # ---------------------------------------------------------------
 TOPIC_POOL = [
-    "duniya ki sabse ajeeb jagah jahan science bhi confuse ho jata hai",
-    "samundar ke andar chupi hui koi hairan kar dene wali cheez",
-    "koi aisa island jahan jana mana hai",
-    "space aur planets ke bare mein koi weird fact",
-    "insani jism ka koi aisa fact jo zyadatar log nahi jante",
-    "koi purani civilization ka aisa raaz jo aaj tak solve nahi hua",
-    "duniya ka sabse khatarnak natural phenomenon",
-    "koi aisi jagah jahan waqt ya gravity ajeeb behave karti hai",
-    "abandoned city ya ghost town ki kahani",
-    "koi aisi purani technology jo apne waqt se decades aage thi",
-    "desert, glacier ya volcano se juda koi shocking fact",
-    "deep sea creatures aur unki ajeeb duniya",
-    "mausam ka koi aisa record jo sunn kar yaqeen na aaye",
-    "dimagh aur memory se juda koi mind blowing fact",
-    "kisi mashhoor jagah ke peeche chupa hua ajeeb sach",
-    "duniya ka sabse purana ya sabse bada kuch",
-    "space mein aisi cheez jo science ko confuse karti hai",
-    "samundar ki aisi awaaz jo scientists ko hairan karti hai",
-    "duniya ka sabse bada volcano ya earthquake",
-    "aisi jagah jahan pani ulta behta hai",
-    "duniya ka sabse khatarnak ocean current",
-    "aisi natural disaster jo history mein sabse zyada destructive thi",
-    "space mein aisi cheez jo light se bhi tez chalti hai",
-    "duniya ki sabse gehri jagah jahan insaan gaya hai",
-    "aisi jagah jahan dhoop kabhi nahi pahunchti",
-    "duniya ka sabse bada waterfall ya glacier",
-    "aisi cheez jo scientists aaj tak samajh nahi paye",
-    "duniya ka sabse purana tree ya jeev",
-    "aisa phenomenon jahan electricity aasman se girti hai",
-    "duniya ki sabse ajeeb weather condition",
+    "aisi jagah jahan insaan ne jaana chhor diya aur phir gayab ho gayi",
+    "samundar mein aisi awaaz jo sunke scientists bhi darr gaye",
+    "aisa fact jo sunke aap apni aankhon par yakeen nahi karenge",
+    "duniya mein aisi cheez jo kabhi khatam nahi hoti",
+    "aisi galti jo scientists ne ki aur poori duniya ko pata chala",
+    "koi aisa raaz jo 100 saal se chhupa hua tha",
+    "aisi jagah jahan pani ulta girta hai aur koi nahi samajh paya",
+    "koi aisa insaan jisne apne jism ko badal diya",
+    "duniya ka sabse khatarnak experiment jo bhool kar bhi nahi karna chahiye",
+    "aisi cheez jo space mein hai lekin koi dekh nahi sakta",
+    "koi aisa incident jahan poora sheher gayab ho gaya",
+    "aisi natural disaster jo 100 saal mein ek baar aati hai",
+    "koi aisa jaanwar jo insaan se zyada smart hai",
+    "aisa technology jo 100 saal aage ki lagti hai",
+    "koi aisa place jahan waqt ruk jata hai",
+    "aisi bimari jo poori duniya ko khatam kar sakti thi",
+    "koi aisa raaz jo Google bhi nahi jaanta",
+    "aisi jagah jahan log jaate hain lekin wapas nahi aate",
+    "koi aisa fact jo physics ke saare rules todta hai",
+    "duniya ka sabse bada jhoot jo sab ne maan liya",
+    "aisa insaan jisne maut ko dhoka diya",
+    "koi aisi cheez jo aasman se gir rahi hai aur koi nahi jaanta kyun",
+    "aisi jagah jo duniya ke map se gayab ho gayi",
+    "koi aisa number jo poori duniya ko confuse karta hai",
+    "aisi cheez jo samundar mein 100 saal se padi hai",
 ]
 
 ANGLE_POOL = [
-    "ek seedhe sawal se shuru karo",
-    "ek shocking statement se shuru karo",
-    "'zara socho' wale andaz mein samjhao",
-    "pehle mystery batao phir scientists ka jawab",
-    "ek chhoti si kahani ki tarah sunao",
-    "'zyadatar log samajhte hain lekin asal mein' wala twist do",
+    "ek aise sawal se shuru karo jiska jawab koi nahi jaanta",
+    "ek aisi baat batao jo sunke viewer ka dimaag ghoom jaye",
+    "pehle ek ajeeb si baat batao phir uska asli reason",
+    "ek aisi kahani sunao jo sach lagti hai lekin impossible hai",
+    "ek aisa fact batao jo sunke viewer soche 'ye jhoot hai' phir prove karo",
 ]
 
 HOOK_POOL = [
-    "ek shocking claim se shuru karo jo sunte hi impossible lage",
-    "ek khaufnak ya dangerous warning se shuru karo",
-    "aisa sawal poocho jiska jawab jaanne ke liye viewer ruk jaye",
-    "ek unbelievable number ya record se shuru karo",
-    "aisi baat se shuru karo jo viewer ki soch ko challenge kare",
-    "ek adhoori baat se shuru karo jo jawab dene se pehle ruk jaye",
+    "ek aisi baat se shuru karo jo sunte hi viewer ka scroll ruk jaye",
+    "ek aisa sawal poocho jiska jawab jaanne ke liye viewer ko rukna pade",
+    "ek aisi warning se shuru karo jo viewer ko dara de",
+    "ek aisa fact batao jo sunke viewer soche 'ye kaise possible hai'",
+    "ek aisi baat batao jo poori duniya ko nahi pata lekin honi chahiye",
+    "ek aisa raaz kholo jo 100 saal se chhupa tha",
 ]
 
 TITLE_POOL = [
-    "Unbelievable Mystery Revealed!",
-    "You Won't Believe This Exists!",
-    "This Place Broke Science!",
-    "Nobody Can Explain This!",
-    "The Craziest Fact Ever!",
-    "Scientists Are Still Confused!",
-    "This Sounds Fake But It's Real!",
-    "Wait Till You See This!",
+    "Ye Kaise Possible Hai? 😱",
+    "Duniya Ka Sabse Bada Raaz!",
+    "Scientists Bhi Confuse! 🤯",
+    "Ye Sach Hai Ya Jhoot?",
+    "100 Saal Se Chhupa Raaz!",
+    "Aapko Yakeen Nahi Hoga!",
+    "Ye Cheez Real Hai!",
 ]
 
 BASE_TAGS = [
     "shorts", "youtubeshorts", "facts", "hindi facts", "urdu facts",
     "amazing facts", "mysteries", "viral shorts", "science facts",
+    "crazy facts", "mind blowing", "unbelievable",
 ]
 
-MIN_SCENES = 7  # 7-9 scenes = 3-4 sec per scene, fast paced
+MIN_SCENES = 7
+
 
 # ---------------------------------------------------------------
 # Telegram notifications
 # ---------------------------------------------------------------
 def notify_telegram(message: str):
-    """Telegram par message bhejo (agar token + chat id set ho)."""
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
         return
     try:
@@ -191,6 +162,7 @@ def notify_telegram(message: str):
         )
     except Exception as e:
         print(f"⚠️ Telegram notify failed: {e}")
+
 
 # ---------------------------------------------------------------
 # Topic deduplication
@@ -204,6 +176,7 @@ def load_used_topics() -> dict:
     except Exception:
         return {}
 
+
 def save_used_topics(data: dict):
     try:
         with open(USED_TOPICS_FILE, "w") as f:
@@ -211,8 +184,8 @@ def save_used_topics(data: dict):
     except Exception as e:
         print(f"⚠️ used_topics save failed: {e}")
 
+
 def pick_fresh_topic() -> str:
-    """Aisa topic chuno jo pichle TOPIC_COOLDOWN_DAYS din mein use na hua ho."""
     used = load_used_topics()
     cutoff = (datetime.utcnow() - timedelta(days=TOPIC_COOLDOWN_DAYS)).isoformat()
 
@@ -222,13 +195,13 @@ def pick_fresh_topic() -> str:
     ]
 
     if not fresh:
-        # Sab topics used — sabse purane 5 mein se random pick karo
         fresh = sorted(
             TOPIC_POOL,
             key=lambda t: used.get(t, {}).get("last_used", "0"),
         )[:5]
 
     return random.choice(fresh)
+
 
 def mark_topic_used(topic: str):
     used = load_used_topics()
@@ -238,22 +211,22 @@ def mark_topic_used(topic: str):
     }
     save_used_topics(used)
 
+
 # ---------------------------------------------------------------
 # Search query optimization
 # ---------------------------------------------------------------
 def get_optimized_search_query(text):
-    """Specific keyword ko better stock search term mein convert karo."""
     text_lower = text.lower()
     for key, search_term in KEYWORD_MAP.items():
         if key in text_lower:
             return search_term
     return text
 
+
 # ---------------------------------------------------------------
 # Script normalization
 # ---------------------------------------------------------------
 def normalize_script(data):
-    """Gemini output (dict ya list) ko standard dict mein badlo."""
     if isinstance(data, list):
         data = {"scenes": data}
     if not isinstance(data, dict):
@@ -289,8 +262,9 @@ def normalize_script(data):
         "scenes": scenes,
     }
 
+
 # ---------------------------------------------------------------
-# Script generation
+# Script generation — HOOK par poora focus
 # ---------------------------------------------------------------
 def generate_script(max_retries=3, base_wait=20):
     topic = pick_fresh_topic()
@@ -313,99 +287,89 @@ def generate_script(max_retries=3, base_wait=20):
 
     HOOK STYLE FOR SCENE 1: {hook_style}
 
-    FRESHNESS RULES (VERY IMPORTANT):
-    1. The JSON example below is ONLY a format sample. DO NOT write about Eternal Flame Falls,
-       New York, or any topic shown in the example.
-    2. Pick a specific, concrete subject that fits the topic above and build the whole script on it.
-    3. Uniqueness seed (do not mention it in the output, just make sure the wording and the chosen
-       subject are different from any previous script): {run_seed}
-    4. Facts must be REAL and CREDIBLE. If you are not 100% sure about a fact, do NOT use it.
-       Better to pick a well-documented fact than a viral fake one.
+    FRESHNESS RULES:
+    1. The JSON example below is ONLY a format sample. DO NOT write about Eternal Flame Falls.
+    2. Pick a specific, concrete subject that fits the topic above.
+    3. Uniqueness seed (do not mention it, just use it to vary the wording): {run_seed}
+    4. Facts must be REAL and CREDIBLE.
 
-    VISUAL AVAILABILITY RULE (MOST IMPORTANT - read carefully):
-    Free stock video sites like Pexels and Pixabay ONLY have footage for COMMON, BROAD, EVERYDAY subjects.
-    They do NOT have footage for rare or hyper-specific subjects like:
-    - specific animal species (mantis shrimp, axolotl, tardigrade, anglerfish, etc.)
-    - specific flower or plant species (corpse flower, rafflesia, venus flytrap, etc.)
-    - specific fish species (goblin shark, vampire squid, etc.)
-    - specific tiny body parts or processes
-    - specific unnamed historical objects
+    ============================================================
+    HOOK RULES — SABSE ZAROORI PART (VIEWER 3 SECOND MEIN DECIDE KARTA HAI)
+    ============================================================
 
-    When you pick a fact, its subject MUST be representable by ONE of these broad, commonly-filmed visual categories:
-    - space, galaxy, stars, planets, moon, sun, rocket, astronaut, satellite
-    - ocean, underwater, waves, deep sea, beach, coral reef
-    - forest, jungle, trees, nature, rainforest
-    - mountains, desert, sand, clouds, sky, rain, storm, sunset
-    - city, street, traffic, skyscrapers, crowd of people
-    - common animals in general motion (dog, cat, lion, elephant, shark, bird, wolf, bear, monkey, snake, insect)
-    - human body parts in general (eyes, brain, heart, hands, skin, sleeping person)
-    - laboratory, scientist, microscope, technology, computer, robot, smartphone
-    - money, gold, coins, bank vault
-    - ancient ruins, old temple, museum, statue, pyramid
-    - fire, ice, lightning, volcano
-    - books, library, classroom
-    - kitchen, food, cooking
-    - clock, time, calendar
+    Scene 1 (hook) sirf 6-8 words ka hai. MAXIMUM 8 words.
 
-    If a fact is naturally about something narrow, either skip that fact OR write the "search_keyword"
-    using the closest broad category instead of the narrow subject.
-    Example: for a fact about a specific frog's skin, use "forest wildlife closeup" instead of the species name.
-    Example: for a fact about a specific ancient king, use "ancient ruins temple" instead of the king's name.
-    Example: for a fact about a specific deep sea fish, use "deep sea underwater dark" instead of the fish name.
+    Hook aisa hona chahiye jo turant SHOCK ya CURIOSITY paida kare.
 
-    PREFER facts that are CRAZY and MIND-BLOWING - the kind people love to share.
-    Avoid facts whose main subject is a specific animal, specific flower, specific fish, or specific named event/place.
+    YE HOOKS BILKUL MAT LIKHNA (in se viewer turant swipe kar deta hai):
+    - "Kya aapko pata hai..." — bahut slow, bahut common
+    - "Aaj hum baat karenge..." — boring, koi curiosity nahi
+    - "Duniya mein ek jagah hai..." — bahut vague, koi shock nahi
+    - "Scientists ne ek cheez dhundhi..." — bahut slow
+    - 8 words se lamba koi bhi hook
 
-    HOOK RULES (MOST IMPORTANT - viewers decide in the first 3 seconds):
-    1. Scene 1 is ONLY the hook. Maximum 8 words (about 3 seconds when spoken).
-    2. The hook must create a curiosity gap - make the viewer NEED the answer - but must NOT reveal the answer.
-    3. No greeting. Do NOT start with "Namaste", "Hello", "Doston" or "Kya aapko pata hai".
-    4. Scene 2 must immediately start paying off the hook. Add one small twist line around the middle
-       (like "lekin asli baat ye hai") so people keep watching.
-    5. The LAST scene is a short punchy closing line that makes people want to watch again
-       (it can connect back to the opening question). No long "like subscribe" speech.
+    YE HOOK PATTERNS USE KARO (ek chuno):
+    1. UNBELIEVABLE CLAIM: "Ye jagah duniya se gayab ho gayi"
+    2. SHOCKING WARNING: "Yahan jaana aapki maut ho sakti hai"
+    3. IMPOSSIBLE QUESTION: "Kaise possible hai ke pani ulta girta hai"
+    4. DEADLY SECRET: "Ye cheez aapko 24 ghante mein maar sakti hai"
+    5. SCARY FACT: "Is jagah se koi wapas nahi aaya"
 
-    STRICT LANGUAGE & STYLE RULES:
-    1. NO hard or formal Hindi words (Strictly avoid: prakriti, chattaan, rahasya, adbhut, drishya, etc.).
-    2. Use simple daily conversational Hindi/Urdu with simple English words (waterfall, fire, mystery, natural gas, place, dangerous, scientists).
-    3. VERY IMPORTANT FOR CONTINUOUS FLOW: DO NOT use full stops (.), question marks (?), or commas (,) inside the narration text so there are NO LONG PAUSES OR GAPS between words. Keep every scene as ONE connected sentence.
+    Hook aisa hona chahiye ke viewer soche: "WAIT WHAT? MUJHE AUR JAANNA HAI!"
 
-    SCENE & DURATION RULES:
-    1. Split the script into exactly 8 scenes. Each scene = exactly ONE short sentence (7 to 12 words).
-       Scene 1 is the hook (max 8 words).
-    2. Total length MUST be 30 to 38 seconds (75-90 words total across all scenes).
-       Each scene should be roughly 3.5 to 4.5 seconds when spoken.
-    3. Every scene gets its OWN stock video clip, so every scene needs a DIFFERENT "search_keyword".
-       Never repeat the same keyword or the same visual in two scenes.
-    4. "search_keyword" = English stock-footage search words, 2 to 4 words, that visually match THAT scene's sentence.
-       Use ONLY the broad categories listed above. Never use specific species names, flower names, fish names,
-       or brand names in the search_keyword.
-    5. Hook scene (scene 1) ka search_keyword should be visually dramatic/shocking (e.g. "storm ocean dark",
-       "volcano eruption closeup", "fire explosion slow motion").
+    Scene 2 turant hook ka jawab dena shuru kare. Koi deri nahi. Koi extra context nahi.
 
-    YOUTUBE METADATA RULES:
-    1. "title": maximum 55 characters, curiosity-based, includes the main keyword of the fact,
-       one emoji, Roman Hindi/Urdu + English mix, NO hashtags. Must be DIFFERENT from generic titles.
-    2. "description": 2 to 3 short lines, engaging, and rich with search keywords people would type
-       (for example: amazing facts in hindi, urdu facts, mysterious places, the topic keywords).
-       NO hashtags in it (they are added separately).
-    3. "tags": 15 to 20 lowercase search keywords WITHOUT the # sign. Mix English and Roman Hindi/Urdu,
-       broad ones (facts, hindi facts, urdu facts, amazing facts, shorts) and topic-specific ones.
+    ============================================================
+    VISUAL AVAILABILITY RULE (stock video clips ke liye)
+    ============================================================
+    Pexels/Pixabay par sirf BROAD, COMMON subjects ki footage hoti hai:
+    space, ocean, forest, mountains, desert, city, common animals (dog/cat/lion/shark/bird),
+    human body (eyes/brain/heart/hands), laboratory, technology, money, ruins, fire, ice, volcano,
+    books, kitchen, clock, astronaut.
+
+    search_keyword mein kabhi specific species name, flower name, fish name mat likhna.
+    Agar asli subject narrow hai, to closest broad category use karo.
+    Example: specific deep sea fish ke fact ke liye → "deep sea underwater dark"
+
+    ============================================================
+    LANGUAGE RULES
+    ============================================================
+    1. Simple spoken Hindi/Urdu with common English words.
+    2. NO formal Hindi words (prakriti, chattaan, rahasya, adbhut).
+    3. Narration ke andar NO full stops (.), question marks (?), ya commas (,).
+       Har scene ek hi connected sentence ho, koi pause nahi.
+
+    ============================================================
+    SCENE & DURATION RULES
+    ============================================================
+    1. EXACTLY 8 scenes. Har scene = ek chhota sentence (7-12 words).
+       Scene 1 = hook (MAX 8 words).
+    2. Total: 30-38 seconds (75-90 words total).
+    3. Har scene ka search_keyword ALAG ho (2-4 words, English).
+    4. Hook scene ka search_keyword visually dramatic ho: "storm ocean dark", "volcano eruption closeup", "fire explosion slow motion".
+
+    ============================================================
+    YOUTUBE METADATA RULES
+    ============================================================
+    1. "title": MAX 55 characters, curiosity-based, ek emoji, NO hashtags.
+       Aisa ho ke log click karne ko majboor ho jayein. Example: "Ye Kaise Possible Hai? 😱"
+    2. "description": 2-3 short lines with search keywords. No hashtags.
+    3. "tags": 15-20 lowercase keywords without #.
 
     Return ONLY valid JSON (no markdown) in exactly this structure.
 
-    Example JSON Output Format (FORMAT ONLY - do not reuse this content):
+    Example JSON Output Format (FORMAT ONLY):
     {{
       "title": "Yahan title likho 🔥",
       "description": "Line one\\nLine two",
       "tags": ["tag one", "tag two"],
       "scenes": [
         {{
-          "narration": "Ye jagah duniya ke naqshe se kyun mita di gayi",
-          "search_keyword": "old map ocean"
+          "narration": "Ye jagah duniya se gayab ho gayi",
+          "search_keyword": "abandoned city fog"
         }},
         {{
-          "narration": "Scientists ko wahan pahunchte hi kuch ajeeb mehsoos hua",
+          "narration": "Scientists ne wahan jaake kuch ajeeb dekha",
           "search_keyword": "scientist laboratory"
         }}
       ]
@@ -418,7 +382,7 @@ def generate_script(max_retries=3, base_wait=20):
                 model="gemini-2.5-flash",
                 contents=prompt,
                 config=types.GenerateContentConfig(
-                    temperature=1.0,   # 1.3 se kam — hallucination control
+                    temperature=1.0,
                     top_p=0.9,
                     top_k=40,
                     response_mime_type="application/json",
@@ -451,6 +415,7 @@ def generate_script(max_retries=3, base_wait=20):
 
     return None
 
+
 # ---------------------------------------------------------------
 # TTS text cleanup
 # ---------------------------------------------------------------
@@ -463,18 +428,18 @@ def clean_text_for_tts(text):
     text = re.sub(r"\s+", " ", text).strip()
     return text
 
+
 async def generate_voiceover(text, output_file):
     voice = "hi-IN-MadhurNeural"
     cleaned_text = clean_text_for_tts(text)
-    # +5% se +14% — energetic but natural
     communicate = edge_tts.Communicate(cleaned_text, voice, rate="+14%")
     await communicate.save(output_file)
+
 
 # ---------------------------------------------------------------
 # Scene-wise voiceovers
 # ---------------------------------------------------------------
 def build_scene_voiceovers(scenes):
-    """Har scene ki apni voice file (taake clip length voice se match ho)."""
     paths = []
     for index, scene in enumerate(scenes, start=1):
         path = os.path.join(TEMP_AUDIO_DIR, f"scene_{index:02d}.mp3")
@@ -494,15 +459,15 @@ def build_scene_voiceovers(scenes):
                 f"Scene {index} ki voiceover generate nahi ho saki."
             )
 
-        _trim_silence(path)  # scene start/end ki extra khamoshi hatao
+        _trim_silence(path)
         paths.append(path)
     return paths
+
 
 # ---------------------------------------------------------------
 # Scene-wise video clips
 # ---------------------------------------------------------------
 def build_scene_clips(scenes):
-    """Har scene ke liye alag stock clip (Pexels -> Pixabay -> AI fallback)."""
     shutil.rmtree(SCENE_CLIP_DIR, ignore_errors=True)
     os.makedirs(SCENE_CLIP_DIR, exist_ok=True)
 
@@ -520,23 +485,20 @@ def build_scene_clips(scenes):
             print(f"⚠️ Scene {index} ka clip nahi mila: {e}")
             if not paths:
                 raise
-            # Pichla clip dobara use karo (composer alag hissa lega)
             paths.append(paths[-1])
     return paths
+
 
 # ---------------------------------------------------------------
 # YouTube metadata builder
 # ---------------------------------------------------------------
 def build_metadata(script, full_narration):
-    """Title, description (keywords + hashtags) aur tags tayyar karo."""
     title_core = re.sub(r"#\S+", "", script.get("title", "")).strip()
     if not title_core:
         title_core = random.choice(TITLE_POOL)
 
-    # YouTube title limit 100 chars, but mobile ke liye 60 best
     title = f"{title_core[:75].strip()} #Shorts"[:95]
 
-    # Tags: Gemini ke topic tags + base tags (dedupe, total 450 chars se kam)
     tags, seen, total_chars = [], set(), 0
     for tag in script.get("tags", []) + BASE_TAGS:
         tag = re.sub(r"[#,<>]", "", tag).strip().lower()
@@ -548,9 +510,8 @@ def build_metadata(script, full_narration):
         tags.append(tag)
         total_chars += len(tag) + 1
 
-    # Hashtags: YouTube 15 se zyada ignore karta hai, isliye max 10
     hashtags, seen_h = [], set()
-    candidates = ["#Shorts", "#Facts", "#HindiFacts", "#UrduFacts", "#AmazingFacts"]
+    candidates = ["#Shorts", "#Facts", "#HindiFacts", "#UrduFacts", "#AmazingFacts", "#CrazyFacts"]
     candidates += [
         "#" + re.sub(r"[^0-9a-zA-Z]", "", t)
         for t in script.get("tags", [])
@@ -569,20 +530,16 @@ def build_metadata(script, full_narration):
 
     return title, description, tags
 
+
 # ---------------------------------------------------------------
-# Thumbnail generation (FFmpeg)
+# Thumbnail generation
 # ---------------------------------------------------------------
 def generate_thumbnail(video_path: str, output_path: str, title_text: str):
-    """
-    Video ke 1-second frame se thumbnail banao aur title text overlay karo.
-    Roman text ke liye DejaVu font use karta hai.
-    """
     import subprocess
 
     if not os.path.exists(video_path):
         return None
 
-    # Pehle frame extract karo
     frame_path = output_path + ".frame.jpg"
     subprocess.run(
         [
@@ -596,12 +553,10 @@ def generate_thumbnail(video_path: str, output_path: str, title_text: str):
         print("⚠️ Thumbnail frame extract nahi ho paya.")
         return None
 
-    # Safe title text (no quotes, no colons, no special chars)
     safe_title = re.sub(r'[":\'\\\n\r]', "", title_text)[:40].strip()
     if not safe_title:
         safe_title = "Amazing Fact"
 
-    # Font file dhoondo
     font_candidates = [
         "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
         "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
@@ -640,6 +595,7 @@ def generate_thumbnail(video_path: str, output_path: str, title_text: str):
     print(f"⚠️ Thumbnail generate nahi hua: {result.stderr[-300:]}")
     return None
 
+
 # ---------------------------------------------------------------
 # Main pipeline
 # ---------------------------------------------------------------
@@ -647,7 +603,6 @@ def main():
     print("🚀 Starting Automated Short Pipeline...")
     start_time = time.time()
 
-    # 1. Script generate karo
     print("\n📝 Generating 30-40s Short script...")
     script = generate_script()
     if not script:
@@ -659,7 +614,6 @@ def main():
     full_narration = " ".join(s["narration"] for s in scenes)
     print(f"📝 {len(scenes)} scenes | Hook: {scenes[0]['narration']}")
 
-    # 2. Voiceovers
     print("\n🎙️ Generating scene-wise Voiceover...")
     try:
         voice_paths = build_scene_voiceovers(scenes)
@@ -668,7 +622,6 @@ def main():
         notify_telegram(f"❌ Voiceover generation failed: {e}")
         return
 
-    # 3. Video clips
     print("\n🎥 Downloading a different Stock Video for every scene...")
     try:
         clip_paths = build_scene_clips(scenes)
@@ -677,11 +630,9 @@ def main():
         notify_telegram(f"❌ Video download failed: {e}")
         return
 
-    # 4. Compose final video
     print("\n🎬 Merging Video & Audio...")
     composer = ShortsComposer(output_dir=OUTPUT_DIR)
 
-    # BG music path resolution
     bg_music_path = None
     for candidate in [
         os.path.join("assets", "bgm"),
@@ -718,7 +669,6 @@ def main():
         notify_telegram("❌ Final video file not created")
         return
 
-    # 5. Thumbnail generate karo
     print("\n🖼️ Generating thumbnail...")
     thumb_path = os.path.join(OUTPUT_DIR, "thumbnail.jpg")
     generate_thumbnail(
@@ -727,7 +677,6 @@ def main():
         script.get("title", "Amazing Fact"),
     )
 
-    # 6. YouTube upload
     print("\n⬆️ Uploading Video to YouTube...")
     title, description, tags = build_metadata(script, full_narration)
     print(f"📹 Title: {title}")
@@ -748,7 +697,6 @@ def main():
         print(f"🎉 Video uploaded! ID: {video_id}")
         print(f"🔗 https://youtube.com/shorts/{video_id}")
 
-        # Thumbnail set karo (optional — scope nahi hai to skip ho jayega)
         if os.path.exists(thumb_path):
             print("\n🖼️ Setting thumbnail...")
             set_thumbnail(
@@ -759,7 +707,6 @@ def main():
                 YOUTUBE_REFRESH_TOKEN,
             )
 
-        # Playlist mein add karo (optional)
         if YOUTUBE_PLAYLIST_ID:
             print("\n📂 Adding to playlist...")
             add_to_playlist(
@@ -781,11 +728,7 @@ def main():
     except Exception as e:
         print(f"❌ YouTube Upload Failed: {e}")
         notify_telegram(f"❌ YouTube upload failed: {e}")
-        # YouTube fail ho gaya, lekin TikTok try karo
 
-    # ─────────────────────────────────────────────────────────
-    # 7. TikTok upload (draft mode — sandbox)
-    # ─────────────────────────────────────────────────────────
     if TIKTOK_CLIENT_KEY and TIKTOK_CLIENT_SECRET and TIKTOK_REFRESH_TOKEN:
         print("\n⬆️ Uploading Video to TikTok (draft)...")
         try:
@@ -813,6 +756,7 @@ def main():
 
     elapsed = time.time() - start_time
     print(f"\n✨ Pipeline complete in {elapsed:.0f}s")
+
 
 if __name__ == "__main__":
     main()
