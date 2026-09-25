@@ -57,21 +57,55 @@ for directory in [TEMP_VIDEO_DIR, TEMP_AUDIO_DIR, SCENE_CLIP_DIR, OUTPUT_DIR]:
 
 # ---------------------------------------------------------------
 # Keyword map (specific keywords ke liye better stock footage)
+# Specific species/flower/plant terms ko broad stock categories
+# par map karta hai taake Pexels/Pixabay par clips mil jayein.
 # ---------------------------------------------------------------
 KEYWORD_MAP = {
-    "blood falls": "Antarctica red waterfall glacier",
-    "dancing forest": "Kaliningrad twisted pine trees forest",
-    "eternal flame": "New York eternal flame waterfall cave",
+    # Places / phenomena
+    "blood falls": "antarctica red waterfall glacier",
+    "dancing forest": "twisted pine trees forest",
+    "eternal flame": "waterfall cave fire",
     "antarctica": "antarctica glacier ice landscape",
-    "bermuda triangle": "bermuda triangle ocean storm dark",
+    "bermuda triangle": "ocean storm dark",
     "surtsey island": "volcano island sea ocean lava",
     "puma punku": "ancient stone ruins temple",
     "sphinx": "ancient egypt pyramid statue desert",
     "bermuda": "ocean storm dark water aerial",
+
+    # Specific species -> broad category (clips easily mil jayengi)
+    "mantis shrimp": "ocean underwater colorful",
+    "pistol shrimp": "ocean underwater colorful",
+    "axolotl": "underwater aquarium fish",
+    "tardigrade": "microscope laboratory science",
+    "anglerfish": "deep sea underwater dark",
+    "corpse flower": "tropical jungle plant",
+    "rafflesia": "tropical jungle flower",
+    "venus flytrap": "tropical jungle plant",
+    "box jellyfish": "underwater jellyfish ocean",
+    "immortal jellyfish": "underwater jellyfish ocean",
+    "mimic octopus": "underwater octopus ocean",
+    "blue whale": "ocean whale underwater",
+    "giant squid": "deep sea underwater dark",
+    "narwhal": "arctic ice ocean",
+    "pangolin": "wildlife animal closeup",
+    "okapi": "forest wildlife animal",
+    "saiga antelope": "wildlife animal desert",
+    "goblin shark": "deep sea underwater dark",
+    "vampire squid": "deep sea underwater dark",
+    "glass frog": "rainforest wildlife closeup",
+    "poison dart frog": "rainforest wildlife closeup",
+    "leafcutter ant": "insect macro jungle",
+    "honey badger": "wildlife animal savanna",
+    "komodo dragon": "wildlife reptile lizard",
+    "peregrine falcon": "bird flying sky",
+    "hummingbird": "bird flying flower",
+    "peacock spider": "insect macro colorful",
+    "bombardier beetle": "insect macro jungle",
 }
 
 # ---------------------------------------------------------------
-# Topic Pool (expanded — 20 unique topics)
+# Topic Pool (visual-friendly — broad categories only)
+# Sirf aise topics jo broad stock categories se represent ho sakein
 # ---------------------------------------------------------------
 TOPIC_POOL = [
     "duniya ki sabse ajeeb jagah jahan science bhi confuse ho jata hai",
@@ -80,20 +114,30 @@ TOPIC_POOL = [
     "space aur planets ke bare mein koi weird fact",
     "insani jism ka koi aisa fact jo zyadatar log nahi jante",
     "koi purani civilization ka aisa raaz jo aaj tak solve nahi hua",
-    "jaanwaron ki koi aisi power jo bilkul unbelievable hai",
     "duniya ka sabse khatarnak natural phenomenon",
     "koi aisi jagah jahan waqt ya gravity ajeeb behave karti hai",
     "abandoned city ya ghost town ki kahani",
     "koi aisi purani technology jo apne waqt se decades aage thi",
     "desert, glacier ya volcano se juda koi shocking fact",
-    "koi aisa plant ya khana jo duniya ka sabse ajeeb hai",
     "deep sea creatures aur unki ajeeb duniya",
     "mausam ka koi aisa record jo sunn kar yaqeen na aaye",
-    "koi aam cheez jiski asli kahani hairan kar deti hai",
     "dimagh aur memory se juda koi mind blowing fact",
     "kisi mashhoor jagah ke peeche chupa hua ajeeb sach",
-    "koi aisa animal jo apni body regenerate kar sakta hai",
     "duniya ka sabse purana ya sabse bada kuch",
+    "space mein aisi cheez jo science ko confuse karti hai",
+    "samundar ki aisi awaaz jo scientists ko hairan karti hai",
+    "duniya ka sabse bada volcano ya earthquake",
+    "aisi jagah jahan pani ulta behta hai",
+    "duniya ka sabse khatarnak ocean current",
+    "aisi natural disaster jo history mein sabse zyada destructive thi",
+    "space mein aisi cheez jo light se bhi tez chalti hai",
+    "duniya ki sabse gehri jagah jahan insaan gaya hai",
+    "aisi jagah jahan dhoop kabhi nahi pahunchti",
+    "duniya ka sabse bada waterfall ya glacier",
+    "aisi cheez jo scientists aaj tak samajh nahi paye",
+    "duniya ka sabse purana tree ya jeev",
+    "aisa phenomenon jahan electricity aasman se girti hai",
+    "duniya ki sabse ajeeb weather condition",
 ]
 
 ANGLE_POOL = [
@@ -132,7 +176,6 @@ BASE_TAGS = [
 
 MIN_SCENES = 7  # 7-9 scenes = 3-4 sec per scene, fast paced
 
-
 # ---------------------------------------------------------------
 # Telegram notifications
 # ---------------------------------------------------------------
@@ -149,7 +192,6 @@ def notify_telegram(message: str):
     except Exception as e:
         print(f"⚠️ Telegram notify failed: {e}")
 
-
 # ---------------------------------------------------------------
 # Topic deduplication
 # ---------------------------------------------------------------
@@ -162,14 +204,12 @@ def load_used_topics() -> dict:
     except Exception:
         return {}
 
-
 def save_used_topics(data: dict):
     try:
         with open(USED_TOPICS_FILE, "w") as f:
             json.dump(data, f, indent=2)
     except Exception as e:
         print(f"⚠️ used_topics save failed: {e}")
-
 
 def pick_fresh_topic() -> str:
     """Aisa topic chuno jo pichle TOPIC_COOLDOWN_DAYS din mein use na hua ho."""
@@ -190,7 +230,6 @@ def pick_fresh_topic() -> str:
 
     return random.choice(fresh)
 
-
 def mark_topic_used(topic: str):
     used = load_used_topics()
     used[topic] = {
@@ -198,7 +237,6 @@ def mark_topic_used(topic: str):
         "count": used.get(topic, {}).get("count", 0) + 1,
     }
     save_used_topics(used)
-
 
 # ---------------------------------------------------------------
 # Search query optimization
@@ -210,7 +248,6 @@ def get_optimized_search_query(text):
         if key in text_lower:
             return search_term
     return text
-
 
 # ---------------------------------------------------------------
 # Script normalization
@@ -252,7 +289,6 @@ def normalize_script(data):
         "scenes": scenes,
     }
 
-
 # ---------------------------------------------------------------
 # Script generation
 # ---------------------------------------------------------------
@@ -286,6 +322,40 @@ def generate_script(max_retries=3, base_wait=20):
     4. Facts must be REAL and CREDIBLE. If you are not 100% sure about a fact, do NOT use it.
        Better to pick a well-documented fact than a viral fake one.
 
+    VISUAL AVAILABILITY RULE (MOST IMPORTANT - read carefully):
+    Free stock video sites like Pexels and Pixabay ONLY have footage for COMMON, BROAD, EVERYDAY subjects.
+    They do NOT have footage for rare or hyper-specific subjects like:
+    - specific animal species (mantis shrimp, axolotl, tardigrade, anglerfish, etc.)
+    - specific flower or plant species (corpse flower, rafflesia, venus flytrap, etc.)
+    - specific fish species (goblin shark, vampire squid, etc.)
+    - specific tiny body parts or processes
+    - specific unnamed historical objects
+
+    When you pick a fact, its subject MUST be representable by ONE of these broad, commonly-filmed visual categories:
+    - space, galaxy, stars, planets, moon, sun, rocket, astronaut, satellite
+    - ocean, underwater, waves, deep sea, beach, coral reef
+    - forest, jungle, trees, nature, rainforest
+    - mountains, desert, sand, clouds, sky, rain, storm, sunset
+    - city, street, traffic, skyscrapers, crowd of people
+    - common animals in general motion (dog, cat, lion, elephant, shark, bird, wolf, bear, monkey, snake, insect)
+    - human body parts in general (eyes, brain, heart, hands, skin, sleeping person)
+    - laboratory, scientist, microscope, technology, computer, robot, smartphone
+    - money, gold, coins, bank vault
+    - ancient ruins, old temple, museum, statue, pyramid
+    - fire, ice, lightning, volcano
+    - books, library, classroom
+    - kitchen, food, cooking
+    - clock, time, calendar
+
+    If a fact is naturally about something narrow, either skip that fact OR write the "search_keyword"
+    using the closest broad category instead of the narrow subject.
+    Example: for a fact about a specific frog's skin, use "forest wildlife closeup" instead of the species name.
+    Example: for a fact about a specific ancient king, use "ancient ruins temple" instead of the king's name.
+    Example: for a fact about a specific deep sea fish, use "deep sea underwater dark" instead of the fish name.
+
+    PREFER facts that are CRAZY and MIND-BLOWING - the kind people love to share.
+    Avoid facts whose main subject is a specific animal, specific flower, specific fish, or specific named event/place.
+
     HOOK RULES (MOST IMPORTANT - viewers decide in the first 3 seconds):
     1. Scene 1 is ONLY the hook. Maximum 8 words (about 3 seconds when spoken).
     2. The hook must create a curiosity gap - make the viewer NEED the answer - but must NOT reveal the answer.
@@ -308,10 +378,8 @@ def generate_script(max_retries=3, base_wait=20):
     3. Every scene gets its OWN stock video clip, so every scene needs a DIFFERENT "search_keyword".
        Never repeat the same keyword or the same visual in two scenes.
     4. "search_keyword" = English stock-footage search words, 2 to 4 words, that visually match THAT scene's sentence.
-       Use common, easy-to-find footage subjects (ocean, forest, volcano, desert, space, city, animals,
-       laboratory, ruins, fire, ice, storm, clouds, waterfall, night sky, etc.). Do not use people's names
-       or brand names. If the real subject is too rare/specific for stock sites, use the closest broad
-       category instead.
+       Use ONLY the broad categories listed above. Never use specific species names, flower names, fish names,
+       or brand names in the search_keyword.
     5. Hook scene (scene 1) ka search_keyword should be visually dramatic/shocking (e.g. "storm ocean dark",
        "volcano eruption closeup", "fire explosion slow motion").
 
@@ -383,7 +451,6 @@ def generate_script(max_retries=3, base_wait=20):
 
     return None
 
-
 # ---------------------------------------------------------------
 # TTS text cleanup
 # ---------------------------------------------------------------
@@ -396,14 +463,12 @@ def clean_text_for_tts(text):
     text = re.sub(r"\s+", " ", text).strip()
     return text
 
-
 async def generate_voiceover(text, output_file):
     voice = "hi-IN-MadhurNeural"
     cleaned_text = clean_text_for_tts(text)
     # +5% se +14% — energetic but natural
     communicate = edge_tts.Communicate(cleaned_text, voice, rate="+14%")
     await communicate.save(output_file)
-
 
 # ---------------------------------------------------------------
 # Scene-wise voiceovers
@@ -433,7 +498,6 @@ def build_scene_voiceovers(scenes):
         paths.append(path)
     return paths
 
-
 # ---------------------------------------------------------------
 # Scene-wise video clips
 # ---------------------------------------------------------------
@@ -459,7 +523,6 @@ def build_scene_clips(scenes):
             # Pichla clip dobara use karo (composer alag hissa lega)
             paths.append(paths[-1])
     return paths
-
 
 # ---------------------------------------------------------------
 # YouTube metadata builder
@@ -505,7 +568,6 @@ def build_metadata(script, full_narration):
     description = f"{body}\n\n{' '.join(hashtags)}"[:4900]
 
     return title, description, tags
-
 
 # ---------------------------------------------------------------
 # Thumbnail generation (FFmpeg)
@@ -577,7 +639,6 @@ def generate_thumbnail(video_path: str, output_path: str, title_text: str):
 
     print(f"⚠️ Thumbnail generate nahi hua: {result.stderr[-300:]}")
     return None
-
 
 # ---------------------------------------------------------------
 # Main pipeline
@@ -752,7 +813,6 @@ def main():
 
     elapsed = time.time() - start_time
     print(f"\n✨ Pipeline complete in {elapsed:.0f}s")
-
 
 if __name__ == "__main__":
     main()
