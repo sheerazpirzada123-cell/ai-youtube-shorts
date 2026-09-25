@@ -34,30 +34,91 @@ class ShortsComposer:
 
     @staticmethod
     def _prepare_scene_video(path, duration):
-        clip = VideoFileClip(path, audio=False)
-        if clip.duration < duration:
-            clip = clip.fx(vfx.loop, duration=duration)
+        """
+        Scene video ko given duration ke liye ready karo.
+        FIX: agar clip.bob bahut chhota hai to loop karo,
+        aur subclip ke liye safe range use karo.
+        """
+        try:
+            clip = VideoFileClip(path, audio=False)
+        except Exception as e:
+            raise RuntimeError(
+                f"VideoFileClip fail hua '{path}' ke liye: {e}"
+            )
+
+        if clip.duration is None or clip.duration <= 0:
+            clip.close()
+            raise RuntimeError(
+                f"Clip '{path}' ki duration invalid hai: {clip.duration}"
+            )
+
+        # Agar clip chhoti hai to loop karo
+        if clip.duration < duration + 0.2:
+            try:
+                clip = clip.fx(vfx.loop, duration=duration + 0.5)
+            except Exception as e:
+                clip.close()
+                raise RuntimeError(
+                    f"Loop fail hua '{path}' ke liye: {e}"
+                )
         else:
-            spare = clip.duration - duration - 0.1
-            start = random.uniform(0, spare) if spare > 0.1 else 0
-            clip = clip.subclip(start, start + duration)
+            # SAFE subclip: spare hamesha positive ho
+            spare = max(0.0, clip.duration - duration - 0.2)
+            if spare > 0.1:
+                start = random.uniform(0, spare)
+            else:
+                start = 0.0
+            end = start + duration
+            # Clamp karo taake clip.duration se aage na jaye
+            if end > clip.duration:
+                end = clip.duration
+                start = max(0.0, end - duration)
+            try:
+                clip = clip.subclip(start, end)
+            except Exception as e:
+                clip.close()
+                raise RuntimeError(
+                    f"Subclip fail hua '{path}' ke liye "
+                    f"(start={start}, end={end}, dur={clip.duration}): {e}"
+                )
+
         return ShortsComposer._fit_vertical(clip)
 
     def _add_background_music(self, voice_audio, total_duration, bg_music_path):
         audio_tracks = [voice_audio]
         bg_music = None
-        if bg_music_path and os.path.exists(bg_music_path):
-            print(f"🎵 BG music: {bg_music_path} (vol {BG_MUSIC_VOLUME})")
-            bg_music = AudioFileClip(bg_music_path)
-            if bg_music.duration < total_duration:
-                loop_count = int(total_duration // bg_music.duration) + 1
-                bg_music = concatenate_audioclips([bg_music] * loop_count)
-            bg_music = bg_music.subclip(0, total_duration)
-            bg_music = bg_music.volumex(BG_MUSIC_VOLUME)
-            bg_music = bg_music.fx(afx.audio_fadein, 0.5).fx(afx.audio_fadeout, 1.0)
-            audio_tracks.append(bg_music)
-        else:
-            print("⚠️ bg_music nahi mila. Bina BG ke banegi.")
+        try:
+            if bg_music_path and os.path.exists(bg_music_path):
+                print(f"🎵 BG music: {bg_music_path} (vol {BG_MUSIC_VOLUME})")
+                bg_music_raw = AudioFileClip(bg_music_path)
+
+                if bg_music_raw.duration is None or bg_music_raw.duration <= 0:
+                    print("⚠️ BG music ki duration invalid hai, skip kar rahe hain.")
+                    bg_music_raw.close()
+                    bg_music = None
+                else:
+                    bg_music = bg_music_raw
+                    if bg_music.duration < total_duration:
+                        loop_count = int(total_duration // bg_music.duration) + 2
+                        bg_music = concatenate_audioclips(
+                            [bg_music] * loop_count
+                        )
+                    # SAFE subclip
+                    if bg_music.duration > total_duration:
+                        bg_music = bg_music.subclip(0, total_duration)
+                    bg_music = bg_music.volumex(BG_MUSIC_VOLUME)
+                    bg_music = (
+                        bg_music
+                        .fx(afx.audio_fadein, 0.5)
+                        .fx(afx.audio_fadeout, 1.0)
+                    )
+                    audio_tracks.append(bg_music)
+            else:
+                print("⚠️ bg_music nahi mila. Bina BG ke banegi.")
+        except Exception as e:
+            print(f"⚠️ BG music process karne mein error: {e}")
+            bg_music = None
+
         return CompositeAudioClip(audio_tracks), bg_music
 
     def _export(self, video_clip, output_filename):
@@ -67,8 +128,8 @@ class ShortsComposer:
             codec="libx264",
             audio_codec="aac",
             fps=30,
-            preset="medium",           # veryfast se medium — better quality
-            ffmpeg_params=["-pix_fmt", "yuv420p", "-crf", "22"],  # 23 se 22
+            preset="medium",
+            ffmpeg_params=["-pix_fmt", "yuv420p", "-crf", "22"],
             temp_audiofile=os.path.join(self.output_dir, "temp_audio.m4a"),
             remove_temp=True,
         )
@@ -78,44 +139,114 @@ class ShortsComposer:
                                   output_filename="final_short.mp4",
                                   bg_music_path="bg_music.mp3"):
         print("🎬 Multi-scene composition...")
-        if not clip_paths or len(clip_paths) != len(voiceover_paths):
-            raise ValueError("clip_paths aur voiceover_paths barabar honi chahiye.")
+
+        if not clip_paths or not voiceover_paths:
+            raise ValueError("clip_paths ya voiceover_paths empty hain.")
+
+        # Agar counts match nahi karte, to chhoti list ki length le lo
+        count = min(len(clip_paths), len(voiceover_paths))
+        if len(clip_paths) != len(voiceover_paths):
+            print(
+                f"⚠️ clip_paths={len(clip_paths)}, "
+                f"voiceover_paths={len(voiceover_paths)} — "
+                f"sirf pehle {count} use karenge."
+            )
+
+        # SAFETY: har clip aur voice file exist karti hai ya nahi check karo
+        for i in range(count):
+            if not os.path.exists(clip_paths[i]):
+                raise FileNotFoundError(
+                    f"Scene {i+1} ka video clip nahi mila: {clip_paths[i]}"
+                )
+            if not os.path.exists(voiceover_paths[i]):
+                raise FileNotFoundError(
+                    f"Scene {i+1} ki voiceover nahi mili: {voiceover_paths[i]}"
+                )
 
         voice_clips = []
         video_scenes = []
-        opened = []
+        opened_audio = []
+        opened_video = []
         timeline = 0.0
+
         try:
-            for index, (clip_path, voice_path) in enumerate(zip(clip_paths, voiceover_paths), start=1):
-                voice = AudioFileClip(voice_path)
-                opened.append(voice)
+            for index in range(count):
+                clip_path = clip_paths[index]
+                voice_path = voiceover_paths[index]
+
+                try:
+                    voice = AudioFileClip(voice_path)
+                except Exception as e:
+                    raise RuntimeError(
+                        f"Scene {index+1} ki voice load nahi hui: {e}"
+                    )
+
+                opened_audio.append(voice)
+
+                if voice.duration is None or voice.duration <= 0.1:
+                    raise RuntimeError(
+                        f"Scene {index+1} ki voice duration invalid: "
+                        f"{voice.duration}"
+                    )
+
                 scene_duration = voice.duration + SCENE_GAP
-                scene_video = self._prepare_scene_video(clip_path, scene_duration)
+
+                try:
+                    scene_video = self._prepare_scene_video(
+                        clip_path, scene_duration
+                    )
+                except Exception as e:
+                    raise RuntimeError(
+                        f"Scene {index+1} ka video prepare nahi hua: {e}"
+                    )
+
+                opened_video.append(scene_video)
                 video_scenes.append(scene_video)
                 voice_clips.append(voice.set_start(timeline))
                 timeline += scene_duration
-                print(f"   scene {index}: {scene_duration:.2f}s")
+                print(
+                    f"   scene {index+1}: video={scene_video.duration:.2f}s, "
+                    f"voice={voice.duration:.2f}s, "
+                    f"total={scene_duration:.2f}s"
+                )
 
             total_duration = timeline
             print(f"⏱️ Total: {total_duration:.1f}s")
 
-            voice_track = CompositeAudioClip(voice_clips).set_duration(total_duration)
-            final_audio, bg_music = self._add_background_music(voice_track, total_duration, bg_music_path)
+            if not voice_clips:
+                raise RuntimeError(
+                    "Koi bhi voice clip ready nahi hui — composition rok diya."
+                )
+
+            voice_track = CompositeAudioClip(voice_clips).set_duration(
+                total_duration
+            )
+            final_audio, bg_music = self._add_background_music(
+                voice_track, total_duration, bg_music_path
+            )
             if bg_music is not None:
-                opened.append(bg_music)
+                opened_audio.append(bg_music)
+
+            if not video_scenes:
+                raise RuntimeError("Koi bhi video scene ready nahi hui.")
 
             video = concatenate_videoclips(video_scenes, method="chain")
             video = video.set_audio(final_audio).set_duration(total_duration)
 
             output_path = self._export(video, output_filename)
-            video.close()
+
+            try:
+                video.close()
+            except Exception:
+                pass
+
         finally:
-            for clip in opened:
+            for clip in opened_audio:
                 try:
                     clip.close()
                 except Exception:
                     pass
-            for clip in video_scenes:
+            for clip in opened_video:
                 try:
                     clip.close()
                 except Exception:
@@ -125,22 +256,38 @@ class ShortsComposer:
         return output_path
 
     # OLD method — backward compat
-    def create_short(self, video_path, voiceover_path, output_filename="final_short.mp4",
+    def create_short(self, video_path, voiceover_path,
+                     output_filename="final_short.mp4",
                      bg_music_path="bg_music.mp3"):
         print("🎬 Single-clip composition...")
+
+        if not os.path.exists(video_path):
+            raise FileNotFoundError(f"Video nahi mili: {video_path}")
+        if not os.path.exists(voiceover_path):
+            raise FileNotFoundError(f"Voiceover nahi mili: {voiceover_path}")
+
         voiceover_clip = AudioFileClip(voiceover_path)
         final_duration = voiceover_clip.duration
+
         video_clip = VideoFileClip(video_path)
         if video_clip.duration < final_duration:
             video_clip = video_clip.fx(vfx.loop, duration=final_duration)
         else:
             video_clip = video_clip.subclip(0, final_duration)
-        final_audio, bg_music = self._add_background_music(voiceover_clip, final_duration, bg_music_path)
+
+        final_audio, bg_music = self._add_background_music(
+            voiceover_clip, final_duration, bg_music_path
+        )
         video_clip = video_clip.set_audio(final_audio)
         output_path = self._export(video_clip, output_filename)
+
         video_clip.close()
         voiceover_clip.close()
         if bg_music is not None:
-            bg_music.close()
+            try:
+                bg_music.close()
+            except Exception:
+                pass
+
         print(f"✅ Video ready: {output_path}")
         return output_path
