@@ -82,8 +82,6 @@ KEYWORD_MAP = {
 
 # ---------------------------------------------------------------
 # TOPIC POOL — sirf broad, relatable, no-specific-person topics
-# Rule: har topic aisa ho jise "koi bhi insaan" sun ke ruk jaye
-# Aur uski clip Pexels/Pixabay par easily mil jaye
 # ---------------------------------------------------------------
 TOPIC_POOL = [
     # Ocean / deep sea mysteries
@@ -294,7 +292,7 @@ def normalize_script(data):
 
 
 # ---------------------------------------------------------------
-# Script generation — no specific person, only broad topics
+# Script generation
 # ---------------------------------------------------------------
 def generate_script(max_retries=3, base_wait=20):
     topic = pick_fresh_topic()
@@ -324,9 +322,9 @@ def generate_script(max_retries=3, base_wait=20):
     Na koi real naam, na koi specific story, na koi personal event.
 
     YE BILKUL MAT LIKHNA:
-    - Kisi insaan ka naam (jaise "Rahul", "Ahmed", "Scientist X")
-    - Kisi specific insaan ki kahani (jaise "ek aadmi ne aisa kiya")
-    - Kisi specific person ka record (jaise "X person ne Y kiya")
+    - Kisi insaan ka naam
+    - Kisi specific insaan ki kahani
+    - Kisi specific person ka record
     - Kisi celebrity, athlete, ya famous log ke baare mein
 
     YE LIKHNA HAI:
@@ -335,9 +333,6 @@ def generate_script(max_retries=3, base_wait=20):
     - Science facts (physics, chemistry, biology)
     - Nature records (sabse bada, sabse purana, sabse gehri)
     - Broad categories (insani jism, dimagh, aankh — bina kisi specific person ke)
-
-    Har fact aisa ho ke koi bhi insaan sun ke soche "ye sach mein hota hai?"
-    Aur uski clip Pexels/Pixabay par easily mil jaye.
 
     ============================================================
     HOOK RULES — VIEWER 3 SECOND MEIN DECIDE KARTA HAI
@@ -348,8 +343,8 @@ def generate_script(max_retries=3, base_wait=20):
 
     YE HOOKS BILKUL MAT LIKHNA:
     - "Kya aapko pata hai..." — bahut slow, bahut common
-    - "Aaj hum baat karenge..." — boring, koi curiosity nahi
-    - "Duniya mein ek jagah hai..." — bahut vague, koi shock nahi
+    - "Aaj hum baat karenge..." — boring
+    - "Duniya mein ek jagah hai..." — bahut vague
     - 8 words se lamba koi bhi hook
 
     YE HOOK PATTERNS USE KARO (ek chuno):
@@ -363,6 +358,42 @@ def generate_script(max_retries=3, base_wait=20):
     Scene 2 turant hook ka jawab dena shuru kare.
 
     ============================================================
+    CTA RULES — SABSE ZAROORI (SMART CTA, DIRECT NAHI)
+    ============================================================
+    CTA matlab call-to-action. LEKIN direct "like karo, subscribe karo, share karo"
+    BILKUL MAT LIKHNA. Ye boring hai, log ignore kar dete hain.
+
+    LAST SCENE mein SMART CTA likhna hai. Ye 3 tarike use karo:
+
+    TARIKA 1 — CURIOSITY-BASED:
+    Aisa sawal ya promise jisse viewer next video dekhne ke liye
+    like ya subscribe kare. Example:
+    - "Agli baat aur bhi shocking hai"
+    - "Ye toh kuch bhi nahi, aage kya hai wo dekho"
+    - "Iske baare mein aur jaanne ke liye ruko"
+    - "Aage wali baat sunke aap hairan reh jaoge"
+
+    TARIKA 2 — QUESTION-BASED:
+    Aisa sawal jo viewer ko soche aur comment ya like kare. Example:
+    - "Aapko kya lagta hai ye sach hai"
+    - "Ye possible hai ya nahi apna jawab do"
+    - "Kaun jeeta is race mein aap batao"
+
+    TARIKA 3 — SUBTLE HINT:
+    Halka sa hint jo like ya subscribe ko natural bana de. Example:
+    - "Aise facts roz dekhne hain to ruk jao"
+    - "Ye sirf shuruaat hai"
+
+    YE CTA BILKUL MAT LIKHNA:
+    - "Like karo, share karo, subscribe karo"
+    - "Channel ko subscribe karo"
+    - "Video ko like kare"
+    - "Bell icon dabao"
+    - Koi bhi direct order jo boring lage
+
+    Last scene 6-10 words ka hona chahiye.
+
+    ============================================================
     VISUAL AVAILABILITY RULE
     ============================================================
     Pexels/Pixabay par sirf BROAD, COMMON subjects ki footage hoti hai:
@@ -372,7 +403,6 @@ def generate_script(max_retries=3, base_wait=20):
 
     search_keyword mein kabhi specific species name, flower name, fish name,
     ya specific person ka naam mat likhna.
-    Agar asli subject narrow hai, to closest broad category use karo.
 
     ============================================================
     LANGUAGE & PRONUNCIATION RULES
@@ -383,13 +413,12 @@ def generate_script(max_retries=3, base_wait=20):
     4. Har word ko aise likho jaise koi insaan bolta hai — natural Roman Hindi spelling.
     5. Numbers ko words mein likho: "100" nahi, "sau" likho. "24" nahi, "chaubees".
     6. Aise words avoid karo jinhe TTS galat bole.
-    7. Har word ke beech space ho, chhote sentences banao.
 
     ============================================================
     SCENE & DURATION RULES
     ============================================================
     1. EXACTLY 8 scenes. Har scene = ek chhota sentence (7-12 words).
-       Scene 1 = hook (MAX 8 words).
+       Scene 1 = hook (MAX 8 words). Scene 8 = SMART CTA.
     2. Total: 30-38 seconds (75-90 words total).
     3. Har scene ka search_keyword ALAG ho (2-4 words, English).
     4. Hook scene ka search_keyword visually dramatic ho.
@@ -398,7 +427,6 @@ def generate_script(max_retries=3, base_wait=20):
     YOUTUBE METADATA RULES
     ============================================================
     1. "title": MAX 55 characters, curiosity-based, ek emoji, NO hashtags.
-       Title mein BHI kisi specific person ka naam mat likhna.
     2. "description": 2-3 short lines with search keywords. No hashtags.
     3. "tags": 15-20 lowercase keywords without #.
 
@@ -417,6 +445,10 @@ def generate_script(max_retries=3, base_wait=20):
         {{
           "narration": "Scientists ne wahan jaake kuch ajeeb dekha",
           "search_keyword": "scientist laboratory"
+        }},
+        {{
+          "narration": "Aage wali baat aur bhi shocking hai",
+          "search_keyword": "storm clouds dramatic"
         }}
       ]
     }}
@@ -463,7 +495,7 @@ def generate_script(max_retries=3, base_wait=20):
 
 
 # ---------------------------------------------------------------
-# TTS text cleanup — natural pronunciation ke liye
+# TTS text cleanup
 # ---------------------------------------------------------------
 def clean_text_for_tts(text):
     text = re.sub(r"\bise\b", "isey", text, flags=re.IGNORECASE)
