@@ -2,17 +2,22 @@ import os
 import random
 from moviepy.editor import (
     VideoFileClip, AudioFileClip, CompositeAudioClip,
-    concatenate_audioclips, concatenate_videoclips, vfx
+    concatenate_audioclips, concatenate_videoclips, vfx, TextClip, CompositeVideoClip
 )
 import moviepy.audio.fx.all as afx
 
 TARGET_W = 1080
 TARGET_H = 1920
 
-# 0.05 -> 0.12 -> 0.20 — ab clearly sunai dega
 BG_MUSIC_VOLUME = 0.20
-
 SCENE_GAP = 0.05
+
+# CTA text overlay settings — subtle rakho
+CTA_TEXT = "Like ❤️"
+CTA_FONT_SIZE = 60
+CTA_POSITION = ("center", 0.88)  # screen ke neeche 88% par
+CTA_START_RATIO = 0.55           # video ke 55% ke baad dikhega
+CTA_FADE_DURATION = 0.5
 
 
 class ShortsComposer:
@@ -34,11 +39,6 @@ class ShortsComposer:
 
     @staticmethod
     def _prepare_scene_video(path, duration):
-        """
-        Scene video ko given duration ke liye ready karo.
-        FIX: agar clip.bob bahut chhota hai to loop karo,
-        aur subclip ke liye safe range use karo.
-        """
         try:
             clip = VideoFileClip(path, audio=False)
         except Exception as e:
@@ -52,7 +52,6 @@ class ShortsComposer:
                 f"Clip '{path}' ki duration invalid hai: {clip.duration}"
             )
 
-        # Agar clip chhoti hai to loop karo
         if clip.duration < duration + 0.2:
             try:
                 clip = clip.fx(vfx.loop, duration=duration + 0.5)
@@ -62,14 +61,12 @@ class ShortsComposer:
                     f"Loop fail hua '{path}' ke liye: {e}"
                 )
         else:
-            # SAFE subclip: spare hamesha positive ho
             spare = max(0.0, clip.duration - duration - 0.2)
             if spare > 0.1:
                 start = random.uniform(0, spare)
             else:
                 start = 0.0
             end = start + duration
-            # Clamp karo taake clip.duration se aage na jaye
             if end > clip.duration:
                 end = clip.duration
                 start = max(0.0, end - duration)
@@ -84,6 +81,53 @@ class ShortsComposer:
 
         return ShortsComposer._fit_vertical(clip)
 
+    @staticmethod
+    def _make_cta_overlay(total_duration):
+        """
+        Subtle 'Like' text overlay banata hai jo video ke 55% ke baad
+        fade-in hoti hai aur end tak dikhti hai.
+        Agar font na mile to None return karega (crash nahi karega).
+        """
+        try:
+            font_candidates = [
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+                "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+            ]
+            font_file = next(
+                (f for f in font_candidates if os.path.exists(f)), None
+            )
+            if not font_file:
+                print("⚠️ CTA overlay: font nahi mila, skip kar rahe hain.")
+                return None
+
+            cta_clip = TextClip(
+                CTA_TEXT,
+                fontsize=CTA_FONT_SIZE,
+                color="white",
+                font=font_file,
+                stroke_color="black",
+                stroke_width=2,
+                method="caption",
+            )
+            cta_clip = cta_clip.set_position(CTA_POSITION).set_duration(
+                total_duration
+            )
+
+            # Fade-in start time
+            start_time = total_duration * CTA_START_RATIO
+            cta_clip = cta_clip.set_start(start_time)
+
+            # Fade-in / fade-out
+            cta_clip = cta_clip.crossfadein(CTA_FADE_DURATION)
+
+            # Opacity thoda kam karo taake subtle lage
+            cta_clip = cta_clip.set_opacity(0.85)
+
+            return cta_clip
+        except Exception as e:
+            print(f"⚠️ CTA overlay banane mein error: {e}")
+            return None
+
     def _add_background_music(self, voice_audio, total_duration, bg_music_path):
         audio_tracks = [voice_audio]
         bg_music = None
@@ -93,7 +137,7 @@ class ShortsComposer:
                 bg_music_raw = AudioFileClip(bg_music_path)
 
                 if bg_music_raw.duration is None or bg_music_raw.duration <= 0:
-                    print("⚠️ BG music ki duration invalid hai, skip kar rahe hain.")
+                    print("⚠️ BG music ki duration invalid hai, skip.")
                     bg_music_raw.close()
                     bg_music = None
                 else:
@@ -103,7 +147,6 @@ class ShortsComposer:
                         bg_music = concatenate_audioclips(
                             [bg_music] * loop_count
                         )
-                    # SAFE subclip
                     if bg_music.duration > total_duration:
                         bg_music = bg_music.subclip(0, total_duration)
                     bg_music = bg_music.volumex(BG_MUSIC_VOLUME)
@@ -137,13 +180,13 @@ class ShortsComposer:
 
     def create_multi_scene_short(self, clip_paths, voiceover_paths,
                                   output_filename="final_short.mp4",
-                                  bg_music_path="bg_music.mp3"):
+                                  bg_music_path="bg_music.mp3",
+                                  add_cta=True):
         print("🎬 Multi-scene composition...")
 
         if not clip_paths or not voiceover_paths:
             raise ValueError("clip_paths ya voiceover_paths empty hain.")
 
-        # Agar counts match nahi karte, to chhoti list ki length le lo
         count = min(len(clip_paths), len(voiceover_paths))
         if len(clip_paths) != len(voiceover_paths):
             print(
@@ -152,7 +195,6 @@ class ShortsComposer:
                 f"sirf pehle {count} use karenge."
             )
 
-        # SAFETY: har clip aur voice file exist karti hai ya nahi check karo
         for i in range(count):
             if not os.path.exists(clip_paths[i]):
                 raise FileNotFoundError(
@@ -206,8 +248,7 @@ class ShortsComposer:
                 timeline += scene_duration
                 print(
                     f"   scene {index+1}: video={scene_video.duration:.2f}s, "
-                    f"voice={voice.duration:.2f}s, "
-                    f"total={scene_duration:.2f}s"
+                    f"voice={voice.duration:.2f}s"
                 )
 
             total_duration = timeline
@@ -232,6 +273,19 @@ class ShortsComposer:
 
             video = concatenate_videoclips(video_scenes, method="chain")
             video = video.set_audio(final_audio).set_duration(total_duration)
+
+            # CTA overlay add karo (optional, fail ho to skip)
+            if add_cta:
+                cta_overlay = self._make_cta_overlay(total_duration)
+                if cta_overlay is not None:
+                    try:
+                        video = CompositeVideoClip(
+                            [video, cta_overlay],
+                            size=(TARGET_W, TARGET_H)
+                        ).set_duration(total_duration)
+                        print("✅ CTA overlay added (subtle 'Like' text)")
+                    except Exception as e:
+                        print(f"⚠️ CTA overlay compose fail: {e}")
 
             output_path = self._export(video, output_filename)
 
@@ -279,6 +333,18 @@ class ShortsComposer:
             voiceover_clip, final_duration, bg_music_path
         )
         video_clip = video_clip.set_audio(final_audio)
+
+        # CTA overlay
+        cta_overlay = self._make_cta_overlay(final_duration)
+        if cta_overlay is not None:
+            try:
+                video_clip = CompositeVideoClip(
+                    [video_clip, cta_overlay],
+                    size=(TARGET_W, TARGET_H)
+                ).set_duration(final_duration)
+            except Exception as e:
+                print(f"⚠️ CTA overlay fail: {e}")
+
         output_path = self._export(video_clip, output_filename)
 
         video_clip.close()
