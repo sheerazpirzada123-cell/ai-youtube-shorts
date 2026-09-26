@@ -330,11 +330,18 @@ def generate_script(max_retries=3, base_wait=20):
     Agar asli subject narrow hai, to closest broad category use karo.
 
     ============================================================
-    LANGUAGE RULES
+    LANGUAGE & PRONUNCIATION RULES (TTS ke liye bahut important)
     ============================================================
     1. Simple spoken Hindi/Urdu with common English words.
     2. NO formal Hindi words (prakriti, chattaan, rahasya, adbhut).
     3. Narration ke andar NO full stops (.), question marks (?), ya commas (,).
+    4. Har word ko aise likho jaise koi insaan bolta hai — "kya" ko "kya", "hai" ko "hai",
+       "mein" ko "mein". Natural Roman Hindi spelling use karo taake TTS saaf bole.
+    5. Numbers ko words mein likho: "100" nahi, "sau" likho. "24" nahi, "chaubees" likho.
+       "1000" nahi, "hazaar" likho. "50" nahi, "pachaas" likho.
+    6. Aise words avoid karo jinhe TTS galat bole — jaise "I.S.E." ki jagah "isey" likho.
+    7. Har word ke beech space ho, koi jaldi nahi. Chhote sentences banao taake TTS
+       har word clearly pronounce kar sake.
 
     ============================================================
     SCENE & DURATION RULES
@@ -413,14 +420,30 @@ def generate_script(max_retries=3, base_wait=20):
 
 
 # ---------------------------------------------------------------
-# TTS text cleanup
+# TTS text cleanup — natural pronunciation ke liye
 # ---------------------------------------------------------------
 def clean_text_for_tts(text):
+    # Common mispronunciations fix karo
     text = re.sub(r"\bise\b", "isey", text, flags=re.IGNORECASE)
     text = re.sub(r"\bI\.S\.E\b", "isey", text, flags=re.IGNORECASE)
     text = re.sub(r"\bjise\b", "jisey", text, flags=re.IGNORECASE)
     text = re.sub(r"\buse\b", "usey", text, flags=re.IGNORECASE)
-    text = text.replace(".", " ").replace("?", " ").replace("!", " ").replace(",", " ")
+    text = re.sub(r"\bwo\b", "woh", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bvo\b", "woh", text, flags=re.IGNORECASE)
+
+    # Numbers ko words mein (agar Gemini ne digits chhod diye)
+    text = re.sub(r"\b100\b", "sau", text)
+    text = re.sub(r"\b1000\b", "hazaar", text)
+    text = re.sub(r"\b50\b", "pachaas", text)
+    text = re.sub(r"\b24\b", "chaubees", text)
+
+    # Punctuation ko natural pauses mein badlo (hataao nahi, warna jaldi lagega)
+    text = text.replace(".", " , ")
+    text = text.replace("?", " , ")
+    text = text.replace("!", " , ")
+    text = text.replace(",", " , ")
+
+    # Multiple spaces clean
     text = re.sub(r"\s+", " ", text).strip()
     return text
 
@@ -428,7 +451,13 @@ def clean_text_for_tts(text):
 async def generate_voiceover(text, output_file):
     voice = "hi-IN-MadhurNeural"
     cleaned_text = clean_text_for_tts(text)
-    communicate = edge_tts.Communicate(cleaned_text, voice, rate="+14%")
+    # +14% -> +8% (words saaf sunai denge, natural lagega)
+    communicate = edge_tts.Communicate(
+        cleaned_text,
+        voice,
+        rate="+8%",
+        pitch="-1Hz",
+    )
     await communicate.save(output_file)
 
 
