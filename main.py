@@ -81,34 +81,65 @@ KEYWORD_MAP = {
 }
 
 # ---------------------------------------------------------------
-# TOPIC POOL — 100% crazy + mass appeal
+# TOPIC POOL — sirf broad, relatable, no-specific-person topics
+# Rule: har topic aisa ho jise "koi bhi insaan" sun ke ruk jaye
+# Aur uski clip Pexels/Pixabay par easily mil jaye
 # ---------------------------------------------------------------
 TOPIC_POOL = [
-    "aisi jagah jahan insaan ne jaana chhor diya aur phir gayab ho gayi",
+    # Ocean / deep sea mysteries
+    "samundar ki sabse gehri jagah mein kya chhupa hai",
     "samundar mein aisi awaaz jo sunke scientists bhi darr gaye",
-    "aisa fact jo sunke aap apni aankhon par yakeen nahi karenge",
-    "duniya mein aisi cheez jo kabhi khatam nahi hoti",
-    "aisi galti jo scientists ne ki aur poori duniya ko pata chala",
-    "koi aisa raaz jo 100 saal se chhupa hua tha",
+    "samundar mein aisi cheez jo 100 saal se padi hai",
+    "deep sea mein aisi roshni jo koi samajh nahi paya",
+    "samundar mein aisi jagah jahan koi nahi ja sakta",
+
+    # Space mysteries
+    "space mein aisi cheez jo koi dekh nahi sakta",
+    "space mein aisi awaaz jo sunke scientists hairan hain",
+    "kisi planet par aisa toofan jo poori duniya ko nigal sakta hai",
+    "space mein aisa black hole jiske baare mein koi nahi jaanta",
+    "chaand par aisi cheez jo insaan ne chhod di",
+
+    # Geography / places
     "aisi jagah jahan pani ulta girta hai aur koi nahi samajh paya",
-    "koi aisa insaan jisne apne jism ko badal diya",
-    "duniya ka sabse khatarnak experiment jo bhool kar bhi nahi karna chahiye",
-    "aisi cheez jo space mein hai lekin koi dekh nahi sakta",
-    "koi aisa incident jahan poora sheher gayab ho gaya",
-    "aisi natural disaster jo 100 saal mein ek baar aati hai",
-    "koi aisa jaanwar jo insaan se zyada smart hai",
-    "aisa technology jo 100 saal aage ki lagti hai",
-    "koi aisa place jahan waqt ruk jata hai",
-    "aisi bimari jo poori duniya ko khatam kar sakti thi",
-    "koi aisa raaz jo Google bhi nahi jaanta",
-    "aisi jagah jahan log jaate hain lekin wapas nahi aate",
-    "koi aisa fact jo physics ke saare rules todta hai",
-    "duniya ka sabse bada jhoot jo sab ne maan liya",
-    "aisa insaan jisne maut ko dhoka diya",
-    "koi aisi cheez jo aasman se gir rahi hai aur koi nahi jaanta kyun",
     "aisi jagah jo duniya ke map se gayab ho gayi",
+    "aisi jagah jahan log jaate hain lekin wapas nahi aate",
+    "aisi jagah jahan dhoop kabhi nahi pahunchti",
+    "duniya ka sabse bada waterfall ya glacier",
+
+    # Natural phenomena
+    "aisi natural disaster jo 100 saal mein ek baar aati hai",
+    "aisa phenomenon jahan electricity aasman se girti hai",
+    "duniya ki sabse ajeeb weather condition",
+    "aisi cheez jo aasman se gir rahi hai aur koi nahi jaanta kyun",
+    "duniya ka sabse khatarnak ocean current",
+
+    # Science / physics
+    "koi aisa fact jo physics ke saare rules todta hai",
+    "duniya ka sabse purana ya sabse bada kuch",
+    "aisa experiment jo bhool kar bhi nahi karna chahiye",
+    "aisi cheez jo kabhi khatam nahi hoti",
     "koi aisa number jo poori duniya ko confuse karta hai",
+
+    # History / mysteries (no specific person)
+    "koi purani civilization ka aisa raaz jo aaj tak solve nahi hua",
+    "koi aisa raaz jo 100 saal se chhupa hua tha",
+    "duniya ka sabse bada jhoot jo sab ne maan liya",
+    "aisa technology jo 100 saal aage ki lagti hai",
+    "koi aisa raaz jo Google bhi nahi jaanta",
+
+    # Nature records
+    "duniya ki sabse purani cheez jo aaj bhi zinda hai",
+    "duniya ka sabse bada jaanwar jo aaj bhi zinda hai",
     "aisi cheez jo samundar mein 100 saal se padi hai",
+    "duniya ki sabse gehri jagah jahan insaan gaya hai",
+    "aisa toofan jo poori duniya ko hila de",
+
+    # Human body (broad, no specific person)
+    "insani jism ka koi aisa fact jo zyadatar log nahi jante",
+    "dimagh aur memory se juda koi mind blowing fact",
+    "insani jism mein aisi cheez jo kabhi nahi rukti",
+    "insaan ki aankh mein aisa raaz jo koi nahi jaanta",
 ]
 
 ANGLE_POOL = [
@@ -263,7 +294,7 @@ def normalize_script(data):
 
 
 # ---------------------------------------------------------------
-# Script generation
+# Script generation — no specific person, only broad topics
 # ---------------------------------------------------------------
 def generate_script(max_retries=3, base_wait=20):
     topic = pick_fresh_topic()
@@ -286,16 +317,31 @@ def generate_script(max_retries=3, base_wait=20):
 
     HOOK STYLE FOR SCENE 1: {hook_style}
 
-    FRESHNESS RULES:
-    1. The JSON example below is ONLY a format sample. DO NOT write about Eternal Flame Falls.
-    2. Pick a specific, concrete subject that fits the topic above.
-    3. Uniqueness seed (do not mention it, just use it to vary the wording): {run_seed}
-    4. Facts must be REAL and CREDIBLE.
+    ============================================================
+    SABSE ZAROORI RULE — NO SPECIFIC PERSON
+    ============================================================
+    Script mein KISI BHI SPECIFIC INSAAN ka zikr NAHI hona chahiye.
+    Na koi real naam, na koi specific story, na koi personal event.
+
+    YE BILKUL MAT LIKHNA:
+    - Kisi insaan ka naam (jaise "Rahul", "Ahmed", "Scientist X")
+    - Kisi specific insaan ki kahani (jaise "ek aadmi ne aisa kiya")
+    - Kisi specific person ka record (jaise "X person ne Y kiya")
+    - Kisi celebrity, athlete, ya famous log ke baare mein
+
+    YE LIKHNA HAI:
+    - Natural phenomena (samundar ki awaaz, space ki cheez, weather)
+    - Places (jagah, sheher, pahaad, samundar, jungle)
+    - Science facts (physics, chemistry, biology)
+    - Nature records (sabse bada, sabse purana, sabse gehri)
+    - Broad categories (insani jism, dimagh, aankh — bina kisi specific person ke)
+
+    Har fact aisa ho ke koi bhi insaan sun ke soche "ye sach mein hota hai?"
+    Aur uski clip Pexels/Pixabay par easily mil jaye.
 
     ============================================================
-    HOOK RULES — SABSE ZAROORI PART (VIEWER 3 SECOND MEIN DECIDE KARTA HAI)
+    HOOK RULES — VIEWER 3 SECOND MEIN DECIDE KARTA HAI
     ============================================================
-
     Scene 1 (hook) sirf 6-8 words ka hai. MAXIMUM 8 words.
 
     Hook aisa hona chahiye jo turant SHOCK ya CURIOSITY paida kare.
@@ -304,7 +350,6 @@ def generate_script(max_retries=3, base_wait=20):
     - "Kya aapko pata hai..." — bahut slow, bahut common
     - "Aaj hum baat karenge..." — boring, koi curiosity nahi
     - "Duniya mein ek jagah hai..." — bahut vague, koi shock nahi
-    - "Scientists ne ek cheez dhundhi..." — bahut slow
     - 8 words se lamba koi bhi hook
 
     YE HOOK PATTERNS USE KARO (ek chuno):
@@ -315,7 +360,6 @@ def generate_script(max_retries=3, base_wait=20):
     5. SCARY FACT: "Is jagah se koi wapas nahi aaya"
 
     Hook aisa hona chahiye ke viewer soche: "WAIT WHAT? MUJHE AUR JAANNA HAI!"
-
     Scene 2 turant hook ka jawab dena shuru kare.
 
     ============================================================
@@ -326,22 +370,20 @@ def generate_script(max_retries=3, base_wait=20):
     human body (eyes/brain/heart/hands), laboratory, technology, money, ruins, fire, ice, volcano,
     books, kitchen, clock, astronaut.
 
-    search_keyword mein kabhi specific species name, flower name, fish name mat likhna.
+    search_keyword mein kabhi specific species name, flower name, fish name,
+    ya specific person ka naam mat likhna.
     Agar asli subject narrow hai, to closest broad category use karo.
 
     ============================================================
-    LANGUAGE & PRONUNCIATION RULES (TTS ke liye bahut important)
+    LANGUAGE & PRONUNCIATION RULES
     ============================================================
     1. Simple spoken Hindi/Urdu with common English words.
     2. NO formal Hindi words (prakriti, chattaan, rahasya, adbhut).
     3. Narration ke andar NO full stops (.), question marks (?), ya commas (,).
-    4. Har word ko aise likho jaise koi insaan bolta hai — "kya" ko "kya", "hai" ko "hai",
-       "mein" ko "mein". Natural Roman Hindi spelling use karo taake TTS saaf bole.
-    5. Numbers ko words mein likho: "100" nahi, "sau" likho. "24" nahi, "chaubees" likho.
-       "1000" nahi, "hazaar" likho. "50" nahi, "pachaas" likho.
-    6. Aise words avoid karo jinhe TTS galat bole — jaise "I.S.E." ki jagah "isey" likho.
-    7. Har word ke beech space ho, koi jaldi nahi. Chhote sentences banao taake TTS
-       har word clearly pronounce kar sake.
+    4. Har word ko aise likho jaise koi insaan bolta hai — natural Roman Hindi spelling.
+    5. Numbers ko words mein likho: "100" nahi, "sau" likho. "24" nahi, "chaubees".
+    6. Aise words avoid karo jinhe TTS galat bole.
+    7. Har word ke beech space ho, chhote sentences banao.
 
     ============================================================
     SCENE & DURATION RULES
@@ -356,6 +398,7 @@ def generate_script(max_retries=3, base_wait=20):
     YOUTUBE METADATA RULES
     ============================================================
     1. "title": MAX 55 characters, curiosity-based, ek emoji, NO hashtags.
+       Title mein BHI kisi specific person ka naam mat likhna.
     2. "description": 2-3 short lines with search keywords. No hashtags.
     3. "tags": 15-20 lowercase keywords without #.
 
@@ -423,7 +466,6 @@ def generate_script(max_retries=3, base_wait=20):
 # TTS text cleanup — natural pronunciation ke liye
 # ---------------------------------------------------------------
 def clean_text_for_tts(text):
-    # Common mispronunciations fix karo
     text = re.sub(r"\bise\b", "isey", text, flags=re.IGNORECASE)
     text = re.sub(r"\bI\.S\.E\b", "isey", text, flags=re.IGNORECASE)
     text = re.sub(r"\bjise\b", "jisey", text, flags=re.IGNORECASE)
@@ -431,19 +473,16 @@ def clean_text_for_tts(text):
     text = re.sub(r"\bwo\b", "woh", text, flags=re.IGNORECASE)
     text = re.sub(r"\bvo\b", "woh", text, flags=re.IGNORECASE)
 
-    # Numbers ko words mein (agar Gemini ne digits chhod diye)
     text = re.sub(r"\b100\b", "sau", text)
     text = re.sub(r"\b1000\b", "hazaar", text)
     text = re.sub(r"\b50\b", "pachaas", text)
     text = re.sub(r"\b24\b", "chaubees", text)
 
-    # Punctuation ko natural pauses mein badlo (hataao nahi, warna jaldi lagega)
     text = text.replace(".", " , ")
     text = text.replace("?", " , ")
     text = text.replace("!", " , ")
     text = text.replace(",", " , ")
 
-    # Multiple spaces clean
     text = re.sub(r"\s+", " ", text).strip()
     return text
 
@@ -451,7 +490,6 @@ def clean_text_for_tts(text):
 async def generate_voiceover(text, output_file):
     voice = "hi-IN-MadhurNeural"
     cleaned_text = clean_text_for_tts(text)
-    # +14% -> +8% (words saaf sunai denge, natural lagega)
     communicate = edge_tts.Communicate(
         cleaned_text,
         voice,
