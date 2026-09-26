@@ -11,6 +11,9 @@ on:
     - cron: '30 14 * * *'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-and-run:
     runs-on: ubuntu-latest
@@ -19,19 +22,13 @@ jobs:
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.12'
-
-    - name: Cache used topics
-      uses: actions/cache@v4
-      with:
-        path: used_topics.json
-        key: used-topics-${{ github.run_id }}
-        restore-keys: |
-          used-topics-
 
     - name: Install System Dependencies
       run: |
@@ -59,12 +56,16 @@ jobs:
         TIKTOK_REFRESH_TOKEN: ${{ secrets.TIKTOK_REFRESH_TOKEN }}
       run: python main.py
 
-    - name: Save used topics cache
+    - name: Commit used_topics.json back to repo
       if: always()
-      uses: actions/cache/save@v4
-      with:
-        path: used_topics.json
-        key: used-topics-${{ github.run_id }}
+      run: |
+        if [ -f used_topics.json ]; then
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add used_topics.json
+          git diff --staged --quiet || git commit -m "chore: update used_topics [skip ci]"
+          git push || echo "Push failed, skipping"
+        fi
 
     - name: Notify failure on Telegram
       if: failure()
