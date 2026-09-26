@@ -13,12 +13,12 @@ from moviepy.editor import (
 INTER_SCENE_PAUSE = 0.08  # Thoda sa gap — natural lagti hai
 
 VOICE = "hi-IN-MadhurNeural"
-VOICE_RATE = "+14%"       # +32% se kam — natural
+VOICE_RATE = "+8%"        # +14% se +8% — words saaf sunai denge
 VOICE_PITCH = "-1Hz"
 
-# Aggressive trim se words cut ho jate the. Ab -30dB safer hai.
-SILENCE_TRIM_DB = "-30dB"
-SILENCE_MIN_START = 0.1
+# -30dB se -40dB — sirf bilkul khamosh portions trim honge, words nahi katenge
+SILENCE_TRIM_DB = "-40dB"
+SILENCE_MIN_START = 0.2   # 0.1 se 0.2 — words ko safe rakhega
 
 
 async def generate_tts_async(text, output_path):
