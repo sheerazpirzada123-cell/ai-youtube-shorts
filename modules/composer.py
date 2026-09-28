@@ -12,19 +12,17 @@ TARGET_H = 1920
 
 BG_MUSIC_VOLUME = 0.12
 SCENE_GAP = 0.05
-SFX_VOLUME = 0.35  # SFX voice ke neeche but sunai de
+SFX_VOLUME = 0.35
 
 # ============================================================
-# PREMIUM CAPTION SETTINGS (TikTok/Reels style)
+# PREMIUM CAPTION SETTINGS
 # ============================================================
-CAPTION_FONT_SIZE = 58          # Bada font — premium look
+CAPTION_FONT_SIZE = 58
 CAPTION_POSITION = ("center", 0.78)
 CAPTION_FADE = 0.15
-CAPTION_COLOR = "#FFFFFF"        # White text
-CAPTION_HIGHLIGHT_COLOR = "#FFD700"  # Golden yellow (premium)
+CAPTION_COLOR = "#FFFFFF"
 CAPTION_STROKE_COLOR = "#000000"
-CAPTION_STROKE_WIDTH = 4         # Mota outline — kisi bhi bg par dikhe
-CAPTION_BG_COLOR = None          # Koi box nahi — sirf outline
+CAPTION_STROKE_WIDTH = 4
 
 # CTA settings
 CTA_TEXT = "Follow for more 🔥"
@@ -35,10 +33,6 @@ CTA_FADE_DURATION = 0.5
 
 # SFX settings
 SFX_FOLDER = "assets/sfx"
-SFX_INTRO = "whoosh.mp3"        # Hook ke liye
-SFX_TRANSITION = "whoosh.mp3"    # Scene change ke liye
-SFX_REVEAL = "pop.mp3"           # Twist/reveal ke liye
-SFX_CTA = "pop.mp3"              # CTA ke liye
 
 
 class ShortsComposer:
@@ -46,25 +40,16 @@ class ShortsComposer:
         self.output_dir = output_dir
         os.makedirs(self.output_dir, exist_ok=True)
 
-    # --------------------------------------------------------
-    # Font detection — multiple paths try karo
-    # --------------------------------------------------------
     @staticmethod
     def _get_font_file():
-        """Multiple font paths try karo — GitHub Actions + local."""
         font_candidates = [
-            # DejaVu (Ubuntu default)
             "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
             "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-            # Liberation (Ubuntu)
             "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
             "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
-            # Noto (fallback)
             "/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf",
-            # Local project fonts
             "assets/fonts/DejaVuSans-Bold.ttf",
             "assets/fonts/NotoSans-Bold.ttf",
-            # Windows (local testing)
             "C:/Windows/Fonts/arialbd.ttf",
             "C:/Windows/Fonts/arial.ttf",
         ]
@@ -73,7 +58,6 @@ class ShortsComposer:
                 print(f"✓ Font found: {f}")
                 return f
 
-        # Last resort: fc-match se dhoondho
         try:
             import subprocess
             result = subprocess.run(
@@ -135,24 +119,16 @@ class ShortsComposer:
 
         return ShortsComposer._fit_vertical(clip)
 
-    # ========================================================
-    # PREMIUM CAPTION — Big, Bold, Golden highlight
-    # ========================================================
     @staticmethod
     def _make_caption_overlay(text, start_time, duration, font_file):
-        """
-        Premium caption banata hai — bada font, black outline,
-        golden accent. TikTok/Reels style.
-        """
         try:
             if not text or not text.strip() or not font_file:
                 return None
 
-            display_text = text.strip().upper()  # UPPERCASE — premium feel
+            display_text = text.strip().upper()
             if len(display_text) > 60:
                 display_text = display_text[:57] + "..."
 
-            # Word wrap manually — 2 lines max
             words = display_text.split()
             if len(words) > 6:
                 mid = len(words) // 2
@@ -183,9 +159,6 @@ class ShortsComposer:
             print(f"⚠️ Caption error: {e}")
             return None
 
-    # ========================================================
-    # CTA overlay
-    # ========================================================
     @staticmethod
     def _make_cta_overlay(total_duration, font_file):
         try:
@@ -211,16 +184,7 @@ class ShortsComposer:
             print(f"⚠️ CTA error: {e}")
             return None
 
-    # ========================================================
-    # SFX — Smart placement
-    # ========================================================
-    def _build_sfx_track(self, scene_timings, total_duration, is_hook=True):
-        """
-        SFX ko smart tarike se place karta hai:
-        - Scene 1 (hook) ke start par whoosh
-        - Har scene transition par halka whoosh
-        - Last scene (CTA) par pop
-        """
+    def _build_sfx_track(self, scene_timings, total_duration):
         sfx_clips = []
         sfx_dir = SFX_FOLDER
 
@@ -228,7 +192,6 @@ class ShortsComposer:
             print(f"⚠️ SFX folder nahi mila: {sfx_dir}")
             return None
 
-        # Available SFX files
         available = {
             f.lower(): os.path.join(sfx_dir, f)
             for f in os.listdir(sfx_dir)
@@ -242,13 +205,11 @@ class ShortsComposer:
         print(f"✓ SFX available: {list(available.keys())}")
 
         def pick(preferred):
-            """Preferred SFX dhoondho, warna koi bhi."""
             for key in available:
                 if preferred.lower().replace(".mp3", "") in key:
                     return available[key]
             return None
 
-        # Intro whoosh (scene 1 ke start par)
         whoosh = pick("whoosh")
         if whoosh and scene_timings:
             try:
@@ -260,11 +221,10 @@ class ShortsComposer:
             except Exception as e:
                 print(f"   ⚠️ Intro SFX fail: {e}")
 
-        # Har scene transition par halka whoosh
         for i, (start_t, dur_t) in enumerate(scene_timings):
             if i == 0:
-                continue  # Pehla scene already handled
-            if whoosh and i < len(scene_timings) - 1:  # Last scene skip
+                continue
+            if whoosh and i < len(scene_timings) - 1:
                 try:
                     sfx = AudioFileClip(whoosh).volumex(SFX_VOLUME * 0.7)
                     sfx = sfx.subclip(0, min(0.6, sfx.duration))
@@ -274,7 +234,6 @@ class ShortsComposer:
                 except Exception as e:
                     print(f"   ⚠️ Transition SFX fail: {e}")
 
-        # CTA par pop
         pop = pick("pop")
         if pop and scene_timings:
             cta_time = scene_timings[-1][0]
@@ -339,9 +298,6 @@ class ShortsComposer:
         )
         return output_path
 
-    # ========================================================
-    # MAIN — Multi-scene composition with captions + SFX
-    # ========================================================
     def create_multi_scene_short(self, clip_paths, voiceover_paths,
                                   output_filename="final_short.mp4",
                                   bg_music_path="bg_music.mp3",
@@ -355,7 +311,6 @@ class ShortsComposer:
         count = min(len(clip_paths), len(voiceover_paths))
         print(f"📊 Scenes: {count}")
 
-        # Font check — early fail
         font_file = self._get_font_file()
         if not font_file:
             print("❌ FONT NAHI MILA — Captions skip ho jayengi!")
@@ -405,17 +360,14 @@ class ShortsComposer:
             if not voice_clips:
                 raise RuntimeError("No voice clips ready")
 
-            # Voice track
             voice_track = CompositeAudioClip(voice_clips).set_duration(total_duration)
 
-            # BG music
             final_audio, bg_music = self._add_background_music(
                 voice_track, total_duration, bg_music_path
             )
             if bg_music is not None:
                 opened_audio.append(bg_music)
 
-            # SFX track
             sfx_clips = self._build_sfx_track(scene_timings, total_duration)
             if sfx_clips:
                 print(f"✅ {len(sfx_clips)} SFX clips added")
@@ -424,14 +376,11 @@ class ShortsComposer:
                 for s in sfx_clips:
                     opened_audio.append(s)
 
-            # Video concat
             video = concatenate_videoclips(video_scenes, method="chain")
             video = video.set_audio(final_audio).set_duration(total_duration)
 
-            # ---- OVERLAYS ----
             overlays = []
 
-            # Captions
             if scene_narrations and font_file:
                 for i, (start_t, dur_t) in enumerate(scene_timings):
                     if i >= len(scene_narrations):
@@ -444,7 +393,6 @@ class ShortsComposer:
                         overlays.append(caption)
                 print(f"✅ {len(overlays)} captions added")
 
-            # CTA
             if add_cta and font_file:
                 cta_overlay = self._make_cta_overlay(total_duration, font_file)
                 if cta_overlay is not None:
@@ -482,7 +430,6 @@ class ShortsComposer:
         print(f"✅ Video ready: {output_path}")
         return output_path
 
-    # Backward compat
     def create_short(self, video_path, voiceover_path,
                      output_filename="final_short.mp4",
                      bg_music_path="bg_music.mp3"):
