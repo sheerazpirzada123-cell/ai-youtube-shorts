@@ -19,7 +19,11 @@ from modules.youtube_uploader import (
     add_to_playlist,
 )
 from modules.tiktok_uploader import upload_to_tiktok
-from modules.asset_manager import fetch_scene_video, prepare_background_audio
+from modules.asset_manager import (
+    fetch_scene_video,
+    prepare_background_audio,
+    prepare_all_assets,
+)
 from modules.audio import _trim_silence
 
 # ---------------------------------------------------------------
@@ -81,59 +85,44 @@ KEYWORD_MAP = {
 }
 
 # ---------------------------------------------------------------
-# TOPIC POOL — sirf broad, relatable, no-specific-person topics
+# TOPIC POOL
 # ---------------------------------------------------------------
 TOPIC_POOL = [
-    # Ocean / deep sea mysteries
     "samundar ki sabse gehri jagah mein kya chhupa hai",
     "samundar mein aisi awaaz jo sunke scientists bhi darr gaye",
     "samundar mein aisi cheez jo 100 saal se padi hai",
     "deep sea mein aisi roshni jo koi samajh nahi paya",
     "samundar mein aisi jagah jahan koi nahi ja sakta",
-
-    # Space mysteries
     "space mein aisi cheez jo koi dekh nahi sakta",
     "space mein aisi awaaz jo sunke scientists hairan hain",
     "kisi planet par aisa toofan jo poori duniya ko nigal sakta hai",
     "space mein aisa black hole jiske baare mein koi nahi jaanta",
     "chaand par aisi cheez jo insaan ne chhod di",
-
-    # Geography / places
     "aisi jagah jahan pani ulta girta hai aur koi nahi samajh paya",
     "aisi jagah jo duniya ke map se gayab ho gayi",
     "aisi jagah jahan log jaate hain lekin wapas nahi aate",
     "aisi jagah jahan dhoop kabhi nahi pahunchti",
     "duniya ka sabse bada waterfall ya glacier",
-
-    # Natural phenomena
     "aisi natural disaster jo 100 saal mein ek baar aati hai",
     "aisa phenomenon jahan electricity aasman se girti hai",
     "duniya ki sabse ajeeb weather condition",
     "aisi cheez jo aasman se gir rahi hai aur koi nahi jaanta kyun",
     "duniya ka sabse khatarnak ocean current",
-
-    # Science / physics
     "koi aisa fact jo physics ke saare rules todta hai",
     "duniya ka sabse purana ya sabse bada kuch",
     "aisa experiment jo bhool kar bhi nahi karna chahiye",
     "aisi cheez jo kabhi khatam nahi hoti",
     "koi aisa number jo poori duniya ko confuse karta hai",
-
-    # History / mysteries (no specific person)
     "koi purani civilization ka aisa raaz jo aaj tak solve nahi hua",
     "koi aisa raaz jo 100 saal se chhupa hua tha",
     "duniya ka sabse bada jhoot jo sab ne maan liya",
     "aisa technology jo 100 saal aage ki lagti hai",
     "koi aisa raaz jo Google bhi nahi jaanta",
-
-    # Nature records
     "duniya ki sabse purani cheez jo aaj bhi zinda hai",
     "duniya ka sabse bada jaanwar jo aaj bhi zinda hai",
     "aisi cheez jo samundar mein 100 saal se padi hai",
     "duniya ki sabse gehri jagah jahan insaan gaya hai",
     "aisa toofan jo poori duniya ko hila de",
-
-    # Human body (broad, no specific person)
     "insani jism ka koi aisa fact jo zyadatar log nahi jante",
     "dimagh aur memory se juda koi mind blowing fact",
     "insani jism mein aisi cheez jo kabhi nahi rukti",
@@ -176,9 +165,6 @@ BASE_TAGS = [
 MIN_SCENES = 7
 
 
-# ---------------------------------------------------------------
-# Telegram notifications
-# ---------------------------------------------------------------
 def notify_telegram(message: str):
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
         return
@@ -192,9 +178,6 @@ def notify_telegram(message: str):
         print(f"⚠️ Telegram notify failed: {e}")
 
 
-# ---------------------------------------------------------------
-# Topic deduplication
-# ---------------------------------------------------------------
 def load_used_topics() -> dict:
     if not os.path.exists(USED_TOPICS_FILE):
         return {}
@@ -240,9 +223,6 @@ def mark_topic_used(topic: str):
     save_used_topics(used)
 
 
-# ---------------------------------------------------------------
-# Search query optimization
-# ---------------------------------------------------------------
 def get_optimized_search_query(text):
     text_lower = text.lower()
     for key, search_term in KEYWORD_MAP.items():
@@ -251,9 +231,6 @@ def get_optimized_search_query(text):
     return text
 
 
-# ---------------------------------------------------------------
-# Script normalization
-# ---------------------------------------------------------------
 def normalize_script(data):
     if isinstance(data, list):
         data = {"scenes": data}
@@ -291,9 +268,6 @@ def normalize_script(data):
     }
 
 
-# ---------------------------------------------------------------
-# Script generation
-# ---------------------------------------------------------------
 def generate_script(max_retries=3, base_wait=20):
     topic = pick_fresh_topic()
     mark_topic_used(topic)
@@ -502,9 +476,6 @@ def generate_script(max_retries=3, base_wait=20):
     return None
 
 
-# ---------------------------------------------------------------
-# TTS text cleanup
-# ---------------------------------------------------------------
 def clean_text_for_tts(text):
     text = re.sub(r"\bise\b", "isey", text, flags=re.IGNORECASE)
     text = re.sub(r"\bI\.S\.E\b", "isey", text, flags=re.IGNORECASE)
@@ -539,9 +510,6 @@ async def generate_voiceover(text, output_file):
     await communicate.save(output_file)
 
 
-# ---------------------------------------------------------------
-# Scene-wise voiceovers
-# ---------------------------------------------------------------
 def build_scene_voiceovers(scenes):
     paths = []
     for index, scene in enumerate(scenes, start=1):
@@ -567,9 +535,6 @@ def build_scene_voiceovers(scenes):
     return paths
 
 
-# ---------------------------------------------------------------
-# Scene-wise video clips
-# ---------------------------------------------------------------
 def build_scene_clips(scenes):
     shutil.rmtree(SCENE_CLIP_DIR, ignore_errors=True)
     os.makedirs(SCENE_CLIP_DIR, exist_ok=True)
@@ -592,9 +557,6 @@ def build_scene_clips(scenes):
     return paths
 
 
-# ---------------------------------------------------------------
-# YouTube metadata builder
-# ---------------------------------------------------------------
 def build_metadata(script, full_narration):
     title_core = re.sub(r"#\S+", "", script.get("title", "")).strip()
     if not title_core:
@@ -634,9 +596,6 @@ def build_metadata(script, full_narration):
     return title, description, tags
 
 
-# ---------------------------------------------------------------
-# Thumbnail generation
-# ---------------------------------------------------------------
 def generate_thumbnail(video_path: str, output_path: str, title_text: str):
     import subprocess
 
@@ -699,12 +658,16 @@ def generate_thumbnail(video_path: str, output_path: str, title_text: str):
     return None
 
 
-# ---------------------------------------------------------------
-# Main pipeline
-# ---------------------------------------------------------------
 def main():
     print("🚀 Starting Automated Short Pipeline...")
     start_time = time.time()
+
+    # SFX download karo
+    print("\n🔊 Preparing SFX library...")
+    try:
+        prepare_background_audio()
+    except Exception as e:
+        print(f"⚠️ SFX preparation failed (skip): {e}")
 
     print("\n📝 Generating 30-40s Short script...")
     script = generate_script()
