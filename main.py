@@ -60,7 +60,7 @@ for directory in [TEMP_VIDEO_DIR, TEMP_AUDIO_DIR, SCENE_CLIP_DIR, OUTPUT_DIR]:
     os.makedirs(directory, exist_ok=True)
 
 # ---------------------------------------------------------------
-# Keyword map — broad categories only
+# Keyword map
 # ---------------------------------------------------------------
 KEYWORD_MAP = {
     "blood falls": "antarctica red waterfall glacier",
@@ -175,7 +175,7 @@ def notify_telegram(message: str):
             timeout=15,
         )
     except Exception as e:
-        print(f"⚠️ Telegram notify failed: {e}")
+        print(f"Telegram notify failed: {e}")
 
 
 def load_used_topics() -> dict:
@@ -193,7 +193,7 @@ def save_used_topics(data: dict):
         with open(USED_TOPICS_FILE, "w") as f:
             json.dump(data, f, indent=2)
     except Exception as e:
-        print(f"⚠️ used_topics save failed: {e}")
+        print(f"used_topics save failed: {e}")
 
 
 def pick_fresh_topic() -> str:
@@ -274,7 +274,7 @@ def generate_script(max_retries=3, base_wait=20):
     angle = random.choice(ANGLE_POOL)
     hook_style = random.choice(HOOK_POOL)
     run_seed = f"{int(time.time())}-{random.randint(100000, 999999)}"
-    print(f"🎲 Run topic: {topic}")
+    print(f"Run topic: {topic}")
     print(f"   angle: {angle}")
     print(f"   hook: {hook_style}")
     print(f"   seed: {run_seed}")
@@ -290,7 +290,7 @@ def generate_script(max_retries=3, base_wait=20):
     HOOK STYLE FOR SCENE 1: {hook_style}
 
     ============================================================
-    SABSE ZAROORI RULE — NO SPECIFIC PERSON
+    SABSE ZAROORI RULE - NO SPECIFIC PERSON
     ============================================================
     Script mein KISI BHI SPECIFIC INSAAN ka zikr NAHI hona chahiye.
     Na koi real naam, na koi specific story, na koi personal event.
@@ -306,19 +306,19 @@ def generate_script(max_retries=3, base_wait=20):
     - Places (jagah, sheher, pahaad, samundar, jungle)
     - Science facts (physics, chemistry, biology)
     - Nature records (sabse bada, sabse purana, sabse gehri)
-    - Broad categories (insani jism, dimagh, aankh — bina kisi specific person ke)
+    - Broad categories (insani jism, dimagh, aankh - bina kisi specific person ke)
 
     ============================================================
-    HOOK RULES — VIEWER 3 SECOND MEIN DECIDE KARTA HAI
+    HOOK RULES - VIEWER 3 SECOND MEIN DECIDE KARTA HAI
     ============================================================
     Scene 1 (hook) sirf 5-7 words ka hai. MAXIMUM 7 words.
 
     Hook aisa hona chahiye jo turant SHOCK, FEAR, ya CURIOSITY paida kare.
 
     YE HOOKS BILKUL MAT LIKHNA:
-    - "Kya aapko pata hai..." — bahut slow, bahut common
-    - "Aaj hum baat karenge..." — boring
-    - "Duniya mein ek jagah hai..." — bahut vague
+    - "Kya aapko pata hai..." - bahut slow, bahut common
+    - "Aaj hum baat karenge..." - boring
+    - "Duniya mein ek jagah hai..." - bahut vague
     - 7 words se lamba koi bhi hook
 
     YE HOOK PATTERNS USE KARO (ek chuno):
@@ -329,18 +329,18 @@ def generate_script(max_retries=3, base_wait=20):
     5. UNBELIEVABLE FACT: "Duniya ki sabse khatarnak cheez paani hai"
 
     Hook aisa hona chahiye ke viewer soche: "WAIT WHAT? YE KAISE POSSIBLE HAI?"
-    Scene 2 turant hook ka jawab dena shuru kare — lekin poora jawab mat do,
+    Scene 2 turant hook ka jawab dena shuru kare - lekin poora jawab mat do,
     thoda suspense rakho taake viewer end tak dekhe.
 
     ============================================================
-    CTA RULES — SABSE ZAROORI (SMART CTA, DIRECT NAHI)
+    CTA RULES - SABSE ZAROORI (SMART CTA, DIRECT NAHI)
     ============================================================
     CTA matlab call-to-action. LEKIN direct "like karo, subscribe karo, share karo"
     BILKUL MAT LIKHNA. Ye boring hai, log ignore kar dete hain.
 
     LAST SCENE mein SMART CTA likhna hai. Ye 3 tarike use karo:
 
-    TARIKA 1 — LOOP CTA (SABSE BEST):
+    TARIKA 1 - LOOP CTA (SABSE BEST):
     Aisa CTA jo viewer ko video dobara dekhne par majboor kare.
     Example:
     - "Ye baat aapne miss kar di, dobara dekho"
@@ -348,14 +348,14 @@ def generate_script(max_retries=3, base_wait=20):
     - "Kya aapne ye notice kiya? Wapas dekho"
     - "Ye video dobara dekhne layak hai"
 
-    TARIKA 2 — QUESTION CTA:
+    TARIKA 2 - QUESTION CTA:
     Aisa sawal jo viewer ko comment karne par majboor kare.
     Example:
     - "Aapko kya lagta hai ye sach hai"
     - "Ye possible hai ya nahi apna jawab do"
     - "Kaun jeeta is race mein aap batao"
 
-    TARIKA 3 — CURIOSITY CTA:
+    TARIKA 3 - CURIOSITY CTA:
     Aisa promise jo viewer ko next video ke liye subscribe karne par majboor kare.
     Example:
     - "Agli baat aur bhi shocking hai"
@@ -388,11 +388,11 @@ def generate_script(max_retries=3, base_wait=20):
     1. Simple spoken Hindi/Urdu with common English words.
     2. NO formal Hindi words (prakriti, chattaan, rahasya, adbhut).
     3. Narration ke andar NO full stops (.), question marks (?), ya commas (,).
-    4. Har word ko aise likho jaise koi insaan bolta hai — natural Roman Hindi spelling.
+    4. Har word ko aise likho jaise koi insaan bolta hai - natural Roman Hindi spelling.
     5. Numbers ko words mein likho: "100" nahi, "sau" likho. "24" nahi, "chaubees".
     6. Aise words avoid karo jinhe TTS galat bole.
-    7. Har scene ke beech mein natural pause ho — jaise koi insaan bol raha ho.
-    8. Sentences chhote rakho — 7-10 words max. Lambi sentences mat likho.
+    7. Har scene ke beech mein natural pause ho - jaise koi insaan bol raha ho.
+    8. Sentences chhote rakho - 7-10 words max. Lambi sentences mat likho.
 
     ============================================================
     SCENE & DURATION RULES
@@ -416,7 +416,7 @@ def generate_script(max_retries=3, base_wait=20):
 
     Example JSON Output Format (FORMAT ONLY):
     {{
-      "title": "Yahan title likho 🔥",
+      "title": "Yahan title likho",
       "description": "Line one\\nLine two",
       "tags": ["tag one", "tag two"],
       "scenes": [
@@ -436,42 +436,56 @@ def generate_script(max_retries=3, base_wait=20):
     }}
     """
 
+    models_to_try = [
+        "gemini-2.5-flash",
+        "gemini-2.0-flash",
+        "gemini-flash-latest",
+        "gemini-2.5-flash-lite",
+    ]
+
     for attempt in range(1, max_retries + 1):
-        try:
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    temperature=1.0,
-                    top_p=0.9,
-                    top_k=40,
-                    response_mime_type="application/json",
-                ),
-            )
-            clean_json = re.sub(
-                r"```(?:json)?\s*([\s\S]*?)\s*```", r"\1", response.text
-            ).strip()
-            return normalize_script(json.loads(clean_json))
-        except APIError as e:
-            wait_time = base_wait * attempt
-            print(
-                f"[Attempt {attempt}/{max_retries}] API Error: {e}. "
-                f"Retrying in {wait_time}s..."
-            )
-            if attempt < max_retries:
-                time.sleep(wait_time)
-            else:
-                print("Max retries reached. Giving up on script generation.")
-                notify_telegram(
-                    f"❌ Script generation failed after {max_retries} attempts: {e}"
+        for model_name in models_to_try:
+            try:
+                print(f"[Attempt {attempt}/{max_retries}] Trying {model_name}...")
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        temperature=1.0,
+                        top_p=0.9,
+                        top_k=40,
+                        response_mime_type="application/json",
+                    ),
                 )
-                return None
-        except Exception as e:
-            print(
-                f"[Attempt {attempt}/{max_retries}] Error parsing script JSON: {e}"
-            )
-            if attempt < max_retries:
-                time.sleep(5)
+                clean_json = re.sub(
+                    r"```(?:json)?\s*([\s\S]*?)\s*```", r"\1", response.text
+                ).strip()
+                return normalize_script(json.loads(clean_json))
+            except APIError as e:
+                err_str = str(e)
+                if "503" in err_str or "UNAVAILABLE" in err_str or "overloaded" in err_str.lower():
+                    print(f"   {model_name} unavailable (503), trying next model...")
+                    continue
+                elif "429" in err_str or "quota" in err_str.lower():
+                    print(f"   {model_name} quota exceeded (429), trying next model...")
+                    continue
+                else:
+                    print(f"   {model_name} error: {e}")
+                    continue
+            except json.JSONDecodeError:
+                print(f"   {model_name} returned invalid JSON, trying next...")
+                continue
+            except Exception as e:
+                print(f"   {model_name} unexpected error: {e}")
+                continue
+
+        wait_time = base_wait * attempt
+        print(f"All models failed. Retrying in {wait_time}s...")
+        if attempt < max_retries:
+            time.sleep(wait_time)
+        else:
+            notify_telegram(f"Script generation failed after {max_retries} attempts")
+            return None
 
     return None
 
@@ -544,13 +558,13 @@ def build_scene_clips(scenes):
         target = os.path.join(SCENE_CLIP_DIR, f"scene_{index:02d}.mp4")
         keyword = scene.get("search_keyword") or "nature landscape"
         query = get_optimized_search_query(keyword)
-        print(f"🎥 Scene {index}: '{query}'")
+        print(f"Scene {index}: '{query}'")
 
         try:
             fetch_scene_video(query, target, min_duration=3)
             paths.append(target)
         except Exception as e:
-            print(f"⚠️ Scene {index} ka clip nahi mila: {e}")
+            print(f"Scene {index} ka clip nahi mila: {e}")
             if not paths:
                 raise
             paths.append(paths[-1])
@@ -612,7 +626,7 @@ def generate_thumbnail(video_path: str, output_path: str, title_text: str):
     )
 
     if not os.path.exists(frame_path):
-        print("⚠️ Thumbnail frame extract nahi ho paya.")
+        print("Thumbnail frame extract nahi ho paya.")
         return None
 
     safe_title = re.sub(r'[":\'\\\n\r]', "", title_text)[:40].strip()
@@ -654,49 +668,48 @@ def generate_thumbnail(video_path: str, output_path: str, title_text: str):
     if result.returncode == 0 and os.path.exists(output_path):
         return output_path
 
-    print(f"⚠️ Thumbnail generate nahi hua: {result.stderr[-300:]}")
+    print(f"Thumbnail generate nahi hua: {result.stderr[-300:]}")
     return None
 
 
 def main():
-    print("🚀 Starting Automated Short Pipeline...")
+    print("Starting Automated Short Pipeline...")
     start_time = time.time()
 
-    # SFX download karo
-    print("\n🔊 Preparing SFX library...")
+    print("\nPreparing SFX library...")
     try:
         prepare_background_audio()
     except Exception as e:
-        print(f"⚠️ SFX preparation failed (skip): {e}")
+        print(f"SFX preparation failed (skip): {e}")
 
-    print("\n📝 Generating 30-40s Short script...")
+    print("\nGenerating 30-40s Short script...")
     script = generate_script()
     if not script:
-        print("❌ Script generation failed.")
-        notify_telegram("❌ Pipeline failed: script generation returned None")
+        print("Script generation failed.")
+        notify_telegram("Pipeline failed: script generation returned None")
         return
 
     scenes = script["scenes"]
     full_narration = " ".join(s["narration"] for s in scenes)
-    print(f"📝 {len(scenes)} scenes | Hook: {scenes[0]['narration']}")
+    print(f"{len(scenes)} scenes | Hook: {scenes[0]['narration']}")
 
-    print("\n🎙️ Generating scene-wise Voiceover...")
+    print("\nGenerating scene-wise Voiceover...")
     try:
         voice_paths = build_scene_voiceovers(scenes)
     except Exception as e:
-        print(f"❌ Voiceover failed: {e}")
-        notify_telegram(f"❌ Voiceover generation failed: {e}")
+        print(f"Voiceover failed: {e}")
+        notify_telegram(f"Voiceover generation failed: {e}")
         return
 
-    print("\n🎥 Downloading a different Stock Video for every scene...")
+    print("\nDownloading a different Stock Video for every scene...")
     try:
         clip_paths = build_scene_clips(scenes)
     except Exception as e:
-        print(f"❌ Video download failed: {e}")
-        notify_telegram(f"❌ Video download failed: {e}")
+        print(f"Video download failed: {e}")
+        notify_telegram(f"Video download failed: {e}")
         return
 
-    print("\n🎬 Merging Video & Audio...")
+    print("\nMerging Video & Audio...")
     composer = ShortsComposer(output_dir=OUTPUT_DIR)
 
     bg_music_path = None
@@ -711,11 +724,11 @@ def main():
             ]
             if files:
                 bg_music_path = os.path.join(candidate, random.choice(files))
-                print(f"🎵 BG music: {bg_music_path}")
+                print(f"BG music: {bg_music_path}")
                 break
         elif os.path.isfile(candidate):
             bg_music_path = candidate
-            print(f"🎵 BG music: {bg_music_path}")
+            print(f"BG music: {bg_music_path}")
             break
 
     try:
@@ -727,16 +740,16 @@ def main():
             scene_narrations=[s["narration"] for s in scenes],
         )
     except Exception as e:
-        print(f"❌ Composition failed: {e}")
-        notify_telegram(f"❌ Video composition failed: {e}")
+        print(f"Composition failed: {e}")
+        notify_telegram(f"Video composition failed: {e}")
         return
 
     if not os.path.exists(final_video_path):
-        print("❌ Final video file create nahi hui.")
-        notify_telegram("❌ Final video file not created")
+        print("Final video file create nahi hui.")
+        notify_telegram("Final video file not created")
         return
 
-    print("\n🖼️ Generating thumbnail...")
+    print("\nGenerating thumbnail...")
     thumb_path = os.path.join(OUTPUT_DIR, "thumbnail.jpg")
     generate_thumbnail(
         final_video_path,
@@ -744,10 +757,10 @@ def main():
         script.get("title", "Amazing Fact"),
     )
 
-    print("\n⬆️ Uploading Video to YouTube...")
+    print("\nUploading Video to YouTube...")
     title, description, tags = build_metadata(script, full_narration)
-    print(f"📹 Title: {title}")
-    print(f"🏷️ Tags: {len(tags)} tags")
+    print(f"Title: {title}")
+    print(f"Tags: {len(tags)} tags")
 
     video_id = None
     try:
@@ -761,11 +774,11 @@ def main():
             client_secret=YOUTUBE_CLIENT_SECRET,
             refresh_token=YOUTUBE_REFRESH_TOKEN,
         )
-        print(f"🎉 Video uploaded! ID: {video_id}")
-        print(f"🔗 https://youtube.com/shorts/{video_id}")
+        print(f"Video uploaded! ID: {video_id}")
+        print(f"https://youtube.com/shorts/{video_id}")
 
         if os.path.exists(thumb_path):
-            print("\n🖼️ Setting thumbnail...")
+            print("\nSetting thumbnail...")
             set_thumbnail(
                 video_id,
                 thumb_path,
@@ -775,7 +788,7 @@ def main():
             )
 
         if YOUTUBE_PLAYLIST_ID:
-            print("\n📂 Adding to playlist...")
+            print("\nAdding to playlist...")
             add_to_playlist(
                 video_id,
                 YOUTUBE_PLAYLIST_ID,
@@ -786,18 +799,18 @@ def main():
 
         elapsed = time.time() - start_time
         notify_telegram(
-            f"✅ Video uploaded!\n"
-            f"📹 {title}\n"
-            f"🔗 https://youtube.com/shorts/{video_id}\n"
-            f"⏱️ {elapsed:.0f}s"
+            f"Video uploaded!\n"
+            f"{title}\n"
+            f"https://youtube.com/shorts/{video_id}\n"
+            f"{elapsed:.0f}s"
         )
 
     except Exception as e:
-        print(f"❌ YouTube Upload Failed: {e}")
-        notify_telegram(f"❌ YouTube upload failed: {e}")
+        print(f"YouTube Upload Failed: {e}")
+        notify_telegram(f"YouTube upload failed: {e}")
 
     if TIKTOK_CLIENT_KEY and TIKTOK_CLIENT_SECRET and TIKTOK_REFRESH_TOKEN:
-        print("\n⬆️ Uploading Video to TikTok (draft)...")
+        print("\nUploading Video to TikTok (draft)...")
         try:
             tiktok_publish_id = upload_to_tiktok(
                 video_path=final_video_path,
@@ -806,23 +819,22 @@ def main():
                 client_secret=TIKTOK_CLIENT_SECRET,
                 refresh_token=TIKTOK_REFRESH_TOKEN,
             )
-            print(f"🎉 TikTok upload complete! Publish ID: {tiktok_publish_id}")
-            print(f"📱 Open TikTok app to manually post the draft")
+            print(f"TikTok upload complete! Publish ID: {tiktok_publish_id}")
 
             notify_telegram(
-                f"✅ TikTok draft uploaded!\n"
-                f"📹 {title}\n"
-                f"🆔 Publish ID: {tiktok_publish_id}\n"
-                f"📱 Open TikTok app to post manually"
+                f"TikTok draft uploaded!\n"
+                f"{title}\n"
+                f"Publish ID: {tiktok_publish_id}\n"
+                f"Open TikTok app to post manually"
             )
         except Exception as e:
-            print(f"❌ TikTok Upload Failed: {e}")
-            notify_telegram(f"❌ TikTok upload failed: {e}")
+            print(f"TikTok Upload Failed: {e}")
+            notify_telegram(f"TikTok upload failed: {e}")
     else:
-        print("\n⚠️ TikTok credentials missing — skipping TikTok upload.")
+        print("\nTikTok credentials missing - skipping TikTok upload.")
 
     elapsed = time.time() - start_time
-    print(f"\n✨ Pipeline complete in {elapsed:.0f}s")
+    print(f"\nPipeline complete in {elapsed:.0f}s")
 
 
 if __name__ == "__main__":
