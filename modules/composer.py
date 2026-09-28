@@ -9,15 +9,20 @@ import moviepy.audio.fx.all as afx
 TARGET_W = 1080
 TARGET_H = 1920
 
-BG_MUSIC_VOLUME = 0.20
+BG_MUSIC_VOLUME = 0.15  # 0.20 se 0.15 — voice clear rahegi
 SCENE_GAP = 0.05
 
 # CTA text overlay settings — subtle rakho
-CTA_TEXT = "Like ❤️"
-CTA_FONT_SIZE = 60
-CTA_POSITION = ("center", 0.88)  # screen ke neeche 88% par
-CTA_START_RATIO = 0.55           # video ke 55% ke baad dikhega
+CTA_TEXT = "Follow for more 🔥"
+CTA_FONT_SIZE = 55
+CTA_POSITION = ("center", 0.90)  # screen ke neeche 90% par
+CTA_START_RATIO = 0.60           # video ke 60% ke baad dikhega
 CTA_FADE_DURATION = 0.5
+
+# Caption settings
+CAPTION_FONT_SIZE = 42
+CAPTION_POSITION = ("center", 0.80)  # screen ke neeche 80% par
+CAPTION_FADE = 0.2
 
 
 class ShortsComposer:
@@ -82,20 +87,24 @@ class ShortsComposer:
         return ShortsComposer._fit_vertical(clip)
 
     @staticmethod
+    def _get_font_file():
+        """Font file dhoondho."""
+        font_candidates = [
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+        ]
+        return next(
+            (f for f in font_candidates if os.path.exists(f)), None
+        )
+
+    @staticmethod
     def _make_cta_overlay(total_duration):
         """
-        Subtle 'Like' text overlay banata hai jo video ke 55% ke baad
-        fade-in hoti hai aur end tak dikhti hai.
-        Agar font na mile to None return karega (crash nahi karega).
+        Professional 'Follow for more' text overlay banata hai jo
+        video ke 60% ke baad fade-in hoti hai aur end tak dikhti hai.
         """
         try:
-            font_candidates = [
-                "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-                "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
-            ]
-            font_file = next(
-                (f for f in font_candidates if os.path.exists(f)), None
-            )
+            font_file = ShortsComposer._get_font_file()
             if not font_file:
                 print("⚠️ CTA overlay: font nahi mila, skip kar rahe hain.")
                 return None
@@ -106,7 +115,7 @@ class ShortsComposer:
                 color="white",
                 font=font_file,
                 stroke_color="black",
-                stroke_width=2,
+                stroke_width=3,
                 method="caption",
             )
             cta_clip = cta_clip.set_position(CTA_POSITION).set_duration(
@@ -117,15 +126,49 @@ class ShortsComposer:
             start_time = total_duration * CTA_START_RATIO
             cta_clip = cta_clip.set_start(start_time)
 
-            # Fade-in / fade-out
+            # Fade-in
             cta_clip = cta_clip.crossfadein(CTA_FADE_DURATION)
 
             # Opacity thoda kam karo taake subtle lage
-            cta_clip = cta_clip.set_opacity(0.85)
+            cta_clip = cta_clip.set_opacity(0.90)
 
             return cta_clip
         except Exception as e:
             print(f"⚠️ CTA overlay banane mein error: {e}")
+            return None
+
+    @staticmethod
+    def _make_caption_overlay(text, start_time, duration, font_file):
+        """
+        Scene ke narration ko caption ke roop mein dikhata hai.
+        """
+        try:
+            if not text or not text.strip():
+                return None
+
+            # Text ko chhota karo agar bahut lamba hai
+            display_text = text.strip()
+            if len(display_text) > 80:
+                display_text = display_text[:77] + "..."
+
+            caption_clip = TextClip(
+                display_text,
+                fontsize=CAPTION_FONT_SIZE,
+                color="white",
+                font=font_file,
+                stroke_color="black",
+                stroke_width=2,
+                method="caption",
+                size=(TARGET_W - 120, None),
+            )
+            caption_clip = caption_clip.set_position(CAPTION_POSITION)
+            caption_clip = caption_clip.set_duration(duration)
+            caption_clip = caption_clip.set_start(start_time)
+            caption_clip = caption_clip.crossfadein(CAPTION_FADE).crossfadeout(CAPTION_FADE)
+            caption_clip = caption_clip.set_opacity(0.95)
+            return caption_clip
+        except Exception as e:
+            print(f"⚠️ Caption overlay error: {e}")
             return None
 
     def _add_background_music(self, voice_audio, total_duration, bg_music_path):
@@ -181,7 +224,8 @@ class ShortsComposer:
     def create_multi_scene_short(self, clip_paths, voiceover_paths,
                                   output_filename="final_short.mp4",
                                   bg_music_path="bg_music.mp3",
-                                  add_cta=True):
+                                  add_cta=True,
+                                  scene_narrations=None):
         print("🎬 Multi-scene composition...")
 
         if not clip_paths or not voiceover_paths:
@@ -210,6 +254,7 @@ class ShortsComposer:
         opened_audio = []
         opened_video = []
         timeline = 0.0
+        scene_timings = []  # (start_time, duration) har scene ke liye
 
         try:
             for index in range(count):
@@ -232,6 +277,7 @@ class ShortsComposer:
                     )
 
                 scene_duration = voice.duration + SCENE_GAP
+                scene_timings.append((timeline, voice.duration))
 
                 try:
                     scene_video = self._prepare_scene_video(
@@ -274,18 +320,40 @@ class ShortsComposer:
             video = concatenate_videoclips(video_scenes, method="chain")
             video = video.set_audio(final_audio).set_duration(total_duration)
 
-            # CTA overlay add karo (optional, fail ho to skip)
+            # ---- Overlays (CTA + Captions) ----
+            overlays = []
+            font_file = self._get_font_file()
+
+            # CTA overlay
             if add_cta:
                 cta_overlay = self._make_cta_overlay(total_duration)
                 if cta_overlay is not None:
-                    try:
-                        video = CompositeVideoClip(
-                            [video, cta_overlay],
-                            size=(TARGET_W, TARGET_H)
-                        ).set_duration(total_duration)
-                        print("✅ CTA overlay added (subtle 'Like' text)")
-                    except Exception as e:
-                        print(f"⚠️ CTA overlay compose fail: {e}")
+                    overlays.append(cta_overlay)
+
+            # Captions overlay
+            if scene_narrations and font_file:
+                for i, (start_t, dur_t) in enumerate(scene_timings):
+                    if i >= len(scene_narrations):
+                        break
+                    narration_text = scene_narrations[i]
+                    if not narration_text:
+                        continue
+                    caption = self._make_caption_overlay(
+                        narration_text, start_t, dur_t, font_file
+                    )
+                    if caption is not None:
+                        overlays.append(caption)
+                print(f"✅ {len([o for o in overlays])} overlays added")
+
+            if overlays:
+                try:
+                    video = CompositeVideoClip(
+                        [video] + overlays,
+                        size=(TARGET_W, TARGET_H)
+                    ).set_duration(total_duration)
+                    print("✅ CTA + Captions overlays added")
+                except Exception as e:
+                    print(f"⚠️ Overlay compose fail: {e}")
 
             output_path = self._export(video, output_filename)
 
