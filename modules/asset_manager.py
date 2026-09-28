@@ -6,16 +6,16 @@ import shutil
 
 
 # ============================================================
-# FREE SFX URLs (Pixabay CDN — no API key needed)
+# RELIABLE SFX URLs (Mixkit - no API key needed)
 # ============================================================
 SFX_SOURCES = {
-    "whoosh.mp3": "https://cdn.pixabay.com/download/audio/2022/03/10/audio_c35f9923ed.mp3?filename=whoosh-6316.mp3",
-    "whoosh2.mp3": "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=fast-whoosh-113458.mp3",
-    "pop.mp3": "https://cdn.pixabay.com/download/audio/2021/08/04/audio_bb630cc098.mp3?filename=pop-39222.mp3",
-    "pop2.mp3": "https://cdn.pixabay.com/download/audio/2022/03/15/audio_2c8a2b9c3c.mp3?filename=pop-94319.mp3",
-    "impact.mp3": "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=cinematic-impact-7051.mp3",
-    "swoosh.mp3": "https://cdn.pixabay.com/download/audio/2022/01/18/audio_5c4e8f7a2b.mp3?filename=swoosh-113459.mp3",
-    "ding.mp3": "https://cdn.pixabay.com/download/audio/2021/08/04/audio_4f3c2e1a0d.mp3?filename=ding-39221.mp3",
+    "whoosh.mp3": "https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3",
+    "whoosh2.mp3": "https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3",
+    "pop.mp3": "https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3",
+    "pop2.mp3": "https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3",
+    "impact.mp3": "https://assets.mixkit.co/active_storage/sfx/2185/2185-preview.mp3",
+    "swoosh.mp3": "https://assets.mixkit.co/active_storage/sfx/2569/2569-preview.mp3",
+    "ding.mp3": "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3",
 }
 
 PEXELS_API_KEY = os.environ.get("PEXELS_API_KEY")
@@ -164,8 +164,8 @@ def download_file(url, target_path, extra_headers=None, asset_type="video"):
                 if "video" not in content_type and "octet-stream" not in content_type:
                     raise ValueError(f"Unexpected video content type: {content_type}")
             elif asset_type == "audio":
-                if "audio" not in content_type and "octet-stream" not in content_type:
-                    raise ValueError(f"Unexpected audio content type: {content_type}")
+                if "audio" not in content_type and "octet-stream" not in content_type and "mpeg" not in content_type:
+                    print(f"Warning: Unexpected audio content type: {content_type}")
 
             with open(temp_path, "wb") as file:
                 for chunk in response.iter_content(chunk_size=1024 * 1024):
@@ -475,28 +475,34 @@ def fetch_scene_clips(scenes, scene_durations, output_dir="assets/scene_clips"):
 
 
 def prepare_background_audio(sfx_folder="assets/sfx"):
-    """
-    Pixabay se multiple free SFX download karta hai.
-    Composer automatically inhe scenes mein place karega.
-    """
     os.makedirs(sfx_folder, exist_ok=True)
+
+    # Purane failed (0-byte) files delete karo
+    for f in os.listdir(sfx_folder):
+        full_path = os.path.join(sfx_folder, f)
+        try:
+            if os.path.isfile(full_path) and os.path.getsize(full_path) < 1000:
+                os.remove(full_path)
+                print(f"Deleted failed SFX: {f}")
+        except Exception:
+            pass
 
     downloaded = 0
     for filename, url in SFX_SOURCES.items():
         target = os.path.join(sfx_folder, filename)
         if os.path.exists(target) and os.path.getsize(target) > 1000:
-            print(f"✓ SFX already exists: {filename}")
+            print(f"SFX already exists: {filename}")
             downloaded += 1
             continue
         try:
-            print(f"📥 Downloading SFX: {filename}")
+            print(f"Downloading SFX: {filename}")
             download_file(url, target, asset_type="audio")
             downloaded += 1
-            print(f"   ✓ {filename} downloaded")
+            print(f"  {filename} downloaded")
         except Exception as e:
-            print(f"   ⚠️ SFX '{filename}' skipped: {e}")
+            print(f"  SFX '{filename}' skipped: {e}")
 
-    print(f"✅ Total SFX ready: {downloaded}/{len(SFX_SOURCES)}")
+    print(f"Total SFX ready: {downloaded}/{len(SFX_SOURCES)}")
 
 
 def prepare_all_assets():
