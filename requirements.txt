@@ -1,4 +1,4 @@
-google-genai
+google-genai>=1.0.0
 google-generativeai
 requests
 moviepy==1.0.3
