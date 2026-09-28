@@ -15,32 +15,36 @@ PIXABAY_API_KEY = os.environ.get("PIXABAY_API_KEY")
 
 
 PEXELS_SEARCH_TERMS = [
-    "space",
-    "galaxy stars",
-    "abstract background",
-    "nature forest",
-    "ocean waves",
-    "underwater",
-    "clouds timelapse",
-    "mountains landscape",
-    "city street",
+    "space galaxy stars",
+    "abstract background dark",
+    "nature forest fog",
+    "ocean waves storm",
+    "underwater deep sea",
+    "clouds timelapse dramatic",
+    "mountains landscape aerial",
+    "city street night",
     "night city lights",
     "crowd people walking",
-    "technology computer",
-    "human brain",
+    "technology computer code",
+    "human brain animation",
     "human eye closeup",
     "hands closeup",
-    "wildlife animals",
-    "fire flames",
-    "rain window",
-    "desert sand",
-    "sunset sky",
+    "wildlife animals closeup",
+    "fire flames dark",
+    "rain window moody",
+    "desert sand dunes",
+    "sunset sky dramatic",
     "ancient ruins temple",
     "gold coins money",
-    "clock time",
-    "books library",
+    "clock time lapse",
+    "books library dark",
     "science laboratory",
-    "rocket space launch"
+    "rocket space launch",
+    "storm lightning thunder",
+    "ice glacier arctic",
+    "volcano eruption lava",
+    "microscope science lab",
+    "astronaut space suit",
 ]
 
 
@@ -436,12 +440,6 @@ def fetch_pexels_clip(
     )
 
 
-    # Agar keyword bahut specific hai (jese "poison dart frog skin"),
-    # to uske chhote/simpler versions bhi try karo (last two words,
-    # first two words) generic fallback terms per jaane se pehle -
-    # isse zyada chance hai ke koi real matching clip mil jaye
-    # instead of ek totally unrelated random topic per gir jaana.
-
     keyword_words = keyword.split()
 
     simplified_queries = []
@@ -560,10 +558,6 @@ def fetch_pexels_clip(
 
                 continue
 
-
-            # Medium resolution ko preference.
-            # Bohat huge files GitHub Actions mein
-            # incomplete download ka risk barhate hain.
 
             files.sort(
 
@@ -697,10 +691,6 @@ def fetch_pixabay_clip(
             "PIXABAY_API_KEY set nahi hai."
         )
 
-
-    # Pexels ki tarah, agar poora keyword bahut specific hai aur
-    # koi hits nahi mile, to uske simpler (shorter) versions bhi
-    # try karo generic fallback terms per jaane se pehle.
 
     keyword_words = keyword.split()
 
@@ -963,21 +953,27 @@ def fetch_fallback_ai_clip(
         "force_original_aspect_ratio=increase,"
         "crop=1080:1920,"
         "zoompan="
-        "z='min(zoom+0.0015,1.3)':"
+        "z='min(zoom+0.0008,1.15)':"
         "d=150:"
         "s=1080x1920:"
-        "fps=25",
+        "fps=30",
 
         "-t",
         str(
             max(
                 duration,
-                4
+                5
             )
         ),
 
         "-c:v",
         "libx264",
+
+        "-preset",
+        "medium",
+
+        "-crf",
+        "20",
 
         "-pix_fmt",
         "yuv420p",
