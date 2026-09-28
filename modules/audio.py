@@ -10,23 +10,19 @@ from moviepy.editor import (
     concatenate_audioclips,
 )
 
-INTER_SCENE_PAUSE = 0.12  # 0.08 se 0.12 — natural pause ke liye
+INTER_SCENE_PAUSE = 0.12
 
-VOICE = "hi-IN-MadhurNeural"  # Ye best hai Hindi ke liye
-VOICE_RATE = "+4%"        # +8% se +4% — zyada natural lagega
-VOICE_PITCH = "-2Hz"      # -1Hz se -2Hz — thoda deep, professional
+VOICE = "hi-IN-MadhurNeural"
+VOICE_RATE = "+4%"
+VOICE_PITCH = "-2Hz"
 
-# -45dB — sirf bilkul khamosh portions trim honge, words nahi katenge
 SILENCE_TRIM_DB = "-45dB"
-SILENCE_MIN_START = 0.3   # 0.2 se 0.3 — words ko safe rakhega
+SILENCE_MIN_START = 0.3
 
 
 async def generate_tts_async(text, output_path):
     communicate = edge_tts.Communicate(
-        text=text,
-        voice=VOICE,
-        rate=VOICE_RATE,
-        pitch=VOICE_PITCH,
+        text=text, voice=VOICE, rate=VOICE_RATE, pitch=VOICE_PITCH
     )
     await communicate.save(output_path)
 
@@ -109,7 +105,6 @@ def concatenate_voiceovers(audio_paths, output_path="assets/voiceover_full.mp3")
 
 def add_background_music_and_sfx(voiceover_path, output_path="assets/final_audio.mp3",
                                   bg_music_path="assets/audio/bg_music.mp3", bg_volume=0.15):
-    """bg_volume 0.10 se 0.15 kiya — voice clear rahegi."""
     try:
         if not os.path.exists(voiceover_path):
             raise FileNotFoundError(f"Voiceover not found: {voiceover_path}")
