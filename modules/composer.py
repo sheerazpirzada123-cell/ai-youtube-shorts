@@ -2,33 +2,94 @@ import os
 import random
 from moviepy.editor import (
     VideoFileClip, AudioFileClip, CompositeAudioClip,
-    concatenate_audioclips, concatenate_videoclips, vfx, TextClip, CompositeVideoClip
+    concatenate_audioclips, concatenate_videoclips, vfx,
+    TextClip, CompositeVideoClip
 )
 import moviepy.audio.fx.all as afx
 
 TARGET_W = 1080
 TARGET_H = 1920
 
-BG_MUSIC_VOLUME = 0.15  # 0.20 se 0.15 — voice clear rahegi
+BG_MUSIC_VOLUME = 0.12
 SCENE_GAP = 0.05
+SFX_VOLUME = 0.35  # SFX voice ke neeche but sunai de
 
-# CTA text overlay settings — subtle rakho
+# ============================================================
+# PREMIUM CAPTION SETTINGS (TikTok/Reels style)
+# ============================================================
+CAPTION_FONT_SIZE = 58          # Bada font — premium look
+CAPTION_POSITION = ("center", 0.78)
+CAPTION_FADE = 0.15
+CAPTION_COLOR = "#FFFFFF"        # White text
+CAPTION_HIGHLIGHT_COLOR = "#FFD700"  # Golden yellow (premium)
+CAPTION_STROKE_COLOR = "#000000"
+CAPTION_STROKE_WIDTH = 4         # Mota outline — kisi bhi bg par dikhe
+CAPTION_BG_COLOR = None          # Koi box nahi — sirf outline
+
+# CTA settings
 CTA_TEXT = "Follow for more 🔥"
-CTA_FONT_SIZE = 55
-CTA_POSITION = ("center", 0.90)  # screen ke neeche 90% par
-CTA_START_RATIO = 0.60           # video ke 60% ke baad dikhega
+CTA_FONT_SIZE = 52
+CTA_POSITION = ("center", 0.91)
+CTA_START_RATIO = 0.60
 CTA_FADE_DURATION = 0.5
 
-# Caption settings
-CAPTION_FONT_SIZE = 42
-CAPTION_POSITION = ("center", 0.80)  # screen ke neeche 80% par
-CAPTION_FADE = 0.2
+# SFX settings
+SFX_FOLDER = "assets/sfx"
+SFX_INTRO = "whoosh.mp3"        # Hook ke liye
+SFX_TRANSITION = "whoosh.mp3"    # Scene change ke liye
+SFX_REVEAL = "pop.mp3"           # Twist/reveal ke liye
+SFX_CTA = "pop.mp3"              # CTA ke liye
 
 
 class ShortsComposer:
     def __init__(self, output_dir="output"):
         self.output_dir = output_dir
         os.makedirs(self.output_dir, exist_ok=True)
+
+    # --------------------------------------------------------
+    # Font detection — multiple paths try karo
+    # --------------------------------------------------------
+    @staticmethod
+    def _get_font_file():
+        """Multiple font paths try karo — GitHub Actions + local."""
+        font_candidates = [
+            # DejaVu (Ubuntu default)
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            # Liberation (Ubuntu)
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+            # Noto (fallback)
+            "/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf",
+            # Local project fonts
+            "assets/fonts/DejaVuSans-Bold.ttf",
+            "assets/fonts/NotoSans-Bold.ttf",
+            # Windows (local testing)
+            "C:/Windows/Fonts/arialbd.ttf",
+            "C:/Windows/Fonts/arial.ttf",
+        ]
+        for f in font_candidates:
+            if os.path.exists(f):
+                print(f"✓ Font found: {f}")
+                return f
+
+        # Last resort: fc-match se dhoondho
+        try:
+            import subprocess
+            result = subprocess.run(
+                ["fc-match", "-f", "%{file}", "sans:bold"],
+                capture_output=True, text=True, timeout=5
+            )
+            if result.returncode == 0 and result.stdout.strip():
+                path = result.stdout.strip()
+                if os.path.exists(path):
+                    print(f"✓ Font via fc-match: {path}")
+                    return path
+        except Exception as e:
+            print(f"⚠️ fc-match failed: {e}")
+
+        print("❌ Koi bhi font nahi mila!")
+        return None
 
     @staticmethod
     def _fit_vertical(clip):
@@ -47,30 +108,21 @@ class ShortsComposer:
         try:
             clip = VideoFileClip(path, audio=False)
         except Exception as e:
-            raise RuntimeError(
-                f"VideoFileClip fail hua '{path}' ke liye: {e}"
-            )
+            raise RuntimeError(f"VideoFileClip fail '{path}': {e}")
 
         if clip.duration is None or clip.duration <= 0:
             clip.close()
-            raise RuntimeError(
-                f"Clip '{path}' ki duration invalid hai: {clip.duration}"
-            )
+            raise RuntimeError(f"Clip '{path}' duration invalid: {clip.duration}")
 
         if clip.duration < duration + 0.2:
             try:
                 clip = clip.fx(vfx.loop, duration=duration + 0.5)
             except Exception as e:
                 clip.close()
-                raise RuntimeError(
-                    f"Loop fail hua '{path}' ke liye: {e}"
-                )
+                raise RuntimeError(f"Loop fail '{path}': {e}")
         else:
             spare = max(0.0, clip.duration - duration - 0.2)
-            if spare > 0.1:
-                start = random.uniform(0, spare)
-            else:
-                start = 0.0
+            start = random.uniform(0, spare) if spare > 0.1 else 0.0
             end = start + duration
             if end > clip.duration:
                 end = clip.duration
@@ -79,97 +131,166 @@ class ShortsComposer:
                 clip = clip.subclip(start, end)
             except Exception as e:
                 clip.close()
-                raise RuntimeError(
-                    f"Subclip fail hua '{path}' ke liye "
-                    f"(start={start}, end={end}, dur={clip.duration}): {e}"
-                )
+                raise RuntimeError(f"Subclip fail '{path}': {e}")
 
         return ShortsComposer._fit_vertical(clip)
 
-    @staticmethod
-    def _get_font_file():
-        """Font file dhoondho."""
-        font_candidates = [
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-            "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
-        ]
-        return next(
-            (f for f in font_candidates if os.path.exists(f)), None
-        )
-
-    @staticmethod
-    def _make_cta_overlay(total_duration):
-        """
-        Professional 'Follow for more' text overlay banata hai jo
-        video ke 60% ke baad fade-in hoti hai aur end tak dikhti hai.
-        """
-        try:
-            font_file = ShortsComposer._get_font_file()
-            if not font_file:
-                print("⚠️ CTA overlay: font nahi mila, skip kar rahe hain.")
-                return None
-
-            cta_clip = TextClip(
-                CTA_TEXT,
-                fontsize=CTA_FONT_SIZE,
-                color="white",
-                font=font_file,
-                stroke_color="black",
-                stroke_width=3,
-                method="caption",
-            )
-            cta_clip = cta_clip.set_position(CTA_POSITION).set_duration(
-                total_duration
-            )
-
-            # Fade-in start time
-            start_time = total_duration * CTA_START_RATIO
-            cta_clip = cta_clip.set_start(start_time)
-
-            # Fade-in
-            cta_clip = cta_clip.crossfadein(CTA_FADE_DURATION)
-
-            # Opacity thoda kam karo taake subtle lage
-            cta_clip = cta_clip.set_opacity(0.90)
-
-            return cta_clip
-        except Exception as e:
-            print(f"⚠️ CTA overlay banane mein error: {e}")
-            return None
-
+    # ========================================================
+    # PREMIUM CAPTION — Big, Bold, Golden highlight
+    # ========================================================
     @staticmethod
     def _make_caption_overlay(text, start_time, duration, font_file):
         """
-        Scene ke narration ko caption ke roop mein dikhata hai.
+        Premium caption banata hai — bada font, black outline,
+        golden accent. TikTok/Reels style.
         """
         try:
-            if not text or not text.strip():
+            if not text or not text.strip() or not font_file:
                 return None
 
-            # Text ko chhota karo agar bahut lamba hai
-            display_text = text.strip()
-            if len(display_text) > 80:
-                display_text = display_text[:77] + "..."
+            display_text = text.strip().upper()  # UPPERCASE — premium feel
+            if len(display_text) > 60:
+                display_text = display_text[:57] + "..."
+
+            # Word wrap manually — 2 lines max
+            words = display_text.split()
+            if len(words) > 6:
+                mid = len(words) // 2
+                line1 = " ".join(words[:mid])
+                line2 = " ".join(words[mid:])
+                display_text = f"{line1}\n{line2}"
 
             caption_clip = TextClip(
                 display_text,
                 fontsize=CAPTION_FONT_SIZE,
-                color="white",
+                color=CAPTION_COLOR,
                 font=font_file,
-                stroke_color="black",
-                stroke_width=2,
+                stroke_color=CAPTION_STROKE_COLOR,
+                stroke_width=CAPTION_STROKE_WIDTH,
                 method="caption",
-                size=(TARGET_W - 120, None),
+                size=(TARGET_W - 100, None),
+                align="center",
             )
             caption_clip = caption_clip.set_position(CAPTION_POSITION)
             caption_clip = caption_clip.set_duration(duration)
             caption_clip = caption_clip.set_start(start_time)
             caption_clip = caption_clip.crossfadein(CAPTION_FADE).crossfadeout(CAPTION_FADE)
-            caption_clip = caption_clip.set_opacity(0.95)
+            caption_clip = caption_clip.set_opacity(1.0)
+
+            print(f"   ✓ Caption: '{display_text[:40]}...' @ {start_time:.1f}s")
             return caption_clip
         except Exception as e:
-            print(f"⚠️ Caption overlay error: {e}")
+            print(f"⚠️ Caption error: {e}")
             return None
+
+    # ========================================================
+    # CTA overlay
+    # ========================================================
+    @staticmethod
+    def _make_cta_overlay(total_duration, font_file):
+        try:
+            if not font_file:
+                return None
+
+            cta_clip = TextClip(
+                CTA_TEXT,
+                fontsize=CTA_FONT_SIZE,
+                color="#FFFFFF",
+                font=font_file,
+                stroke_color="#000000",
+                stroke_width=3,
+                method="caption",
+            )
+            cta_clip = cta_clip.set_position(CTA_POSITION).set_duration(total_duration)
+            start_time = total_duration * CTA_START_RATIO
+            cta_clip = cta_clip.set_start(start_time)
+            cta_clip = cta_clip.crossfadein(CTA_FADE_DURATION)
+            cta_clip = cta_clip.set_opacity(0.95)
+            return cta_clip
+        except Exception as e:
+            print(f"⚠️ CTA error: {e}")
+            return None
+
+    # ========================================================
+    # SFX — Smart placement
+    # ========================================================
+    def _build_sfx_track(self, scene_timings, total_duration, is_hook=True):
+        """
+        SFX ko smart tarike se place karta hai:
+        - Scene 1 (hook) ke start par whoosh
+        - Har scene transition par halka whoosh
+        - Last scene (CTA) par pop
+        """
+        sfx_clips = []
+        sfx_dir = SFX_FOLDER
+
+        if not os.path.isdir(sfx_dir):
+            print(f"⚠️ SFX folder nahi mila: {sfx_dir}")
+            return None
+
+        # Available SFX files
+        available = {
+            f.lower(): os.path.join(sfx_dir, f)
+            for f in os.listdir(sfx_dir)
+            if f.lower().endswith((".mp3", ".wav", ".m4a"))
+        }
+
+        if not available:
+            print("⚠️ SFX folder khaali hai")
+            return None
+
+        print(f"✓ SFX available: {list(available.keys())}")
+
+        def pick(preferred):
+            """Preferred SFX dhoondho, warna koi bhi."""
+            for key in available:
+                if preferred.lower().replace(".mp3", "") in key:
+                    return available[key]
+            return None
+
+        # Intro whoosh (scene 1 ke start par)
+        whoosh = pick("whoosh")
+        if whoosh and scene_timings:
+            try:
+                intro = AudioFileClip(whoosh).volumex(SFX_VOLUME)
+                intro = intro.subclip(0, min(1.0, intro.duration))
+                intro = intro.set_start(0.1)
+                sfx_clips.append(intro)
+                print(f"   ✓ SFX intro whoosh @ 0.1s")
+            except Exception as e:
+                print(f"   ⚠️ Intro SFX fail: {e}")
+
+        # Har scene transition par halka whoosh
+        for i, (start_t, dur_t) in enumerate(scene_timings):
+            if i == 0:
+                continue  # Pehla scene already handled
+            if whoosh and i < len(scene_timings) - 1:  # Last scene skip
+                try:
+                    sfx = AudioFileClip(whoosh).volumex(SFX_VOLUME * 0.7)
+                    sfx = sfx.subclip(0, min(0.6, sfx.duration))
+                    sfx = sfx.set_start(start_t)
+                    sfx_clips.append(sfx)
+                    print(f"   ✓ SFX transition @ {start_t:.1f}s")
+                except Exception as e:
+                    print(f"   ⚠️ Transition SFX fail: {e}")
+
+        # CTA par pop
+        pop = pick("pop")
+        if pop and scene_timings:
+            cta_time = scene_timings[-1][0]
+            try:
+                sfx = AudioFileClip(pop).volumex(SFX_VOLUME)
+                sfx = sfx.subclip(0, min(0.5, sfx.duration))
+                sfx = sfx.set_start(cta_time)
+                sfx_clips.append(sfx)
+                print(f"   ✓ SFX CTA pop @ {cta_time:.1f}s")
+            except Exception as e:
+                print(f"   ⚠️ CTA SFX fail: {e}")
+
+        if not sfx_clips:
+            return None
+
+        return sfx_clips
 
     def _add_background_music(self, voice_audio, total_duration, bg_music_path):
         audio_tracks = [voice_audio]
@@ -180,16 +301,13 @@ class ShortsComposer:
                 bg_music_raw = AudioFileClip(bg_music_path)
 
                 if bg_music_raw.duration is None or bg_music_raw.duration <= 0:
-                    print("⚠️ BG music ki duration invalid hai, skip.")
                     bg_music_raw.close()
                     bg_music = None
                 else:
                     bg_music = bg_music_raw
                     if bg_music.duration < total_duration:
                         loop_count = int(total_duration // bg_music.duration) + 2
-                        bg_music = concatenate_audioclips(
-                            [bg_music] * loop_count
-                        )
+                        bg_music = concatenate_audioclips([bg_music] * loop_count)
                     if bg_music.duration > total_duration:
                         bg_music = bg_music.subclip(0, total_duration)
                     bg_music = bg_music.volumex(BG_MUSIC_VOLUME)
@@ -200,9 +318,9 @@ class ShortsComposer:
                     )
                     audio_tracks.append(bg_music)
             else:
-                print("⚠️ bg_music nahi mila. Bina BG ke banegi.")
+                print("⚠️ bg_music nahi mila.")
         except Exception as e:
-            print(f"⚠️ BG music process karne mein error: {e}")
+            print(f"⚠️ BG music error: {e}")
             bg_music = None
 
         return CompositeAudioClip(audio_tracks), bg_music
@@ -221,40 +339,36 @@ class ShortsComposer:
         )
         return output_path
 
+    # ========================================================
+    # MAIN — Multi-scene composition with captions + SFX
+    # ========================================================
     def create_multi_scene_short(self, clip_paths, voiceover_paths,
                                   output_filename="final_short.mp4",
                                   bg_music_path="bg_music.mp3",
                                   add_cta=True,
                                   scene_narrations=None):
-        print("🎬 Multi-scene composition...")
+        print("🎬 Multi-scene composition START...")
 
         if not clip_paths or not voiceover_paths:
             raise ValueError("clip_paths ya voiceover_paths empty hain.")
 
         count = min(len(clip_paths), len(voiceover_paths))
-        if len(clip_paths) != len(voiceover_paths):
-            print(
-                f"⚠️ clip_paths={len(clip_paths)}, "
-                f"voiceover_paths={len(voiceover_paths)} — "
-                f"sirf pehle {count} use karenge."
-            )
+        print(f"📊 Scenes: {count}")
 
-        for i in range(count):
-            if not os.path.exists(clip_paths[i]):
-                raise FileNotFoundError(
-                    f"Scene {i+1} ka video clip nahi mila: {clip_paths[i]}"
-                )
-            if not os.path.exists(voiceover_paths[i]):
-                raise FileNotFoundError(
-                    f"Scene {i+1} ki voiceover nahi mili: {voiceover_paths[i]}"
-                )
+        # Font check — early fail
+        font_file = self._get_font_file()
+        if not font_file:
+            print("❌ FONT NAHI MILA — Captions skip ho jayengi!")
+            print("   run.yml mein 'fonts-dejavu fonts-liberation' install karo.")
+        else:
+            print(f"✅ Font ready: {font_file}")
 
         voice_clips = []
         video_scenes = []
         opened_audio = []
         opened_video = []
         timeline = 0.0
-        scene_timings = []  # (start_time, duration) har scene ke liye
+        scene_timings = []
 
         try:
             for index in range(count):
@@ -264,86 +378,78 @@ class ShortsComposer:
                 try:
                     voice = AudioFileClip(voice_path)
                 except Exception as e:
-                    raise RuntimeError(
-                        f"Scene {index+1} ki voice load nahi hui: {e}"
-                    )
+                    raise RuntimeError(f"Scene {index+1} voice load fail: {e}")
 
                 opened_audio.append(voice)
 
                 if voice.duration is None or voice.duration <= 0.1:
-                    raise RuntimeError(
-                        f"Scene {index+1} ki voice duration invalid: "
-                        f"{voice.duration}"
-                    )
+                    raise RuntimeError(f"Scene {index+1} voice invalid")
 
                 scene_duration = voice.duration + SCENE_GAP
                 scene_timings.append((timeline, voice.duration))
 
                 try:
-                    scene_video = self._prepare_scene_video(
-                        clip_path, scene_duration
-                    )
+                    scene_video = self._prepare_scene_video(clip_path, scene_duration)
                 except Exception as e:
-                    raise RuntimeError(
-                        f"Scene {index+1} ka video prepare nahi hua: {e}"
-                    )
+                    raise RuntimeError(f"Scene {index+1} video fail: {e}")
 
                 opened_video.append(scene_video)
                 video_scenes.append(scene_video)
                 voice_clips.append(voice.set_start(timeline))
                 timeline += scene_duration
-                print(
-                    f"   scene {index+1}: video={scene_video.duration:.2f}s, "
-                    f"voice={voice.duration:.2f}s"
-                )
+                print(f"   scene {index+1}: video={scene_video.duration:.2f}s, voice={voice.duration:.2f}s")
 
             total_duration = timeline
             print(f"⏱️ Total: {total_duration:.1f}s")
 
             if not voice_clips:
-                raise RuntimeError(
-                    "Koi bhi voice clip ready nahi hui — composition rok diya."
-                )
+                raise RuntimeError("No voice clips ready")
 
-            voice_track = CompositeAudioClip(voice_clips).set_duration(
-                total_duration
-            )
+            # Voice track
+            voice_track = CompositeAudioClip(voice_clips).set_duration(total_duration)
+
+            # BG music
             final_audio, bg_music = self._add_background_music(
                 voice_track, total_duration, bg_music_path
             )
             if bg_music is not None:
                 opened_audio.append(bg_music)
 
-            if not video_scenes:
-                raise RuntimeError("Koi bhi video scene ready nahi hui.")
+            # SFX track
+            sfx_clips = self._build_sfx_track(scene_timings, total_duration)
+            if sfx_clips:
+                print(f"✅ {len(sfx_clips)} SFX clips added")
+                sfx_track = CompositeAudioClip(sfx_clips).set_duration(total_duration)
+                final_audio = CompositeAudioClip([final_audio, sfx_track])
+                for s in sfx_clips:
+                    opened_audio.append(s)
 
+            # Video concat
             video = concatenate_videoclips(video_scenes, method="chain")
             video = video.set_audio(final_audio).set_duration(total_duration)
 
-            # ---- Overlays (CTA + Captions) ----
+            # ---- OVERLAYS ----
             overlays = []
-            font_file = self._get_font_file()
 
-            # CTA overlay
-            if add_cta:
-                cta_overlay = self._make_cta_overlay(total_duration)
-                if cta_overlay is not None:
-                    overlays.append(cta_overlay)
-
-            # Captions overlay
+            # Captions
             if scene_narrations and font_file:
                 for i, (start_t, dur_t) in enumerate(scene_timings):
                     if i >= len(scene_narrations):
                         break
                     narration_text = scene_narrations[i]
-                    if not narration_text:
-                        continue
                     caption = self._make_caption_overlay(
                         narration_text, start_t, dur_t, font_file
                     )
                     if caption is not None:
                         overlays.append(caption)
-                print(f"✅ {len([o for o in overlays])} overlays added")
+                print(f"✅ {len(overlays)} captions added")
+
+            # CTA
+            if add_cta and font_file:
+                cta_overlay = self._make_cta_overlay(total_duration, font_file)
+                if cta_overlay is not None:
+                    overlays.append(cta_overlay)
+                    print("✅ CTA overlay added")
 
             if overlays:
                 try:
@@ -351,7 +457,6 @@ class ShortsComposer:
                         [video] + overlays,
                         size=(TARGET_W, TARGET_H)
                     ).set_duration(total_duration)
-                    print("✅ CTA + Captions overlays added")
                 except Exception as e:
                     print(f"⚠️ Overlay compose fail: {e}")
 
@@ -377,12 +482,11 @@ class ShortsComposer:
         print(f"✅ Video ready: {output_path}")
         return output_path
 
-    # OLD method — backward compat
+    # Backward compat
     def create_short(self, video_path, voiceover_path,
                      output_filename="final_short.mp4",
                      bg_music_path="bg_music.mp3"):
         print("🎬 Single-clip composition...")
-
         if not os.path.exists(video_path):
             raise FileNotFoundError(f"Video nahi mili: {video_path}")
         if not os.path.exists(voiceover_path):
@@ -390,7 +494,6 @@ class ShortsComposer:
 
         voiceover_clip = AudioFileClip(voiceover_path)
         final_duration = voiceover_clip.duration
-
         video_clip = VideoFileClip(video_path)
         if video_clip.duration < final_duration:
             video_clip = video_clip.fx(vfx.loop, duration=final_duration)
@@ -402,19 +505,19 @@ class ShortsComposer:
         )
         video_clip = video_clip.set_audio(final_audio)
 
-        # CTA overlay
-        cta_overlay = self._make_cta_overlay(final_duration)
-        if cta_overlay is not None:
-            try:
-                video_clip = CompositeVideoClip(
-                    [video_clip, cta_overlay],
-                    size=(TARGET_W, TARGET_H)
-                ).set_duration(final_duration)
-            except Exception as e:
-                print(f"⚠️ CTA overlay fail: {e}")
+        font_file = self._get_font_file()
+        if font_file:
+            cta_overlay = self._make_cta_overlay(final_duration, font_file)
+            if cta_overlay is not None:
+                try:
+                    video_clip = CompositeVideoClip(
+                        [video_clip, cta_overlay],
+                        size=(TARGET_W, TARGET_H)
+                    ).set_duration(final_duration)
+                except Exception as e:
+                    print(f"⚠️ CTA overlay fail: {e}")
 
         output_path = self._export(video_clip, output_filename)
-
         video_clip.close()
         voiceover_clip.close()
         if bg_music is not None:
@@ -422,6 +525,5 @@ class ShortsComposer:
                 bg_music.close()
             except Exception:
                 pass
-
         print(f"✅ Video ready: {output_path}")
         return output_path
