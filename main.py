@@ -337,25 +337,26 @@ def generate_script(max_retries=3, base_wait=20):
     ============================================================
     HOOK RULES — VIEWER 3 SECOND MEIN DECIDE KARTA HAI
     ============================================================
-    Scene 1 (hook) sirf 6-8 words ka hai. MAXIMUM 8 words.
+    Scene 1 (hook) sirf 5-7 words ka hai. MAXIMUM 7 words.
 
-    Hook aisa hona chahiye jo turant SHOCK ya CURIOSITY paida kare.
+    Hook aisa hona chahiye jo turant SHOCK, FEAR, ya CURIOSITY paida kare.
 
     YE HOOKS BILKUL MAT LIKHNA:
     - "Kya aapko pata hai..." — bahut slow, bahut common
     - "Aaj hum baat karenge..." — boring
     - "Duniya mein ek jagah hai..." — bahut vague
-    - 8 words se lamba koi bhi hook
+    - 7 words se lamba koi bhi hook
 
     YE HOOK PATTERNS USE KARO (ek chuno):
-    1. UNBELIEVABLE CLAIM: "Ye jagah duniya se gayab ho gayi"
-    2. SHOCKING WARNING: "Yahan jaana aapki maut ho sakti hai"
-    3. IMPOSSIBLE QUESTION: "Kaise possible hai ke pani ulta girta hai"
-    4. DEADLY SECRET: "Ye cheez aapko 24 ghante mein maar sakti hai"
-    5. SCARY FACT: "Is jagah se koi wapas nahi aaya"
+    1. DEADLY WARNING: "Yahan jaana aapki maut ho sakti hai"
+    2. IMPOSSIBLE CLAIM: "Ye cheez physics ke saare rules todti hai"
+    3. SCARY SECRET: "Is jagah se koi wapas nahi aaya"
+    4. SHOCKING REVEAL: "Ye cheez aapko 24 ghante mein maar sakti hai"
+    5. UNBELIEVABLE FACT: "Duniya ki sabse khatarnak cheez paani hai"
 
-    Hook aisa hona chahiye ke viewer soche: "WAIT WHAT? MUJHE AUR JAANNA HAI!"
-    Scene 2 turant hook ka jawab dena shuru kare.
+    Hook aisa hona chahiye ke viewer soche: "WAIT WHAT? YE KAISE POSSIBLE HAI?"
+    Scene 2 turant hook ka jawab dena shuru kare — lekin poora jawab mat do,
+    thoda suspense rakho taake viewer end tak dekhe.
 
     ============================================================
     CTA RULES — SABSE ZAROORI (SMART CTA, DIRECT NAHI)
@@ -365,24 +366,27 @@ def generate_script(max_retries=3, base_wait=20):
 
     LAST SCENE mein SMART CTA likhna hai. Ye 3 tarike use karo:
 
-    TARIKA 1 — CURIOSITY-BASED:
-    Aisa sawal ya promise jisse viewer next video dekhne ke liye
-    like ya subscribe kare. Example:
-    - "Agli baat aur bhi shocking hai"
-    - "Ye toh kuch bhi nahi, aage kya hai wo dekho"
-    - "Iske baare mein aur jaanne ke liye ruko"
-    - "Aage wali baat sunke aap hairan reh jaoge"
+    TARIKA 1 — LOOP CTA (SABSE BEST):
+    Aisa CTA jo viewer ko video dobara dekhne par majboor kare.
+    Example:
+    - "Ye baat aapne miss kar di, dobara dekho"
+    - "Shuru se dekho, ek clue chhupa hai"
+    - "Kya aapne ye notice kiya? Wapas dekho"
+    - "Ye video dobara dekhne layak hai"
 
-    TARIKA 2 — QUESTION-BASED:
-    Aisa sawal jo viewer ko soche aur comment ya like kare. Example:
+    TARIKA 2 — QUESTION CTA:
+    Aisa sawal jo viewer ko comment karne par majboor kare.
+    Example:
     - "Aapko kya lagta hai ye sach hai"
     - "Ye possible hai ya nahi apna jawab do"
     - "Kaun jeeta is race mein aap batao"
 
-    TARIKA 3 — SUBTLE HINT:
-    Halka sa hint jo like ya subscribe ko natural bana de. Example:
-    - "Aise facts roz dekhne hain to ruk jao"
-    - "Ye sirf shuruaat hai"
+    TARIKA 3 — CURIOSITY CTA:
+    Aisa promise jo viewer ko next video ke liye subscribe karne par majboor kare.
+    Example:
+    - "Agli baat aur bhi shocking hai"
+    - "Ye toh kuch bhi nahi, aage kya hai wo dekho"
+    - "Iske baare mein aur jaanne ke liye ruko"
 
     YE CTA BILKUL MAT LIKHNA:
     - "Like karo, share karo, subscribe karo"
@@ -391,7 +395,7 @@ def generate_script(max_retries=3, base_wait=20):
     - "Bell icon dabao"
     - Koi bhi direct order jo boring lage
 
-    Last scene 6-10 words ka hona chahiye.
+    Last scene 5-8 words ka hona chahiye.
 
     ============================================================
     VISUAL AVAILABILITY RULE
@@ -413,15 +417,19 @@ def generate_script(max_retries=3, base_wait=20):
     4. Har word ko aise likho jaise koi insaan bolta hai — natural Roman Hindi spelling.
     5. Numbers ko words mein likho: "100" nahi, "sau" likho. "24" nahi, "chaubees".
     6. Aise words avoid karo jinhe TTS galat bole.
+    7. Har scene ke beech mein natural pause ho — jaise koi insaan bol raha ho.
+    8. Sentences chhote rakho — 7-10 words max. Lambi sentences mat likho.
 
     ============================================================
     SCENE & DURATION RULES
     ============================================================
-    1. EXACTLY 8 scenes. Har scene = ek chhota sentence (7-12 words).
-       Scene 1 = hook (MAX 8 words). Scene 8 = SMART CTA.
-    2. Total: 30-38 seconds (75-90 words total).
+    1. EXACTLY 8 scenes. Har scene = ek chhota sentence (5-10 words).
+       Scene 1 = hook (MAX 7 words). Scene 8 = SMART CTA (5-8 words).
+    2. Total: 25-35 seconds (60-80 words total).
     3. Har scene ka search_keyword ALAG ho (2-4 words, English).
     4. Hook scene ka search_keyword visually dramatic ho.
+    5. Scene 2-7 mein story ko aise build karo ke viewer end tak ruke.
+    6. Scene 7 mein ek chhota twist ya reveal ho.
 
     ============================================================
     YOUTUBE METADATA RULES
@@ -439,15 +447,15 @@ def generate_script(max_retries=3, base_wait=20):
       "tags": ["tag one", "tag two"],
       "scenes": [
         {{
-          "narration": "Ye jagah duniya se gayab ho gayi",
-          "search_keyword": "abandoned city fog"
+          "narration": "Yahan jaana aapki maut ho sakti hai",
+          "search_keyword": "storm ocean dark"
         }},
         {{
           "narration": "Scientists ne wahan jaake kuch ajeeb dekha",
           "search_keyword": "scientist laboratory"
         }},
         {{
-          "narration": "Aage wali baat aur bhi shocking hai",
+          "narration": "Ye baat aapne miss kar di dobara dekho",
           "search_keyword": "storm clouds dramatic"
         }}
       ]
@@ -525,8 +533,8 @@ async def generate_voiceover(text, output_file):
     communicate = edge_tts.Communicate(
         cleaned_text,
         voice,
-        rate="+8%",
-        pitch="-1Hz",
+        rate="+4%",
+        pitch="-2Hz",
     )
     await communicate.save(output_file)
 
@@ -753,6 +761,7 @@ def main():
             voiceover_paths=voice_paths,
             output_filename="final_short.mp4",
             bg_music_path=bg_music_path,
+            scene_narrations=[s["narration"] for s in scenes],
         )
     except Exception as e:
         print(f"❌ Composition failed: {e}")
