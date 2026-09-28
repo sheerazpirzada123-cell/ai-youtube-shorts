@@ -26,9 +26,6 @@ from modules.asset_manager import (
 )
 from modules.audio import _trim_silence
 
-# ---------------------------------------------------------------
-# Config
-# ---------------------------------------------------------------
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 PEXELS_API_KEY = os.getenv("PEXELS_API_KEY")
 PIXABAY_API_KEY = os.getenv("PIXABAY_API_KEY")
@@ -59,9 +56,6 @@ OUTPUT_DIR = os.path.join(ASSETS_DIR, "final")
 for directory in [TEMP_VIDEO_DIR, TEMP_AUDIO_DIR, SCENE_CLIP_DIR, OUTPUT_DIR]:
     os.makedirs(directory, exist_ok=True)
 
-# ---------------------------------------------------------------
-# Keyword map
-# ---------------------------------------------------------------
 KEYWORD_MAP = {
     "blood falls": "antarctica red waterfall glacier",
     "dancing forest": "twisted pine trees forest",
@@ -84,9 +78,6 @@ KEYWORD_MAP = {
     "giant squid": "deep sea underwater dark",
 }
 
-# ---------------------------------------------------------------
-# TOPIC POOL
-# ---------------------------------------------------------------
 TOPIC_POOL = [
     "samundar ki sabse gehri jagah mein kya chhupa hai",
     "samundar mein aisi awaaz jo sunke scientists bhi darr gaye",
@@ -282,84 +273,97 @@ def generate_script(max_retries=3, base_wait=20):
     prompt = f"""
     Write a smooth, fast-paced, VIRAL YouTube Short script in simple spoken Hindi/Urdu (written in Roman letters) mixed with common English words.
 
-    TOPIC FOR THIS SCRIPT (must be about this, pick ONE specific real example of it):
+    TOPIC FOR THIS SCRIPT:
     {topic}
 
-    STYLE ANGLE FOR THIS SCRIPT: {angle}
+    STYLE ANGLE: {angle}
 
-    HOOK STYLE FOR SCENE 1: {hook_style}
+    HOOK STYLE: {hook_style}
 
     ============================================================
     SABSE ZAROORI RULE - NO SPECIFIC PERSON
     ============================================================
     Script mein KISI BHI SPECIFIC INSAAN ka zikr NAHI hona chahiye.
-    Na koi real naam, na koi specific story, na koi personal event.
-
-    YE BILKUL MAT LIKHNA:
-    - Kisi insaan ka naam
-    - Kisi specific insaan ki kahani
-    - Kisi specific person ka record
-    - Kisi celebrity, athlete, ya famous log ke baare mein
 
     YE LIKHNA HAI:
     - Natural phenomena (samundar ki awaaz, space ki cheez, weather)
     - Places (jagah, sheher, pahaad, samundar, jungle)
     - Science facts (physics, chemistry, biology)
     - Nature records (sabse bada, sabse purana, sabse gehri)
-    - Broad categories (insani jism, dimagh, aankh - bina kisi specific person ke)
+    - Broad categories (insani jism, dimagh, aankh)
 
     ============================================================
-    HOOK RULES - VIEWER 3 SECOND MEIN DECIDE KARTA HAI
+    HOOK RULES - VIEWER 3 SECOND MEIN SCROLL ROKTA HAI
     ============================================================
-    Scene 1 (hook) sirf 5-7 words ka hai. MAXIMUM 7 words.
+    Scene 1 (hook) sirf 4-6 words ka hai. MAXIMUM 6 words.
+    Har word MUST punch kare. Koi filler word nahi.
 
-    Hook aisa hona chahiye jo turant SHOCK, FEAR, ya CURIOSITY paida kare.
+    Hook mein 3 cheezein HONI CHAHIYE:
+    1. SHOCK - kuch aisa jo sunke dimaag ruk jaye
+    2. URGENCY - aisa lage ki abhi jaanna zaroori hai
+    3. CURIOSITY GAP - aadha sach batao, poora nahi
 
-    YE HOOKS BILKUL MAT LIKHNA:
-    - "Kya aapko pata hai..." - bahut slow, bahut common
-    - "Aaj hum baat karenge..." - boring
-    - "Duniya mein ek jagah hai..." - bahut vague
-    - 7 words se lamba koi bhi hook
+    YE HOOK PATTERNS (best to worst):
 
-    YE HOOK PATTERNS USE KARO (ek chuno):
-    1. DEADLY WARNING: "Yahan jaana aapki maut ho sakti hai"
-    2. IMPOSSIBLE CLAIM: "Ye cheez physics ke saare rules todti hai"
-    3. SCARY SECRET: "Is jagah se koi wapas nahi aaya"
-    4. SHOCKING REVEAL: "Ye cheez aapko 24 ghante mein maar sakti hai"
-    5. UNBELIEVABLE FACT: "Duniya ki sabse khatarnak cheez paani hai"
+    PATTERN 1 - DEATH/DANGER WARNING (SABSE STRONG):
+    - "Yahan jaana aapki maut hai"
+    - "Ye cheez 24 ghante mein maar degi"
+    - "Is jagah se koi wapas nahi aaya"
+    - "Ye paani aapko kha jayega"
 
-    Hook aisa hona chahiye ke viewer soche: "WAIT WHAT? YE KAISE POSSIBLE HAI?"
-    Scene 2 turant hook ka jawab dena shuru kare - lekin poora jawab mat do,
-    thoda suspense rakho taake viewer end tak dekhe.
+    PATTERN 2 - IMPOSSIBLE CLAIM:
+    - "Ye physics ke saare rules todta hai"
+    - "Ye cheez duniya mein nahi honi chahiye"
+    - "Ye insaan ke bas ki baat nahi"
+    - "Ye science ke against hai"
+
+    PATTERN 3 - SHOCKING NUMBER/FACT:
+    - "Duniya ki sabse khatarnak cheez paani"
+    - "100 saal se ye raaz chhupa tha"
+    - "Sirf 1 second mein sab khatam"
+    - "8 Arab log ye nahi jaante"
+
+    PATTERN 4 - DIRECT CHALLENGE:
+    - "Aap ye kabhi solve nahi kar sakte"
+    - "Ye dekh ke aap ruk jaoge"
+    - "Iska jawab kisi ke paas nahi"
+    - "Aap galat hain ye soch ke"
+
+    YE HOOKS BILKUL MAT LIKHNA (DEAD):
+    - "Kya aapko pata hai..." - BORING
+    - "Aaj hum baat karenge..." - BORING
+    - "Duniya mein ek jagah hai..." - VAGUE
+    - "Scientists ne discover kiya..." - SLOW
+    - "Imagine karo..." - WEAK
+    - Koi bhi hook jo "Kya", "Aaj", "Imagine" se shuru ho
+    - 6 words se lamba koi bhi hook
+
+    Scene 2 turant ek naya sawal khada kare - hook ka jawab poora mat do.
+    Scene 3-6 mein build-up karo - har scene ek naya layer.
+    Scene 7 mein TWIST ya REVEAL do - jo expected nahi tha.
+    Scene 8 mein SMART CTA - loop ya question type.
 
     ============================================================
-    CTA RULES - SABSE ZAROORI (SMART CTA, DIRECT NAHI)
+    CTA RULES - SMART CTA (DIRECT NAHI)
     ============================================================
-    CTA matlab call-to-action. LEKIN direct "like karo, subscribe karo, share karo"
-    BILKUL MAT LIKHNA. Ye boring hai, log ignore kar dete hain.
+    CTA matlab call-to-action. LEKIN direct "like karo, subscribe karo"
+    BILKUL MAT LIKHNA.
 
-    LAST SCENE mein SMART CTA likhna hai. Ye 3 tarike use karo:
+    CTA ka last scene mein 4-6 words ka hona chahiye. Sirf 1 line.
 
     TARIKA 1 - LOOP CTA (SABSE BEST):
-    Aisa CTA jo viewer ko video dobara dekhne par majboor kare.
-    Example:
-    - "Ye baat aapne miss kar di, dobara dekho"
-    - "Shuru se dekho, ek clue chhupa hai"
-    - "Kya aapne ye notice kiya? Wapas dekho"
+    - "Ye baat aapne miss kar di dobara dekho"
+    - "Shuru se dekho ek clue chhupa hai"
+    - "Kya aapne ye notice kiya wapas dekho"
     - "Ye video dobara dekhne layak hai"
 
     TARIKA 2 - QUESTION CTA:
-    Aisa sawal jo viewer ko comment karne par majboor kare.
-    Example:
     - "Aapko kya lagta hai ye sach hai"
     - "Ye possible hai ya nahi apna jawab do"
-    - "Kaun jeeta is race mein aap batao"
+    - "Comment mein batao sach hai ya nahi"
 
     TARIKA 3 - CURIOSITY CTA:
-    Aisa promise jo viewer ko next video ke liye subscribe karne par majboor kare.
-    Example:
     - "Agli baat aur bhi shocking hai"
-    - "Ye toh kuch bhi nahi, aage kya hai wo dekho"
     - "Iske baare mein aur jaanne ke liye ruko"
 
     YE CTA BILKUL MAT LIKHNA:
@@ -367,16 +371,13 @@ def generate_script(max_retries=3, base_wait=20):
     - "Channel ko subscribe karo"
     - "Video ko like kare"
     - "Bell icon dabao"
-    - Koi bhi direct order jo boring lage
-
-    Last scene 5-8 words ka hona chahiye.
 
     ============================================================
     VISUAL AVAILABILITY RULE
     ============================================================
     Pexels/Pixabay par sirf BROAD, COMMON subjects ki footage hoti hai:
-    space, ocean, forest, mountains, desert, city, common animals (dog/cat/lion/shark/bird),
-    human body (eyes/brain/heart/hands), laboratory, technology, money, ruins, fire, ice, volcano,
+    space, ocean, forest, mountains, desert, city, common animals,
+    human body, laboratory, technology, money, ruins, fire, ice, volcano,
     books, kitchen, clock, astronaut.
 
     search_keyword mein kabhi specific species name, flower name, fish name,
@@ -387,18 +388,17 @@ def generate_script(max_retries=3, base_wait=20):
     ============================================================
     1. Simple spoken Hindi/Urdu with common English words.
     2. NO formal Hindi words (prakriti, chattaan, rahasya, adbhut).
-    3. Narration ke andar NO full stops (.), question marks (?), ya commas (,).
-    4. Har word ko aise likho jaise koi insaan bolta hai - natural Roman Hindi spelling.
+    3. Narration ke andar NO full stops, question marks, ya commas.
+    4. Har word natural Roman Hindi spelling mein likho.
     5. Numbers ko words mein likho: "100" nahi, "sau" likho. "24" nahi, "chaubees".
     6. Aise words avoid karo jinhe TTS galat bole.
-    7. Har scene ke beech mein natural pause ho - jaise koi insaan bol raha ho.
-    8. Sentences chhote rakho - 7-10 words max. Lambi sentences mat likho.
+    7. Sentences chhote rakho - 7-10 words max.
 
     ============================================================
     SCENE & DURATION RULES
     ============================================================
     1. EXACTLY 8 scenes. Har scene = ek chhota sentence (5-10 words).
-       Scene 1 = hook (MAX 7 words). Scene 8 = SMART CTA (5-8 words).
+       Scene 1 = hook (MAX 6 words). Scene 8 = SMART CTA (4-6 words).
     2. Total: 25-35 seconds (60-80 words total).
     3. Har scene ka search_keyword ALAG ho (2-4 words, English).
     4. Hook scene ka search_keyword visually dramatic ho.
@@ -421,7 +421,7 @@ def generate_script(max_retries=3, base_wait=20):
       "tags": ["tag one", "tag two"],
       "scenes": [
         {{
-          "narration": "Yahan jaana aapki maut ho sakti hai",
+          "narration": "Yahan jaana aapki maut hai",
           "search_keyword": "storm ocean dark"
         }},
         {{
