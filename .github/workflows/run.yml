@@ -17,7 +17,7 @@ permissions:
 jobs:
   build-and-run:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
 
     steps:
     - name: Checkout Code
@@ -33,7 +33,7 @@ jobs:
     - name: Install System Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y ffmpeg libjpeg-dev zlib1g-dev libpng-dev libfreetype6-dev fonts-deva fonts-noto
+        sudo apt-get install -y ffmpeg libjpeg-dev zlib1g-dev libpng-dev libfreetype6-dev fonts-deva fonts-noto fonts-noto-color-emoji
 
     - name: Install Python Dependencies
       run: |
