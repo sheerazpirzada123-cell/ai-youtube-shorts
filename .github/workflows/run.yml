@@ -2,10 +2,6 @@ name: Auto Generate and Post YouTube Shorts
 
 on:
   schedule:
-    # 3x daily — India prime time ke hisaab se set kiya
-    # 3 AM UTC = 8:30 AM IST (morning commute)
-    # 8 AM UTC = 1:30 PM IST (lunch break)
-    # 15 AM UTC = 8:30 PM IST (prime time)
     - cron: '30 2 * * *'
     - cron: '30 7 * * *'
     - cron: '30 14 * * *'
@@ -51,12 +47,9 @@ jobs:
 
     - name: Fix ImageMagick Policy
       run: |
-        # ImageMagick ki default policy PDF/PS block karti hai,
-        # lekin humein text rendering chahiye — policy edit karo
         sudo sed -i 's/rights="none" pattern="@\*"/rights="read|write" pattern="@*"/' /etc/ImageMagick-6/policy.xml || true
         sudo sed -i 's/policy domain="coder" rights="none" pattern="PDF"/policy domain="coder" rights="read|write" pattern="PDF"/' /etc/ImageMagick-6/policy.xml || true
-        # Verify
-        convert -version || magick -version || echo "ImageMagick version check failed"
+        convert -version || magick -version || echo "ImageMagick check failed"
 
     - name: Install Python Dependencies
       run: |
