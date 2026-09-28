@@ -1,9 +1,11 @@
 import os
 import random
+from PIL import Image, ImageDraw, ImageFont
+import numpy as np
 from moviepy.editor import (
     VideoFileClip, AudioFileClip, CompositeAudioClip,
     concatenate_audioclips, concatenate_videoclips, vfx,
-    TextClip, CompositeVideoClip
+    ImageClip, CompositeVideoClip
 )
 import moviepy.audio.fx.all as afx
 
@@ -14,16 +16,18 @@ BG_MUSIC_VOLUME = 0.15
 SCENE_GAP = 0.05
 SFX_VOLUME = 0.55
 
+# ============================================================
+# CAPTION SETTINGS — PIL based (no ImageMagick needed)
+# ============================================================
 CAPTION_FONT_SIZE = 72
-CAPTION_POSITION = ("center", 0.55)
+CAPTION_POSITION_RATIO = 0.55
 CAPTION_FADE = 0.10
-CAPTION_COLOR = "#FFFFFF"
-CAPTION_STROKE_COLOR = "#000000"
-CAPTION_STROKE_WIDTH = 6
+CAPTION_MAX_WIDTH = TARGET_W - 100
 
+# CTA settings
 CTA_TEXT = "Follow for more"
 CTA_FONT_SIZE = 58
-CTA_POSITION = ("center", 0.85)
+CTA_POSITION_RATIO = 0.85
 CTA_START_RATIO = 0.55
 CTA_FADE_DURATION = 0.5
 
@@ -114,8 +118,15 @@ class ShortsComposer:
 
         return ShortsComposer._fit_vertical(clip)
 
+    # ========================================================
+    # PIL CAPTION — ImageMagick ki zaroorat NAHI
+    # ========================================================
     @staticmethod
-    def _make_caption_overlay(text, start_time, duration, font_file):
+    def _make_caption_png(text, font_file, font_size=CAPTION_FONT_SIZE):
+        """
+        PIL se transparent PNG banata hai jisme text hota hai.
+        White text + black stroke. Multiple lines supported.
+        """
         try:
             if not text or not text.strip() or not font_file:
                 return None
@@ -124,57 +135,118 @@ class ShortsComposer:
             if len(display_text) > 55:
                 display_text = display_text[:52] + "..."
 
+            # Word wrap — 2 lines max
             words = display_text.split()
             if len(words) > 5:
                 mid = len(words) // 2
                 line1 = " ".join(words[:mid])
                 line2 = " ".join(words[mid:])
-                display_text = line1 + "\n" + line2
+                lines = [line1, line2]
+            else:
+                lines = [display_text]
 
             try:
-                caption_clip = TextClip(
-                    display_text,
-                    fontsize=CAPTION_FONT_SIZE,
-                    color=CAPTION_COLOR,
-                    font=font_file,
-                    stroke_color=CAPTION_STROKE_COLOR,
-                    stroke_width=CAPTION_STROKE_WIDTH,
-                    method="caption",
-                    size=(TARGET_W - 80, None),
-                    align="center",
-                )
+                font = ImageFont.truetype(font_file, font_size)
             except Exception as e:
-                print("TextClip fail (ImageMagick issue): " + str(e))
+                print("PIL font load fail: " + str(e))
+                font = ImageFont.load_default()
+
+            # Text size calculate karo
+            dummy_img = Image.new("RGBA", (10, 10), (0, 0, 0, 0))
+            dummy_draw = ImageDraw.Draw(dummy_img)
+
+            line_heights = []
+            line_widths = []
+            for line in lines:
+                bbox = dummy_draw.textbbox((0, 0), line, font=font, stroke_width=6)
+                w = bbox[2] - bbox[0]
+                h = bbox[3] - bbox[1]
+                line_widths.append(w)
+                line_heights.append(h)
+
+            max_width = max(line_widths) if line_widths else 0
+            total_height = sum(line_heights) + (len(lines) - 1) * 15
+
+            # Padding
+            pad_x = 40
+            pad_y = 30
+
+            img_w = max_width + pad_x * 2
+            img_h = total_height + pad_y * 2
+
+            # Transparent image
+            img = Image.new("RGBA", (img_w, img_h), (0, 0, 0, 0))
+            draw = ImageDraw.Draw(img)
+
+            # Draw each line centered
+            y_offset = pad_y
+            for i, line in enumerate(lines):
+                bbox = draw.textbbox((0, 0), line, font=font, stroke_width=6)
+                line_w = bbox[2] - bbox[0]
+                x = (img_w - line_w) // 2
+                draw.text(
+                    (x, y_offset),
+                    line,
+                    font=font,
+                    fill=(255, 255, 255, 255),
+                    stroke_width=6,
+                    stroke_fill=(0, 0, 0, 255),
+                )
+                y_offset += line_heights[i] + 15
+
+            return img
+
+        except Exception as e:
+            print("Caption PNG creation error: " + str(e))
+            return None
+
+    def _make_caption_overlay(self, text, start_time, duration, font_file):
+        """
+        PIL se caption PNG banata hai aur ImageClip mein convert karta hai.
+        """
+        try:
+            png_img = self._make_caption_png(text, font_file)
+            if png_img is None:
                 return None
 
-            caption_clip = caption_clip.set_position(CAPTION_POSITION)
+            # Convert PIL to numpy array
+            img_array = np.array(png_img)
+
+            # ImageClip banao
+            caption_clip = ImageClip(img_array, transparent=True)
             caption_clip = caption_clip.set_duration(duration)
             caption_clip = caption_clip.set_start(start_time)
+
+            # Position: center horizontally, 55% vertically
+            caption_clip = caption_clip.set_position(
+                ("center", int(TARGET_H * CAPTION_POSITION_RATIO))
+            )
+
             caption_clip = caption_clip.crossfadein(CAPTION_FADE).crossfadeout(CAPTION_FADE)
             caption_clip = caption_clip.set_opacity(1.0)
 
             print("Caption added at " + str(round(start_time, 1)) + "s")
             return caption_clip
         except Exception as e:
-            print("Caption error: " + str(e))
+            print("Caption overlay error: " + str(e))
             return None
 
-    @staticmethod
-    def _make_cta_overlay(total_duration, font_file):
+    def _make_cta_overlay(self, total_duration, font_file):
         try:
             if not font_file:
                 return None
 
-            cta_clip = TextClip(
-                CTA_TEXT,
-                fontsize=CTA_FONT_SIZE,
-                color="#FFD700",
-                font=font_file,
-                stroke_color="#000000",
-                stroke_width=4,
-                method="caption",
+            png_img = self._make_caption_png(CTA_TEXT, font_file, font_size=CTA_FONT_SIZE)
+            if png_img is None:
+                return None
+
+            img_array = np.array(png_img)
+            cta_clip = ImageClip(img_array, transparent=True)
+            cta_clip = cta_clip.set_duration(total_duration)
+            cta_clip = cta_clip.set_position(
+                ("center", int(TARGET_H * CTA_POSITION_RATIO))
             )
-            cta_clip = cta_clip.set_position(CTA_POSITION).set_duration(total_duration)
+
             start_time = total_duration * CTA_START_RATIO
             cta_clip = cta_clip.set_start(start_time)
             cta_clip = cta_clip.crossfadein(CTA_FADE_DURATION)
