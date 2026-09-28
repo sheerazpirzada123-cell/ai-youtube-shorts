@@ -2,10 +2,6 @@ name: Auto Generate and Post YouTube Shorts
 
 on:
   schedule:
-    # 3x daily — India prime time ke hisaab se set kiya
-    # 3 AM UTC = 8:30 AM IST (morning commute)
-    # 8 AM UTC = 1:30 PM IST (lunch break)
-    # 15 AM UTC = 8:30 PM IST (prime time)
     - cron: '30 2 * * *'
     - cron: '30 7 * * *'
     - cron: '30 14 * * *'
@@ -33,12 +29,19 @@ jobs:
     - name: Install System Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y ffmpeg libjpeg-dev zlib1g-dev libpng-dev libfreetype6-dev fonts-deva fonts-noto fonts-noto-color-emoji
+        sudo apt-get install -y ffmpeg libjpeg-dev zlib1g-dev libpng-dev libfreetype6-dev fonts-deva fonts-noto fonts-noto-color-emoji fonts-dejavu fonts-dejavu-core fonts-liberation fontconfig
+        sudo fc-cache -f -v
 
     - name: Install Python Dependencies
       run: |
         python -m pip install --upgrade pip setuptools wheel
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    - name: Verify Fonts Available
+      run: |
+        ls -la /usr/share/fonts/truetype/dejavu/ || echo "DejaVu fonts not found"
+        ls -la /usr/share/fonts/truetype/liberation/ || echo "Liberation fonts not found"
+        fc-list | grep -i "dejavu\|liberation" | head -5
 
     - name: Run Auto-Generation & Auto-Posting Script
       env:
