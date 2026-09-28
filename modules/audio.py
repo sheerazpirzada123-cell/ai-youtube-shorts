@@ -10,20 +10,23 @@ from moviepy.editor import (
     concatenate_audioclips,
 )
 
-INTER_SCENE_PAUSE = 0.08  # Thoda sa gap — natural lagti hai
+INTER_SCENE_PAUSE = 0.12  # 0.08 se 0.12 — natural pause ke liye
 
-VOICE = "hi-IN-MadhurNeural"
-VOICE_RATE = "+8%"        # +14% se +8% — words saaf sunai denge
-VOICE_PITCH = "-1Hz"
+VOICE = "hi-IN-MadhurNeural"  # Ye best hai Hindi ke liye
+VOICE_RATE = "+4%"        # +8% se +4% — zyada natural lagega
+VOICE_PITCH = "-2Hz"      # -1Hz se -2Hz — thoda deep, professional
 
-# -30dB se -40dB — sirf bilkul khamosh portions trim honge, words nahi katenge
-SILENCE_TRIM_DB = "-40dB"
-SILENCE_MIN_START = 0.2   # 0.1 se 0.2 — words ko safe rakhega
+# -45dB — sirf bilkul khamosh portions trim honge, words nahi katenge
+SILENCE_TRIM_DB = "-45dB"
+SILENCE_MIN_START = 0.3   # 0.2 se 0.3 — words ko safe rakhega
 
 
 async def generate_tts_async(text, output_path):
     communicate = edge_tts.Communicate(
-        text=text, voice=VOICE, rate=VOICE_RATE, pitch=VOICE_PITCH
+        text=text,
+        voice=VOICE,
+        rate=VOICE_RATE,
+        pitch=VOICE_PITCH,
     )
     await communicate.save(output_path)
 
@@ -55,7 +58,6 @@ def _trim_silence(path):
             os.remove(trimmed_path)
 
 
-# Baaki functions same as before...
 def generate_voiceover(text, output_path="assets/voiceover.mp3"):
     os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
     clean_text = " ".join(text.split())
@@ -106,8 +108,8 @@ def concatenate_voiceovers(audio_paths, output_path="assets/voiceover_full.mp3")
 
 
 def add_background_music_and_sfx(voiceover_path, output_path="assets/final_audio.mp3",
-                                  bg_music_path="assets/audio/bg_music.mp3", bg_volume=0.20):
-    """bg_volume 0.10 se 0.20 kiya — ab sunai dega."""
+                                  bg_music_path="assets/audio/bg_music.mp3", bg_volume=0.15):
+    """bg_volume 0.10 se 0.15 kiya — voice clear rahegi."""
     try:
         if not os.path.exists(voiceover_path):
             raise FileNotFoundError(f"Voiceover not found: {voiceover_path}")
