@@ -2,6 +2,10 @@ name: Auto Generate and Post YouTube Shorts
 
 on:
   schedule:
+    # 3x daily — India prime time ke hisaab se set kiya
+    # 3 AM UTC = 8:30 AM IST (morning commute)
+    # 8 AM UTC = 1:30 PM IST (lunch break)
+    # 15 AM UTC = 8:30 PM IST (prime time)
     - cron: '30 2 * * *'
     - cron: '30 7 * * *'
     - cron: '30 14 * * *'
@@ -39,8 +43,11 @@ jobs:
 
     - name: Verify Fonts Available
       run: |
+        echo "=== DejaVu fonts ==="
         ls -la /usr/share/fonts/truetype/dejavu/ || echo "DejaVu fonts not found"
+        echo "=== Liberation fonts ==="
         ls -la /usr/share/fonts/truetype/liberation/ || echo "Liberation fonts not found"
+        echo "=== fc-list check ==="
         fc-list | grep -i "dejavu\|liberation" | head -5
 
     - name: Run Auto-Generation & Auto-Posting Script
