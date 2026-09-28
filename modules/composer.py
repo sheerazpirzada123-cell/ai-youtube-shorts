@@ -10,21 +10,25 @@ import moviepy.audio.fx.all as afx
 TARGET_W = 1080
 TARGET_H = 1920
 
-BG_MUSIC_VOLUME = 0.12
+BG_MUSIC_VOLUME = 0.15
 SCENE_GAP = 0.05
-SFX_VOLUME = 0.35
+SFX_VOLUME = 0.55
 
-CAPTION_FONT_SIZE = 58
-CAPTION_POSITION = ("center", 0.78)
-CAPTION_FADE = 0.15
+# ============================================================
+# CAPTION SETTINGS — Premium TikTok/Reels style
+# ============================================================
+CAPTION_FONT_SIZE = 72
+CAPTION_POSITION = ("center", 0.55)
+CAPTION_FADE = 0.10
 CAPTION_COLOR = "#FFFFFF"
 CAPTION_STROKE_COLOR = "#000000"
-CAPTION_STROKE_WIDTH = 4
+CAPTION_STROKE_WIDTH = 6
 
+# CTA settings
 CTA_TEXT = "Follow for more"
-CTA_FONT_SIZE = 52
-CTA_POSITION = ("center", 0.91)
-CTA_START_RATIO = 0.60
+CTA_FONT_SIZE = 58
+CTA_POSITION = ("center", 0.85)
+CTA_START_RATIO = 0.55
 CTA_FADE_DURATION = 0.5
 
 SFX_FOLDER = "assets/sfx"
@@ -121,27 +125,34 @@ class ShortsComposer:
                 return None
 
             display_text = text.strip().upper()
-            if len(display_text) > 60:
-                display_text = display_text[:57] + "..."
+            if len(display_text) > 55:
+                display_text = display_text[:52] + "..."
 
+            # Word wrap — 2 lines
             words = display_text.split()
-            if len(words) > 6:
+            if len(words) > 5:
                 mid = len(words) // 2
                 line1 = " ".join(words[:mid])
                 line2 = " ".join(words[mid:])
                 display_text = line1 + "\n" + line2
 
-            caption_clip = TextClip(
-                display_text,
-                fontsize=CAPTION_FONT_SIZE,
-                color=CAPTION_COLOR,
-                font=font_file,
-                stroke_color=CAPTION_STROKE_COLOR,
-                stroke_width=CAPTION_STROKE_WIDTH,
-                method="caption",
-                size=(TARGET_W - 100, None),
-                align="center",
-            )
+            # ImageMagick ke bina TextClip nahi banta — try karo
+            try:
+                caption_clip = TextClip(
+                    display_text,
+                    fontsize=CAPTION_FONT_SIZE,
+                    color=CAPTION_COLOR,
+                    font=font_file,
+                    stroke_color=CAPTION_STROKE_COLOR,
+                    stroke_width=CAPTION_STROKE_WIDTH,
+                    method="caption",
+                    size=(TARGET_W - 80, None),
+                    align="center",
+                )
+            except Exception as e:
+                print("TextClip fail (ImageMagick issue): " + str(e))
+                return None
+
             caption_clip = caption_clip.set_position(CAPTION_POSITION)
             caption_clip = caption_clip.set_duration(duration)
             caption_clip = caption_clip.set_start(start_time)
@@ -163,17 +174,17 @@ class ShortsComposer:
             cta_clip = TextClip(
                 CTA_TEXT,
                 fontsize=CTA_FONT_SIZE,
-                color="#FFFFFF",
+                color="#FFD700",
                 font=font_file,
                 stroke_color="#000000",
-                stroke_width=3,
+                stroke_width=4,
                 method="caption",
             )
             cta_clip = cta_clip.set_position(CTA_POSITION).set_duration(total_duration)
             start_time = total_duration * CTA_START_RATIO
             cta_clip = cta_clip.set_start(start_time)
             cta_clip = cta_clip.crossfadein(CTA_FADE_DURATION)
-            cta_clip = cta_clip.set_opacity(0.95)
+            cta_clip = cta_clip.set_opacity(1.0)
             return cta_clip
         except Exception as e:
             print("CTA error: " + str(e))
@@ -189,8 +200,10 @@ class ShortsComposer:
 
         available = {}
         for f in os.listdir(sfx_dir):
-            if f.lower().endswith((".mp3", ".wav", ".m4a")):
-                available[f.lower()] = os.path.join(sfx_dir, f)
+            if f.lower().endswith((".mp3", ".wav", ".m4a", ".ogg")):
+                full = os.path.join(sfx_dir, f)
+                if os.path.getsize(full) > 1000:
+                    available[f.lower()] = full
 
         if not available:
             print("SFX folder khaali hai")
@@ -204,36 +217,40 @@ class ShortsComposer:
                     return available[key]
             return None
 
-        whoosh = pick("whoosh")
-        if whoosh and scene_timings:
+        # Scene 1 (hook) — impact sound
+        impact = pick("impact") or pick("whoosh") or pick("pop")
+        if impact:
             try:
-                intro = AudioFileClip(whoosh).volumex(SFX_VOLUME)
-                intro = intro.subclip(0, min(1.0, intro.duration))
-                intro = intro.set_start(0.1)
+                intro = AudioFileClip(impact).volumex(SFX_VOLUME)
+                intro = intro.subclip(0, min(1.5, intro.duration))
+                intro = intro.set_start(0.0)
                 sfx_clips.append(intro)
-                print("SFX intro whoosh at 0.1s")
+                print("SFX intro impact at 0.0s")
             except Exception as e:
                 print("Intro SFX fail: " + str(e))
 
-        for i, (start_t, dur_t) in enumerate(scene_timings):
-            if i == 0:
-                continue
-            if whoosh and i < len(scene_timings) - 1:
+        # Har scene transition — whoosh
+        whoosh = pick("whoosh") or pick("swoosh")
+        if whoosh:
+            for i, (start_t, dur_t) in enumerate(scene_timings):
+                if i == 0:
+                    continue
                 try:
-                    sfx = AudioFileClip(whoosh).volumex(SFX_VOLUME * 0.7)
-                    sfx = sfx.subclip(0, min(0.6, sfx.duration))
-                    sfx = sfx.set_start(start_t)
+                    sfx = AudioFileClip(whoosh).volumex(SFX_VOLUME * 0.8)
+                    sfx = sfx.subclip(0, min(0.7, sfx.duration))
+                    sfx = sfx.set_start(start_t - 0.05)
                     sfx_clips.append(sfx)
                     print("SFX transition at " + str(round(start_t, 1)) + "s")
                 except Exception as e:
                     print("Transition SFX fail: " + str(e))
 
-        pop = pick("pop")
+        # CTA — pop/ding
+        pop = pick("pop") or pick("ding")
         if pop and scene_timings:
             cta_time = scene_timings[-1][0]
             try:
                 sfx = AudioFileClip(pop).volumex(SFX_VOLUME)
-                sfx = sfx.subclip(0, min(0.5, sfx.duration))
+                sfx = sfx.subclip(0, min(0.6, sfx.duration))
                 sfx = sfx.set_start(cta_time)
                 sfx_clips.append(sfx)
                 print("SFX CTA pop at " + str(round(cta_time, 1)) + "s")
