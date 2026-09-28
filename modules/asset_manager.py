@@ -5,9 +5,6 @@ import subprocess
 import shutil
 
 
-# ============================================================
-# SFX URLs — Multiple fallback sources per file
-# ============================================================
 SFX_SOURCES = {
     "whoosh.mp3": [
         "https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3",
@@ -187,7 +184,6 @@ def download_file(url, target_path, extra_headers=None, asset_type="video"):
                 if "video" not in content_type and "octet-stream" not in content_type:
                     raise ValueError(f"Unexpected video content type: {content_type}")
             elif asset_type == "audio":
-                # Audio: strict check hata do, sirf warning
                 if "audio" not in content_type and "octet-stream" not in content_type and "mpeg" not in content_type and "ogg" not in content_type:
                     print(f"Warning: Unexpected audio content type: {content_type}")
 
@@ -199,7 +195,6 @@ def download_file(url, target_path, extra_headers=None, asset_type="video"):
         if not os.path.exists(temp_path):
             raise RuntimeError("Downloaded file was not created.")
 
-        # Audio ke liye minimum size chhota rakho (SFX chhote hote hain)
         min_size = 2000 if asset_type == "audio" else 50000
 
         if os.path.getsize(temp_path) < min_size:
@@ -224,10 +219,6 @@ def download_file(url, target_path, extra_headers=None, asset_type="video"):
 
 
 def download_sfx_with_fallback(filename, target_path):
-    """
-    Ek SFX file ke liye multiple URLs try karo.
-    Ek fail ho to next URL try karo.
-    """
     urls = SFX_SOURCES.get(filename, [])
     if not urls:
         raise RuntimeError(f"No URLs configured for {filename}")
@@ -527,7 +518,6 @@ def fetch_scene_clips(scenes, scene_durations, output_dir="assets/scene_clips"):
 def prepare_background_audio(sfx_folder="assets/sfx"):
     os.makedirs(sfx_folder, exist_ok=True)
 
-    # Purane failed (0-byte ya chhote) files delete karo
     for f in os.listdir(sfx_folder):
         full_path = os.path.join(sfx_folder, f)
         try:
@@ -543,7 +533,6 @@ def prepare_background_audio(sfx_folder="assets/sfx"):
     for filename in SFX_SOURCES.keys():
         target = os.path.join(sfx_folder, filename)
 
-        # Already exists aur valid hai
         if os.path.exists(target) and os.path.getsize(target) > 1000:
             print(f"SFX already exists: {filename}")
             downloaded += 1
