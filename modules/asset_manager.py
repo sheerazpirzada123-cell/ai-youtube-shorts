@@ -6,16 +6,39 @@ import shutil
 
 
 # ============================================================
-# RELIABLE SFX URLs (Mixkit - no API key needed)
+# SFX URLs — Multiple fallback sources per file
 # ============================================================
 SFX_SOURCES = {
-    "whoosh.mp3": "https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3",
-    "whoosh2.mp3": "https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3",
-    "pop.mp3": "https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3",
-    "pop2.mp3": "https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3",
-    "impact.mp3": "https://assets.mixkit.co/active_storage/sfx/2185/2185-preview.mp3",
-    "swoosh.mp3": "https://assets.mixkit.co/active_storage/sfx/2569/2569-preview.mp3",
-    "ding.mp3": "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3",
+    "whoosh.mp3": [
+        "https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3",
+        "https://cdn.pixabay.com/download/audio/2022/03/10/audio_c35f9923ed.mp3?filename=whoosh-6316.mp3",
+        "https://actions.google.com/sounds/v1/impacts/whoosh_impact.ogg",
+    ],
+    "whoosh2.mp3": [
+        "https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3",
+        "https://actions.google.com/sounds/v1/impacts/whoosh.ogg",
+    ],
+    "pop.mp3": [
+        "https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3",
+        "https://cdn.pixabay.com/download/audio/2021/08/04/audio_bb630cc098.mp3?filename=pop-39222.mp3",
+        "https://actions.google.com/sounds/v1/cartoon/pop.ogg",
+    ],
+    "pop2.mp3": [
+        "https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3",
+        "https://actions.google.com/sounds/v1/cartoon/concussive_hit_guitar_boing.ogg",
+    ],
+    "impact.mp3": [
+        "https://assets.mixkit.co/active_storage/sfx/2185/2185-preview.mp3",
+        "https://actions.google.com/sounds/v1/impacts/impact_wood_low.ogg",
+    ],
+    "swoosh.mp3": [
+        "https://assets.mixkit.co/active_storage/sfx/2569/2569-preview.mp3",
+        "https://actions.google.com/sounds/v1/impacts/swoosh.ogg",
+    ],
+    "ding.mp3": [
+        "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3",
+        "https://actions.google.com/sounds/v1/alarms/beep_short.ogg",
+    ],
 }
 
 PEXELS_API_KEY = os.environ.get("PEXELS_API_KEY")
@@ -156,7 +179,7 @@ def download_file(url, target_path, extra_headers=None, asset_type="video"):
         headers.update(extra_headers)
 
     try:
-        with requests.get(url, stream=True, headers=headers, timeout=(20, 180)) as response:
+        with requests.get(url, stream=True, headers=headers, timeout=(20, 180), allow_redirects=True) as response:
             response.raise_for_status()
             content_type = response.headers.get("Content-Type", "").lower()
 
@@ -164,7 +187,8 @@ def download_file(url, target_path, extra_headers=None, asset_type="video"):
                 if "video" not in content_type and "octet-stream" not in content_type:
                     raise ValueError(f"Unexpected video content type: {content_type}")
             elif asset_type == "audio":
-                if "audio" not in content_type and "octet-stream" not in content_type and "mpeg" not in content_type:
+                # Audio: strict check hata do, sirf warning
+                if "audio" not in content_type and "octet-stream" not in content_type and "mpeg" not in content_type and "ogg" not in content_type:
                     print(f"Warning: Unexpected audio content type: {content_type}")
 
             with open(temp_path, "wb") as file:
@@ -175,7 +199,10 @@ def download_file(url, target_path, extra_headers=None, asset_type="video"):
         if not os.path.exists(temp_path):
             raise RuntimeError("Downloaded file was not created.")
 
-        if os.path.getsize(temp_path) < 50000:
+        # Audio ke liye minimum size chhota rakho (SFX chhote hote hain)
+        min_size = 2000 if asset_type == "audio" else 50000
+
+        if os.path.getsize(temp_path) < min_size:
             raise ValueError(f"Downloaded file is too small ({os.path.getsize(temp_path)} bytes)")
 
         if asset_type == "video":
@@ -194,6 +221,29 @@ def download_file(url, target_path, extra_headers=None, asset_type="video"):
         if os.path.exists(target_path):
             os.remove(target_path)
         raise RuntimeError(f"Asset download failed ({target_path}): {error}") from error
+
+
+def download_sfx_with_fallback(filename, target_path):
+    """
+    Ek SFX file ke liye multiple URLs try karo.
+    Ek fail ho to next URL try karo.
+    """
+    urls = SFX_SOURCES.get(filename, [])
+    if not urls:
+        raise RuntimeError(f"No URLs configured for {filename}")
+
+    last_error = None
+    for i, url in enumerate(urls):
+        try:
+            print(f"  Trying URL {i+1}/{len(urls)}: {url[:80]}...")
+            download_file(url, target_path, asset_type="audio")
+            return True
+        except Exception as e:
+            last_error = e
+            print(f"  URL {i+1} failed: {e}")
+            continue
+
+    raise RuntimeError(f"All URLs failed for {filename}: {last_error}")
 
 
 def fetch_pexels_clip(keyword, target_path, min_duration=3):
@@ -477,7 +527,7 @@ def fetch_scene_clips(scenes, scene_durations, output_dir="assets/scene_clips"):
 def prepare_background_audio(sfx_folder="assets/sfx"):
     os.makedirs(sfx_folder, exist_ok=True)
 
-    # Purane failed (0-byte) files delete karo
+    # Purane failed (0-byte ya chhote) files delete karo
     for f in os.listdir(sfx_folder):
         full_path = os.path.join(sfx_folder, f)
         try:
@@ -488,21 +538,26 @@ def prepare_background_audio(sfx_folder="assets/sfx"):
             pass
 
     downloaded = 0
-    for filename, url in SFX_SOURCES.items():
+    total = len(SFX_SOURCES)
+
+    for filename in SFX_SOURCES.keys():
         target = os.path.join(sfx_folder, filename)
+
+        # Already exists aur valid hai
         if os.path.exists(target) and os.path.getsize(target) > 1000:
             print(f"SFX already exists: {filename}")
             downloaded += 1
             continue
+
         try:
             print(f"Downloading SFX: {filename}")
-            download_file(url, target, asset_type="audio")
+            download_sfx_with_fallback(filename, target)
             downloaded += 1
-            print(f"  {filename} downloaded")
+            print(f"  {filename} downloaded successfully")
         except Exception as e:
             print(f"  SFX '{filename}' skipped: {e}")
 
-    print(f"Total SFX ready: {downloaded}/{len(SFX_SOURCES)}")
+    print(f"Total SFX ready: {downloaded}/{total}")
 
 
 def prepare_all_assets():
