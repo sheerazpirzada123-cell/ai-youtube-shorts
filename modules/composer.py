@@ -14,9 +14,6 @@ BG_MUSIC_VOLUME = 0.15
 SCENE_GAP = 0.05
 SFX_VOLUME = 0.55
 
-# ============================================================
-# CAPTION SETTINGS — Premium TikTok/Reels style
-# ============================================================
 CAPTION_FONT_SIZE = 72
 CAPTION_POSITION = ("center", 0.55)
 CAPTION_FADE = 0.10
@@ -24,7 +21,6 @@ CAPTION_COLOR = "#FFFFFF"
 CAPTION_STROKE_COLOR = "#000000"
 CAPTION_STROKE_WIDTH = 6
 
-# CTA settings
 CTA_TEXT = "Follow for more"
 CTA_FONT_SIZE = 58
 CTA_POSITION = ("center", 0.85)
@@ -128,7 +124,6 @@ class ShortsComposer:
             if len(display_text) > 55:
                 display_text = display_text[:52] + "..."
 
-            # Word wrap — 2 lines
             words = display_text.split()
             if len(words) > 5:
                 mid = len(words) // 2
@@ -136,7 +131,6 @@ class ShortsComposer:
                 line2 = " ".join(words[mid:])
                 display_text = line1 + "\n" + line2
 
-            # ImageMagick ke bina TextClip nahi banta — try karo
             try:
                 caption_clip = TextClip(
                     display_text,
@@ -217,7 +211,6 @@ class ShortsComposer:
                     return available[key]
             return None
 
-        # Scene 1 (hook) — impact sound
         impact = pick("impact") or pick("whoosh") or pick("pop")
         if impact:
             try:
@@ -229,7 +222,6 @@ class ShortsComposer:
             except Exception as e:
                 print("Intro SFX fail: " + str(e))
 
-        # Har scene transition — whoosh
         whoosh = pick("whoosh") or pick("swoosh")
         if whoosh:
             for i, (start_t, dur_t) in enumerate(scene_timings):
@@ -244,7 +236,6 @@ class ShortsComposer:
                 except Exception as e:
                     print("Transition SFX fail: " + str(e))
 
-        # CTA — pop/ding
         pop = pick("pop") or pick("ding")
         if pop and scene_timings:
             cta_time = scene_timings[-1][0]
