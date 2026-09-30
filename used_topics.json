@@ -120,6 +120,13 @@
       "format": "myth_vs_truth",
       "title": "Apps close karne se battery bachti hai? 🔋",
       "fact": "Closing background apps on smartphones actually consumes more battery because reloading them from scratch requires more CPU cycles than resuming them from RAM."
+    },
+    {
+      "date": "2026-09-30T19:36:10",
+      "category": "dreams and sleep",
+      "format": "shocking_fact",
+      "title": "Kya aapka dimaag jagte hue bhi sota hai? 🧠",
+      "fact": "The brain experiences a state of local sleep where individual neurons can temporarily go offline while the person remains awake."
     }
   ]
 }
