@@ -13,6 +13,7 @@ Why this replaces the old prompt:
 """
 
 import json
+import os
 import random
 import re
 import time
@@ -20,12 +21,23 @@ from datetime import datetime
 
 from google.genai import types
 
-MODELS = [
+# Order = priority. Each model has its OWN quota, so a longer list = more free calls per day.
+# Dead names (404) are skipped automatically. Override without editing code:
+#   GEMINI_MODELS: 'gemini-3.8-flash,gemini-3.6-flash'   (in run.yml)
+_DEFAULT_MODELS = [
+    "gemini-3.8-flash",
+    "gemini-3.6-flash",
+    "gemini-3.5-flash",
+    "gemini-3.5-flash-lite",
+    "gemini-3.1-flash-lite",
     "gemini-2.5-flash",
-    "gemini-flash-latest",
-    "gemini-2.5-flash-lite",
-    "gemini-2.0-flash",
 ]
+MODELS = [
+    m.strip()
+    for m in os.getenv("GEMINI_MODELS", ",".join(_DEFAULT_MODELS)).split(",")
+    if m.strip()
+]
+_DEAD_MODELS = set()
 
 MIN_SCENES = 8
 MAX_SCENES = 12
@@ -180,10 +192,13 @@ def _extract_json(raw):
     return json.loads(raw[start:end + 1])
 
 
-def _ask(client, prompt, temperature=1.0, max_rounds=3, base_wait=15):
+def _ask(client, prompt, temperature=1.0, max_rounds=3, base_wait=10):
     last = None
     for rnd in range(1, max_rounds + 1):
-        for model in MODELS:
+        live = [m for m in MODELS if m not in _DEAD_MODELS]
+        if not live:
+            break
+        for model in live:
             try:
                 print(f"[Gemini round {rnd}/{max_rounds}] {model}")
                 resp = client.models.generate_content(
@@ -198,7 +213,10 @@ def _ask(client, prompt, temperature=1.0, max_rounds=3, base_wait=15):
                 return _extract_json(resp.text)
             except Exception as e:
                 last = e
-                print(f"   {model} failed: {str(e)[:160]}")
+                msg = str(e)
+                print(f"   {model} failed: {msg[:160]}")
+                if "404" in msg or "NOT_FOUND" in msg:
+                    _DEAD_MODELS.add(model)  # never retry a removed model in this run
         if rnd < max_rounds:
             time.sleep(base_wait * rnd)
     raise RuntimeError(f"Gemini failed after all retries: {last}")
