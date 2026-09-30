@@ -87,6 +87,7 @@ jobs:
         TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
         TIKTOK_REFRESH_TOKEN: ${{ secrets.TIKTOK_REFRESH_TOKEN }}
         ENABLE_CAPTIONS: '0'   # '1' = on-screen key-phrase captions
+        HOOK_CAPTION: '1'      # big text on the hook scene + twist scene
         TTS_VOICE: 'hi-IN-MadhurNeural'
         TTS_RATE: '+8%'
       run: python main.py
