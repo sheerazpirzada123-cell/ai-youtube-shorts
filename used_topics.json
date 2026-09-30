@@ -113,6 +113,13 @@
       "format": "personal_what_if",
       "title": "Pyramid ka raaz: Ek pathar ka wazan! 🤯",
       "fact": "The immense weight of individual stone blocks used in ancient structures like the Great Pyramid of Giza, some weighing up to fifty thousand kilograms."
+    },
+    {
+      "date": "2026-09-30T13:58:00",
+      "category": "technology, robots, computers and smartphones",
+      "format": "myth_vs_truth",
+      "title": "Apps close karne se battery bachti hai? 🔋",
+      "fact": "Closing background apps on smartphones actually consumes more battery because reloading them from scratch requires more CPU cycles than resuming them from RAM."
     }
   ]
 }
