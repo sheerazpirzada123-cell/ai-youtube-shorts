@@ -57,75 +57,105 @@ for directory in [TEMP_VIDEO_DIR, TEMP_AUDIO_DIR, SCENE_CLIP_DIR, OUTPUT_DIR]:
     os.makedirs(directory, exist_ok=True)
 
 KEYWORD_MAP = {
-    "blood falls": "antarctica red waterfall glacier",
-    "dancing forest": "twisted pine trees forest",
-    "eternal flame": "waterfall cave fire",
-    "antarctica": "antarctica glacier ice landscape",
-    "bermuda triangle": "ocean storm dark",
-    "surtsey island": "volcano island sea ocean lava",
-    "sphinx": "ancient egypt pyramid statue desert",
-    "bermuda": "ocean storm dark water aerial",
-    "mantis shrimp": "ocean underwater colorful",
-    "pistol shrimp": "ocean underwater colorful",
-    "axolotl": "underwater aquarium fish",
-    "tardigrade": "microscope laboratory science",
-    "anglerfish": "deep sea underwater dark",
-    "corpse flower": "tropical jungle plant",
-    "rafflesia": "tropical jungle flower",
-    "box jellyfish": "underwater jellyfish ocean",
-    "immortal jellyfish": "underwater jellyfish ocean",
-    "blue whale": "ocean whale underwater",
-    "giant squid": "deep sea underwater dark",
+    "hot cheetos": "spicy chips snacks",
+    "chips": "potato chips snack",
+    "water": "water glass drinking",
+    "paani": "water glass drinking",
+    "chai": "tea cup hot",
+    "coffee": "coffee cup hot",
+    "namak": "salt shaker kitchen",
+    "sugar": "sugar cubes sweet",
+    "chocolate": "chocolate bar sweet",
+    "banana": "banana fruit",
+    "apple": "red apple fruit",
+    "energy drink": "energy drink can",
+    "soda": "soda can fizzy",
+    "ice cream": "ice cream cone",
+    "brain": "human brain animation",
+    "dimaag": "human brain animation",
+    "heart": "human heart beating",
+    "dil": "human heart beating",
+    "eye": "human eye closeup",
+    "aankh": "human eye closeup",
+    "lion": "lion wildlife",
+    "sher": "lion wildlife",
+    "wolf": "wolf wildlife",
+    "shark": "shark underwater",
+    "snake": "snake wildlife",
+    "elephant": "elephant wildlife",
+    "spider": "spider web insect",
+    "ant": "ants colony insect",
+    "bee": "bees hive insect",
+    "dinosaur": "dinosaur skeleton museum",
+    "bomb": "explosion fire",
+    "volcano": "volcano eruption lava",
+    "earthquake": "earthquake crack ground",
+    "tsunami": "tsunami wave ocean",
+    "lightning": "lightning storm sky",
+    "tornado": "tornado storm clouds",
+    "diamond": "diamond jewel shiny",
+    "gold": "gold coins treasure",
+    "money": "money cash dollars",
+    "paisa": "money cash dollars",
 }
 
 TOPIC_POOL = [
-    "samundar ki sabse gehri jagah mein kya chhupa hai",
-    "samundar mein aisi awaaz jo sunke scientists bhi darr gaye",
-    "samundar mein aisi cheez jo 100 saal se padi hai",
-    "deep sea mein aisi roshni jo koi samajh nahi paya",
-    "samundar mein aisi jagah jahan koi nahi ja sakta",
-    "space mein aisi cheez jo koi dekh nahi sakta",
-    "space mein aisi awaaz jo sunke scientists hairan hain",
-    "kisi planet par aisa toofan jo poori duniya ko nigal sakta hai",
-    "space mein aisa black hole jiske baare mein koi nahi jaanta",
-    "chaand par aisi cheez jo insaan ne chhod di",
-    "aisi jagah jahan pani ulta girta hai aur koi nahi samajh paya",
-    "aisi jagah jo duniya ke map se gayab ho gayi",
-    "aisi jagah jahan log jaate hain lekin wapas nahi aate",
-    "aisi jagah jahan dhoop kabhi nahi pahunchti",
-    "duniya ka sabse bada waterfall ya glacier",
-    "aisi natural disaster jo 100 saal mein ek baar aati hai",
-    "aisa phenomenon jahan electricity aasman se girti hai",
-    "duniya ki sabse ajeeb weather condition",
-    "aisi cheez jo aasman se gir rahi hai aur koi nahi jaanta kyun",
-    "duniya ka sabse khatarnak ocean current",
-    "koi aisa fact jo physics ke saare rules todta hai",
-    "duniya ka sabse purana ya sabse bada kuch",
-    "aisa experiment jo bhool kar bhi nahi karna chahiye",
-    "aisi cheez jo kabhi khatam nahi hoti",
-    "koi aisa number jo poori duniya ko confuse karta hai",
-    "koi purani civilization ka aisa raaz jo aaj tak solve nahi hua",
-    "koi aisa raaz jo 100 saal se chhupa hua tha",
-    "duniya ka sabse bada jhoot jo sab ne maan liya",
-    "aisa technology jo 100 saal aage ki lagti hai",
-    "koi aisa raaz jo Google bhi nahi jaanta",
-    "duniya ki sabse purani cheez jo aaj bhi zinda hai",
-    "duniya ka sabse bada jaanwar jo aaj bhi zinda hai",
-    "aisi cheez jo samundar mein 100 saal se padi hai",
-    "duniya ki sabse gehri jagah jahan insaan gaya hai",
-    "aisa toofan jo poori duniya ko hila de",
-    "insani jism ka koi aisa fact jo zyadatar log nahi jante",
-    "dimagh aur memory se juda koi mind blowing fact",
-    "insani jism mein aisi cheez jo kabhi nahi rukti",
-    "insaan ki aankh mein aisa raaz jo koi nahi jaanta",
+    # Food/Drink dangers (Sabse strong — universal)
+    "kitne chips khaane se aap mar sakte ho",
+    "kitna paani peene se aap bebaak ho sakte ho",
+    "kitni chai peene se aapka dil ruk sakta hai",
+    "kitna namak khaane se aapki maut ho sakti hai",
+    "kitni coffee peene se aapko heart attack aa sakta hai",
+    "kitni sugar khaane se aap coma mein ja sakte ho",
+    "kitni chocolate khaane se aap mar sakte ho",
+    "kitne energy drinks peene se aapki death ho sakti hai",
+    "kitni ice cream khaane se aapko brain freeze ho sakta hai",
+    "kitne banana khaane se aapko radiation ho sakta hai",
+
+    # Animal scenarios
+    "agar aap sheron ke beech bade hote to kya hota",
+    "agar aap wolves ke saath bade hote to kya hota",
+    "agar aap ek shark ke saath tairte to kya hota",
+    "agar aapke ghar mein 100 saanp hote to kya hota",
+    "agar aap ek hathi ke saamne khade hote to kya hota",
+    "agar aapke jism mein 1000 makdiyaan hoti to kya hota",
+    "agar aap ek cheenti ke size ke hote to kya hota",
+    "agar aap jungle mein akela raat bitate to kya hota",
+
+    # Modern vs Ancient
+    "agar aaj ka insaan dinosaur ke saamne khada ho jaye",
+    "agar aaj ka bomb ancient egypt pe gire",
+    "agar aaj ka mobile 100 saal pehle le jaaye",
+    "agar aaj ki bijli ancient rome mein aaye",
+    "agar aaj ka internet 1950 mein aaye",
+
+    # Body extremes
+    "agar aap 100 din tak so na paayein to kya hoga",
+    "agar aap 100 din tak kuch na khaayein to kya hoga",
+    "agar aap 100 din tak paani na piyein to kya hoga",
+    "agar aapka dil 1 minute ke liye ruk jaye to kya hoga",
+    "agar aapka dimaag 10 second ke liye band ho jaye to kya hoga",
+
+    # Extreme weather/places
+    "agar aap volcano ke andar gir jayein to kya hoga",
+    "agar aap tsunami ke saamne khade ho jayein to kya hoga",
+    "agar aap bijli ke girne wali jagah pe khade ho jayein to kya hoga",
+    "agar aap tornado ke andar chale jayein to kya hoga",
+    "agar aap earthquake ke center mein ho to kya hoga",
+
+    # Money/wealth extremes
+    "agar aap duniya ke sabse ameer insaan ban jayein to kya hoga",
+    "agar aapke paas 100 crore rupaye aa jayein to kya hoga",
+    "agar aap saari duniya ki gold le lein to kya hoga",
+    "agar aap 1 din mein 1 arab rupaye kharch karein to kya hoga",
 ]
 
 ANGLE_POOL = [
     "ek aise sawal se shuru karo jiska jawab koi nahi jaanta",
     "ek aisi baat batao jo sunke viewer ka dimaag ghoom jaye",
     "pehle ek ajeeb si baat batao phir uska asli reason",
-    "ek aisi kahani sunao jo sach lagti hai lekin impossible hai",
     "ek aisa fact batao jo sunke viewer soche 'ye jhoot hai' phir prove karo",
+    "ek aisi warning se shuru karo jo viewer ko dara de",
 ]
 
 HOOK_POOL = [
@@ -142,15 +172,16 @@ TITLE_POOL = [
     "Duniya Ka Sabse Bada Raaz!",
     "Scientists Bhi Confuse! 🤯",
     "Ye Sach Hai Ya Jhoot?",
-    "100 Saal Se Chhupa Raaz!",
     "Aapko Yakeen Nahi Hoga!",
     "Ye Cheez Real Hai!",
+    "Ye Mat Karna Kabhi!",
 ]
 
 BASE_TAGS = [
     "shorts", "youtubeshorts", "facts", "hindi facts", "urdu facts",
     "amazing facts", "mysteries", "viral shorts", "science facts",
-    "crazy facts", "mind blowing", "unbelievable",
+    "crazy facts", "mind blowing", "unbelievable", "dangerous facts",
+    "what if", "how many",
 ]
 
 MIN_SCENES = 7
@@ -281,53 +312,52 @@ def generate_script(max_retries=3, base_wait=20):
     HOOK STYLE: {hook_style}
 
     ============================================================
-    SABSE ZAROORI RULE - NO SPECIFIC PERSON
+    NICHE: "WHAT IF / HOW MANY" - PERSONAL DANGER FORMAT
     ============================================================
-    Script mein KISI BHI SPECIFIC INSAAN ka zikr NAHI hona chahiye.
+    Ye format viewers ko PERSONALLY touch karta hai. Viewer ko lagna chahiye:
+    "Ye mere baare mein hai. Mere saath kya hoga?"
 
-    YE LIKHNA HAI:
-    - Natural phenomena (samundar ki awaaz, space ki cheez, weather)
-    - Places (jagah, sheher, pahaad, samundar, jungle)
-    - Science facts (physics, chemistry, biology)
-    - Nature records (sabse bada, sabse purana, sabse gehri)
-    - Broad categories (insani jism, dimagh, aankh)
+    Isliye:
+    - "Aap" word use karo har scene mein
+    - Direct viewer ko address karo
+    - Personal danger ya personal scenario dikhao
+    - Numbers aur limits batao (kitna, kitne, kitni)
 
     ============================================================
-    HOOK RULES - VIEWER 3 SECOND MEIN SCROLL ROKTA HAI
+    HOOK RULES - 3 SECOND MEIN SCROLL ROKNA HAI
     ============================================================
     Scene 1 (hook) sirf 4-6 words ka hai. MAXIMUM 6 words.
     Har word MUST punch kare. Koi filler word nahi.
 
     Hook mein 3 cheezein HONI CHAHIYE:
-    1. SHOCK - kuch aisa jo sunke dimaag ruk jaye
-    2. URGENCY - aisa lage ki abhi jaanna zaroori hai
+    1. PERSONAL - "aap" ya "aapko" se shuru
+    2. DANGER ya SHOCK - kuch aisa jo daraa de ya chauka de
     3. CURIOSITY GAP - aadha sach batao, poora nahi
 
-    YE HOOK PATTERNS (best to worst):
+    BEST HOOK PATTERNS (in patterns ko use karo):
 
-    PATTERN 1 - DEATH/DANGER WARNING (SABSE STRONG):
-    - "Yahan jaana aapki maut hai"
-    - "Ye cheez 24 ghante mein maar degi"
-    - "Is jagah se koi wapas nahi aaya"
-    - "Ye paani aapko kha jayega"
+    PATTERN 1 - "KITNA/KITNE" DANGER (SABSE STRONG):
+    - "Ye 10 chips aapko maar sakti hai"
+    - "Ye 5 glass paani zeher hai"
+    - "Ye 3 chai aapka dil tod degi"
+    - "Ye 1 cheez aapko 24 ghante mein maar degi"
 
-    PATTERN 2 - IMPOSSIBLE CLAIM:
-    - "Ye physics ke saare rules todta hai"
-    - "Ye cheez duniya mein nahi honi chahiye"
-    - "Ye insaan ke bas ki baat nahi"
+    PATTERN 2 - SCARY NUMBER:
+    - "Sirf 2 chammach ye cheez maut"
+    - "3 saans aur aap khatam"
+    - "24 ghante mein aap khatam"
+    - "10 second mein sab khatam"
+
+    PATTERN 3 - DIRECT WARNING:
+    - "Ye cheez aapko maar degi"
+    - "Ye galti kabhi mat karna"
+    - "Ye aapke saath ho sakta hai"
+    - "Aapko ye kabhi nahi pata tha"
+
+    PATTERN 4 - IMPOSSIBLE CLAIM:
+    - "Ye cheez aapke dimaag ko todti hai"
+    - "Aap ye kabhi nahi soch sakte"
     - "Ye science ke against hai"
-
-    PATTERN 3 - SHOCKING NUMBER/FACT:
-    - "Duniya ki sabse khatarnak cheez paani"
-    - "100 saal se ye raaz chhupa tha"
-    - "Sirf 1 second mein sab khatam"
-    - "8 Arab log ye nahi jaante"
-
-    PATTERN 4 - DIRECT CHALLENGE:
-    - "Aap ye kabhi solve nahi kar sakte"
-    - "Ye dekh ke aap ruk jaoge"
-    - "Iska jawab kisi ke paas nahi"
-    - "Aap galat hain ye soch ke"
 
     YE HOOKS BILKUL MAT LIKHNA (DEAD):
     - "Kya aapko pata hai..." - BORING
@@ -335,13 +365,21 @@ def generate_script(max_retries=3, base_wait=20):
     - "Duniya mein ek jagah hai..." - VAGUE
     - "Scientists ne discover kiya..." - SLOW
     - "Imagine karo..." - WEAK
-    - Koi bhi hook jo "Kya", "Aaj", "Imagine" se shuru ho
-    - 6 words se lamba koi bhi hook
+    - Koi bhi hook jo 6 words se lamba ho
 
-    Scene 2 turant ek naya sawal khada kare - hook ka jawab poora mat do.
-    Scene 3-6 mein build-up karo - har scene ek naya layer.
-    Scene 7 mein TWIST ya REVEAL do - jo expected nahi tha.
-    Scene 8 mein SMART CTA - loop ya question type.
+    ============================================================
+    SCRIPT STRUCTURE (8 SCENES)
+    ============================================================
+    Scene 1 (HOOK): 4-6 words. Personal danger ya shocking number.
+    Scene 2 (LIMIT): "Ye kitna hai" - specific number ya limit batao.
+    Scene 3 (REACTION): "Aapka jism kya karega" - body reaction.
+    Scene 4 (SCIENCE): "Kyun aisa hota hai" - simple science.
+    Scene 5 (BUILD-UP): "Aur agar aap isse zyada karein..." - escalation.
+    Scene 6 (DANGER PEAK): "To kya hoga" - worst case scenario.
+    Scene 7 (TWIST): Ek unexpected fact ya reveal.
+    Scene 8 (CTA): 4-6 words. Loop ya question CTA.
+
+    Har scene mein "aap" word use karo. Direct viewer ko address karo.
 
     ============================================================
     CTA RULES - SMART CTA (DIRECT NAHI)
@@ -349,38 +387,31 @@ def generate_script(max_retries=3, base_wait=20):
     CTA matlab call-to-action. LEKIN direct "like karo, subscribe karo"
     BILKUL MAT LIKHNA.
 
-    CTA ka last scene mein 4-6 words ka hona chahiye. Sirf 1 line.
+    CTA ka last scene mein 4-6 words ka hona chahiye.
 
-    TARIKA 1 - LOOP CTA (SABSE BEST):
+    TARIKA 1 - LOOP CTA:
     - "Ye baat aapne miss kar di dobara dekho"
-    - "Shuru se dekho ek clue chhupa hai"
     - "Kya aapne ye notice kiya wapas dekho"
-    - "Ye video dobara dekhne layak hai"
 
     TARIKA 2 - QUESTION CTA:
-    - "Aapko kya lagta hai ye sach hai"
-    - "Ye possible hai ya nahi apna jawab do"
-    - "Comment mein batao sach hai ya nahi"
+    - "Aapko kya lagta hai sach hai"
+    - "Comment mein batao aap karenge"
 
     TARIKA 3 - CURIOSITY CTA:
     - "Agli baat aur bhi shocking hai"
-    - "Iske baare mein aur jaanne ke liye ruko"
-
-    YE CTA BILKUL MAT LIKHNA:
-    - "Like karo, share karo, subscribe karo"
-    - "Channel ko subscribe karo"
-    - "Video ko like kare"
-    - "Bell icon dabao"
+    - "Iske baare mein aur jaanna hai to ruko"
 
     ============================================================
     VISUAL AVAILABILITY RULE
     ============================================================
     Pexels/Pixabay par sirf BROAD, COMMON subjects ki footage hoti hai:
-    space, ocean, forest, mountains, desert, city, common animals,
-    human body, laboratory, technology, money, ruins, fire, ice, volcano,
-    books, kitchen, clock, astronaut.
+    food (chips, water, tea, coffee, sugar, chocolate, banana, ice cream),
+    body (brain, heart, eye, hands, stomach), animals (lion, shark, snake,
+    elephant, spider, bee, wolf), nature (volcano, tsunami, lightning,
+    tornado, earthquake), objects (money, gold, diamond, bomb, explosion),
+    places (forest, ocean, desert, city).
 
-    search_keyword mein kabhi specific species name, flower name, fish name,
+    search_keyword mein kabhi specific species name, brand name,
     ya specific person ka naam mat likhna.
 
     ============================================================
@@ -392,7 +423,7 @@ def generate_script(max_retries=3, base_wait=20):
     4. Har word natural Roman Hindi spelling mein likho.
     5. Numbers ko words mein likho: "100" nahi, "sau" likho. "24" nahi, "chaubees".
     6. Aise words avoid karo jinhe TTS galat bole.
-    7. Sentences chhote rakho - 7-10 words max.
+    7. Sentences chhote rakho - 5-10 words max.
 
     ============================================================
     SCENE & DURATION RULES
@@ -421,12 +452,12 @@ def generate_script(max_retries=3, base_wait=20):
       "tags": ["tag one", "tag two"],
       "scenes": [
         {{
-          "narration": "Yahan jaana aapki maut hai",
-          "search_keyword": "storm ocean dark"
+          "narration": "Ye 10 chips aapko maar sakti hai",
+          "search_keyword": "spicy chips snacks"
         }},
         {{
-          "narration": "Scientists ne wahan jaake kuch ajeeb dekha",
-          "search_keyword": "scientist laboratory"
+          "narration": "Aapka dimaag 10 minute mein khatam ho jayega",
+          "search_keyword": "human brain animation"
         }},
         {{
           "narration": "Ye baat aapne miss kar di dobara dekho",
@@ -590,7 +621,7 @@ def build_metadata(script, full_narration):
         total_chars += len(tag) + 1
 
     hashtags, seen_h = [], set()
-    candidates = ["#Shorts", "#Facts", "#HindiFacts", "#UrduFacts", "#AmazingFacts", "#CrazyFacts"]
+    candidates = ["#Shorts", "#Facts", "#HindiFacts", "#UrduFacts", "#AmazingFacts", "#CrazyFacts", "#WhatIf", "#DangerousFacts"]
     candidates += [
         "#" + re.sub(r"[^0-9a-zA-Z]", "", t)
         for t in script.get("tags", [])
