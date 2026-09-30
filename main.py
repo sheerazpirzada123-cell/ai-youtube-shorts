@@ -291,7 +291,7 @@ def generate_script(max_retries=3, base_wait=20):
     print(f"   seed: {run_seed}")
 
     prompt = f"""
-    Write a smooth, fast-paced, VIRAL YouTube Short script in simple spoken Urdu/Hindi (written in Roman letters) mixed with common English words.
+    Write a smooth, fast-paced, VIRAL YouTube Short script in simple spoken Hindi/Urdu (written in Roman letters) mixed with common English words.
 
     TOPIC FOR THIS SCRIPT:
     {topic}
@@ -406,15 +406,15 @@ def generate_script(max_retries=3, base_wait=20):
     ============================================================
     LANGUAGE & PRONUNCIATION RULES
     ============================================================
-    1. Simple spoken Urdu/Hindi with common English words (Roman script).
+    1. Simple spoken Hindi/Urdu with common English words (Roman script).
     2. NO formal Hindi/Urdu words (prakriti, chattaan, rahasya, adbhut).
     3. Narration ke andar NO full stops, question marks, ya commas.
-    4. Har word natural Roman Urdu/Hindi spelling mein likho.
+    4. Har word natural Roman Hindi/Urdu spelling mein likho.
     5. Numbers ko words mein likho: "100" nahi, "sau" likho. "24" nahi, "chaubees".
     6. Aise words avoid karo jinhe TTS galat bole.
     7. Sentences chhote rakho - 5-10 words max.
-    8. URDU PRONUNCIATION: "hai" ki jagah "hai" hi rakho, "hain" use karo.
-    9. Words aise likho jo Pakistani Urdu mein natural lagein.
+    8. Natural Hindustani pronunciation ke liye aise words use karo
+       jo Hindi aur Urdu dono mein common hain.
 
     ============================================================
     SCENE & DURATION RULES
@@ -535,16 +535,17 @@ def clean_text_for_tts(text):
 
 
 async def generate_voiceover(text, output_file):
-    # Pakistani Urdu Male Voice - Energetic & Natural
-    voice = "ur-PK-AsadNeural"
+    # Hindi Male Voice - Madhur (Best for Hindi/Urdu Roman script)
+    # Natural, warm, energetic - YouTube Shorts ke liye perfect
+    voice = "hi-IN-MadhurNeural"
     cleaned_text = clean_text_for_tts(text)
 
     communicate = edge_tts.Communicate(
         cleaned_text,
         voice,
-        rate="+15%",
-        pitch="+3Hz",
-        volume="+10%",
+        rate="+12%",       # Energetic pace - natural aur fast
+        pitch="+2Hz",      # Slight lift - lively, boring nahi
+        volume="+8%",      # Clear volume - mobile pe bhi sunai de
     )
     await communicate.save(output_file)
 
@@ -718,7 +719,7 @@ def main():
     full_narration = " ".join(s["narration"] for s in scenes)
     print(f"{len(scenes)} scenes | Hook: {scenes[0]['narration']}")
 
-    print("\nGenerating scene-wise Voiceover (Pakistani Urdu Male - Asad)...")
+    print("\nGenerating scene-wise Voiceover (Hindi Male - Madhur)...")
     try:
         voice_paths = build_scene_voiceovers(scenes)
     except Exception as e:
