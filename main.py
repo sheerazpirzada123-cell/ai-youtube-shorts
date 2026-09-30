@@ -40,6 +40,8 @@ USED_TOPICS_FILE = "used_topics.json"
 # Captions: short punchy key-phrase on screen (Roman, so fonts never break).
 # You removed captions earlier, so default is OFF. Set ENABLE_CAPTIONS: '1' in run.yml to enable.
 ENABLE_CAPTIONS = os.getenv("ENABLE_CAPTIONS", "0") == "1"
+# Big text only on the hook scene (+ twist scene). This is what grabs the first 3 seconds.
+HOOK_CAPTION = os.getenv("HOOK_CAPTION", "1") == "1"
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 
@@ -108,8 +110,15 @@ def build_scene_voiceovers(scenes):
         if os.path.exists(path):
             os.remove(path)
 
-        # Hook: a touch slower + deeper so the first line lands with weight.
-        rate, pitch = (("+3%", "-2Hz") if index == 1 else (None, None))
+        # Voice with emotion: slower/deeper on hook and twist, brisk in the middle.
+        if index == 1:
+            rate, pitch = "+0%", "-3Hz"
+        elif index == len(scenes) - 1 and len(scenes) > 4:
+            rate, pitch = "-4%", "-3Hz"
+        elif index == len(scenes):
+            rate, pitch = "+4%", "+0Hz"
+        else:
+            rate, pitch = None, None
 
         for attempt in range(1, 4):
             try:
@@ -303,7 +312,15 @@ def main():
             print(f"BG music: {bg_music_path}")
             break
 
-    captions = [s.get("caption", "") for s in scenes] if ENABLE_CAPTIONS else None
+    if ENABLE_CAPTIONS:
+        captions = [s.get("caption", "") for s in scenes]
+    elif HOOK_CAPTION:
+        captions = [""] * len(scenes)
+        captions[0] = scenes[0].get("caption", "")
+        if len(scenes) > 4:
+            captions[-2] = scenes[-2].get("caption", "")
+    else:
+        captions = None
     try:
         final_video_path = composer.create_multi_scene_short(
             clip_paths=clip_paths,
