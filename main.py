@@ -301,6 +301,38 @@ def generate_script(max_retries=3, base_wait=20):
     HOOK STYLE: {hook_style}
 
     ============================================================
+    SIMPLICITY RULES - SABKO SAMAJH AAYE (SABSE ZAROORI)
+    ============================================================
+    Script AISA hona chahiye ke 10 saal ka bacha bhi samajh le.
+    Koi mushkil word nahi. Koi English science word nahi.
+
+    YE WORDS BILKUL MAT USE KARO (mushkil):
+    - radiation, energy, chemical, biological, psychological
+    - phenomenon, atmosphere, gravity, oxygen, hydrogen
+    - molecular, cellular, neural, cardiac, toxic
+    - consume, overdose, lethal, fatal, dose
+    - Aur koi bhi science/medical term
+
+    INKI JAGAH SIMPLE WORDS USE KARO:
+    - radiation → "khatarnak kirnein"
+    - overdose → "hadd se zyada"
+    - lethal → "jaan leva"
+    - fatal → "maut wala"
+    - consume → "khaana ya peena"
+    - energy → "taaqat"
+    - toxic → "zeher"
+    - body → "jism"
+    - brain → "dimaag"
+    - heart → "dil"
+
+    SENTENCES AISE BANAO:
+    - Chhote sentences (5-8 words max)
+    - Roz-marra ke words use karo
+    - Jaise ek dost dost ko samjha raha ho
+    - "Matlab ye ke..." jaise connectors use karo
+    - Simple Hindustani jo sab samajh sakein
+
+    ============================================================
     NICHE: "WHAT IF / HOW MANY" - PERSONAL DANGER FORMAT
     ============================================================
     Ye format viewers ko PERSONALLY touch karta hai. Viewer ko lagna chahiye:
@@ -335,18 +367,11 @@ def generate_script(max_retries=3, base_wait=20):
     - "Sirf 2 chammach ye cheez maut"
     - "3 saans aur aap khatam"
     - "24 ghante mein aap khatam"
-    - "10 second mein sab khatam"
 
     PATTERN 3 - DIRECT WARNING:
     - "Ye cheez aapko maar degi"
     - "Ye galti kabhi mat karna"
     - "Ye aapke saath ho sakta hai"
-    - "Aapko ye kabhi nahi pata tha"
-
-    PATTERN 4 - IMPOSSIBLE CLAIM:
-    - "Ye cheez aapke dimaag ko todti hai"
-    - "Aap ye kabhi nahi soch sakte"
-    - "Ye science ke against hai"
 
     YE HOOKS BILKUL MAT LIKHNA (DEAD):
     - "Kya aapko pata hai..." - BORING
@@ -361,14 +386,15 @@ def generate_script(max_retries=3, base_wait=20):
     ============================================================
     Scene 1 (HOOK): 4-6 words. Personal danger ya shocking number.
     Scene 2 (LIMIT): "Ye kitna hai" - specific number ya limit batao.
-    Scene 3 (REACTION): "Aapka jism kya karega" - body reaction.
-    Scene 4 (SCIENCE): "Kyun aisa hota hai" - simple science.
+    Scene 3 (REACTION): "Aapka jism kya karega" - body reaction SIMPLE words mein.
+    Scene 4 (SCIENCE): "Kyun aisa hota hai" - simple science, mushkil word nahi.
     Scene 5 (BUILD-UP): "Aur agar aap isse zyada karein..." - escalation.
     Scene 6 (DANGER PEAK): "To kya hoga" - worst case scenario.
     Scene 7 (TWIST): Ek unexpected fact ya reveal.
     Scene 8 (CTA): 4-6 words. Loop ya question CTA.
 
     Har scene mein "aap" word use karo. Direct viewer ko address karo.
+    Har sentence 5-8 words ka ho. Simple Hindustani.
 
     ============================================================
     CTA RULES - SMART CTA (DIRECT NAHI)
@@ -388,7 +414,6 @@ def generate_script(max_retries=3, base_wait=20):
 
     TARIKA 3 - CURIOSITY CTA:
     - "Agli baat aur bhi shocking hai"
-    - "Iske baare mein aur jaanna hai to ruko"
 
     ============================================================
     VISUAL AVAILABILITY RULE
@@ -406,20 +431,18 @@ def generate_script(max_retries=3, base_wait=20):
     ============================================================
     LANGUAGE & PRONUNCIATION RULES
     ============================================================
-    1. Simple spoken Hindi/Urdu with common English words (Roman script).
-    2. NO formal Hindi/Urdu words (prakriti, chattaan, rahasya, adbhut).
+    1. Simple spoken Hindi/Urdu with common words (Roman script).
+    2. NO formal words (prakriti, chattaan, rahasya, adbhut).
     3. Narration ke andar NO full stops, question marks, ya commas.
     4. Har word natural Roman Hindi/Urdu spelling mein likho.
     5. Numbers ko words mein likho: "100" nahi, "sau" likho. "24" nahi, "chaubees".
     6. Aise words avoid karo jinhe TTS galat bole.
-    7. Sentences chhote rakho - 5-10 words max.
-    8. Natural Hindustani pronunciation ke liye aise words use karo
-       jo Hindi aur Urdu dono mein common hain.
+    7. Sentences chhote rakho - 5-8 words max.
 
     ============================================================
     SCENE & DURATION RULES
     ============================================================
-    1. EXACTLY 8 scenes. Har scene = ek chhota sentence (5-10 words).
+    1. EXACTLY 8 scenes. Har scene = ek chhota sentence (5-8 words).
        Scene 1 = hook (MAX 6 words). Scene 8 = SMART CTA (4-6 words).
     2. Total: 25-35 seconds (60-80 words total).
     3. Har scene ka search_keyword ALAG ho (2-4 words, English).
@@ -447,8 +470,8 @@ def generate_script(max_retries=3, base_wait=20):
           "search_keyword": "spicy chips snacks"
         }},
         {{
-          "narration": "Aapka dimaag 10 minute mein khatam ho jayega",
-          "search_keyword": "human brain animation"
+          "narration": "Aapka pet phat sakta hai",
+          "search_keyword": "stomach pain person"
         }},
         {{
           "narration": "Ye baat aapne miss kar di dobara dekho",
@@ -535,17 +558,16 @@ def clean_text_for_tts(text):
 
 
 async def generate_voiceover(text, output_file):
-    # Hindi Male Voice - Madhur (Best for Hindi/Urdu Roman script)
-    # Natural, warm, energetic - YouTube Shorts ke liye perfect
-    voice = "hi-IN-MadhurNeural"
+    # Pakistani Urdu Male Voice - Natural + Energetic
+    voice = "ur-PK-AsadNeural"
     cleaned_text = clean_text_for_tts(text)
 
     communicate = edge_tts.Communicate(
         cleaned_text,
         voice,
-        rate="+12%",       # Energetic pace - natural aur fast
-        pitch="+2Hz",      # Slight lift - lively, boring nahi
-        volume="+8%",      # Clear volume - mobile pe bhi sunai de
+        rate="+8%",
+        pitch="+0Hz",
+        volume="+8%",
     )
     await communicate.save(output_file)
 
@@ -719,7 +741,7 @@ def main():
     full_narration = " ".join(s["narration"] for s in scenes)
     print(f"{len(scenes)} scenes | Hook: {scenes[0]['narration']}")
 
-    print("\nGenerating scene-wise Voiceover (Hindi Male - Madhur)...")
+    print("\nGenerating scene-wise Voiceover (Pakistani Urdu Male - Asad)...")
     try:
         voice_paths = build_scene_voiceovers(scenes)
     except Exception as e:
@@ -757,13 +779,14 @@ def main():
             print(f"BG music: {bg_music_path}")
             break
 
+    # Captions HATA DIYE - scene_narrations pass nahi kar rahe
     try:
         final_video_path = composer.create_multi_scene_short(
             clip_paths=clip_paths,
             voiceover_paths=voice_paths,
             output_filename="final_short.mp4",
             bg_music_path=bg_music_path,
-            scene_narrations=[s["narration"] for s in scenes],
+            add_cta=False,
         )
     except Exception as e:
         print(f"Composition failed: {e}")
