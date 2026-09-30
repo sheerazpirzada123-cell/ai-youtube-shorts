@@ -438,6 +438,7 @@ def generate_script(max_retries=3, base_wait=20):
     5. Numbers ko words mein likho: "100" nahi, "sau" likho. "24" nahi, "chaubees".
     6. Aise words avoid karo jinhe TTS galat bole.
     7. Sentences chhote rakho - 5-8 words max.
+    8. Hindustani words use karo jo Hindi aur Urdu dono mein common hain.
 
     ============================================================
     SCENE & DURATION RULES
@@ -558,16 +559,17 @@ def clean_text_for_tts(text):
 
 
 async def generate_voiceover(text, output_file):
-    # Pakistani Urdu Male Voice - Natural + Energetic
-    voice = "ur-PK-AsadNeural"
+    # Hindi Male Voice - Madhur (Natural Hindustani)
+    # rate aur pitch NATURAL rakhe hain - koi artificial boost nahi
+    voice = "hi-IN-MadhurNeural"
     cleaned_text = clean_text_for_tts(text)
 
     communicate = edge_tts.Communicate(
         cleaned_text,
         voice,
-        rate="+8%",
+        rate="+0%",
         pitch="+0Hz",
-        volume="+8%",
+        volume="+5%",
     )
     await communicate.save(output_file)
 
@@ -741,7 +743,7 @@ def main():
     full_narration = " ".join(s["narration"] for s in scenes)
     print(f"{len(scenes)} scenes | Hook: {scenes[0]['narration']}")
 
-    print("\nGenerating scene-wise Voiceover (Pakistani Urdu Male - Asad)...")
+    print("\nGenerating scene-wise Voiceover (Natural Hindi - Madhur)...")
     try:
         voice_paths = build_scene_voiceovers(scenes)
     except Exception as e:
