@@ -100,7 +100,6 @@ KEYWORD_MAP = {
 }
 
 TOPIC_POOL = [
-    # Food/Drink dangers (Sabse strong — universal)
     "kitne chips khaane se aap mar sakte ho",
     "kitna paani peene se aap bebaak ho sakte ho",
     "kitni chai peene se aapka dil ruk sakta hai",
@@ -111,8 +110,6 @@ TOPIC_POOL = [
     "kitne energy drinks peene se aapki death ho sakti hai",
     "kitni ice cream khaane se aapko brain freeze ho sakta hai",
     "kitne banana khaane se aapko radiation ho sakta hai",
-
-    # Animal scenarios
     "agar aap sheron ke beech bade hote to kya hota",
     "agar aap wolves ke saath bade hote to kya hota",
     "agar aap ek shark ke saath tairte to kya hota",
@@ -121,29 +118,21 @@ TOPIC_POOL = [
     "agar aapke jism mein 1000 makdiyaan hoti to kya hota",
     "agar aap ek cheenti ke size ke hote to kya hota",
     "agar aap jungle mein akela raat bitate to kya hota",
-
-    # Modern vs Ancient
     "agar aaj ka insaan dinosaur ke saamne khada ho jaye",
     "agar aaj ka bomb ancient egypt pe gire",
     "agar aaj ka mobile 100 saal pehle le jaaye",
     "agar aaj ki bijli ancient rome mein aaye",
     "agar aaj ka internet 1950 mein aaye",
-
-    # Body extremes
     "agar aap 100 din tak so na paayein to kya hoga",
     "agar aap 100 din tak kuch na khaayein to kya hoga",
     "agar aap 100 din tak paani na piyein to kya hoga",
     "agar aapka dil 1 minute ke liye ruk jaye to kya hoga",
     "agar aapka dimaag 10 second ke liye band ho jaye to kya hoga",
-
-    # Extreme weather/places
     "agar aap volcano ke andar gir jayein to kya hoga",
     "agar aap tsunami ke saamne khade ho jayein to kya hoga",
     "agar aap bijli ke girne wali jagah pe khade ho jayein to kya hoga",
     "agar aap tornado ke andar chale jayein to kya hoga",
     "agar aap earthquake ke center mein ho to kya hoga",
-
-    # Money/wealth extremes
     "agar aap duniya ke sabse ameer insaan ban jayein to kya hoga",
     "agar aapke paas 100 crore rupaye aa jayein to kya hoga",
     "agar aap saari duniya ki gold le lein to kya hoga",
@@ -302,7 +291,7 @@ def generate_script(max_retries=3, base_wait=20):
     print(f"   seed: {run_seed}")
 
     prompt = f"""
-    Write a smooth, fast-paced, VIRAL YouTube Short script in simple spoken Hindi/Urdu (written in Roman letters) mixed with common English words.
+    Write a smooth, fast-paced, VIRAL YouTube Short script in simple spoken Urdu/Hindi (written in Roman letters) mixed with common English words.
 
     TOPIC FOR THIS SCRIPT:
     {topic}
@@ -334,7 +323,7 @@ def generate_script(max_retries=3, base_wait=20):
     2. DANGER ya SHOCK - kuch aisa jo daraa de ya chauka de
     3. CURIOSITY GAP - aadha sach batao, poora nahi
 
-    BEST HOOK PATTERNS (in patterns ko use karo):
+    BEST HOOK PATTERNS:
 
     PATTERN 1 - "KITNA/KITNE" DANGER (SABSE STRONG):
     - "Ye 10 chips aapko maar sakti hai"
@@ -417,13 +406,15 @@ def generate_script(max_retries=3, base_wait=20):
     ============================================================
     LANGUAGE & PRONUNCIATION RULES
     ============================================================
-    1. Simple spoken Hindi/Urdu with common English words.
-    2. NO formal Hindi words (prakriti, chattaan, rahasya, adbhut).
+    1. Simple spoken Urdu/Hindi with common English words (Roman script).
+    2. NO formal Hindi/Urdu words (prakriti, chattaan, rahasya, adbhut).
     3. Narration ke andar NO full stops, question marks, ya commas.
-    4. Har word natural Roman Hindi spelling mein likho.
+    4. Har word natural Roman Urdu/Hindi spelling mein likho.
     5. Numbers ko words mein likho: "100" nahi, "sau" likho. "24" nahi, "chaubees".
     6. Aise words avoid karo jinhe TTS galat bole.
     7. Sentences chhote rakho - 5-10 words max.
+    8. URDU PRONUNCIATION: "hai" ki jagah "hai" hi rakho, "hain" use karo.
+    9. Words aise likho jo Pakistani Urdu mein natural lagein.
 
     ============================================================
     SCENE & DURATION RULES
@@ -544,13 +535,16 @@ def clean_text_for_tts(text):
 
 
 async def generate_voiceover(text, output_file):
-    voice = "hi-IN-MadhurNeural"
+    # Pakistani Urdu Male Voice - Energetic & Natural
+    voice = "ur-PK-AsadNeural"
     cleaned_text = clean_text_for_tts(text)
+
     communicate = edge_tts.Communicate(
         cleaned_text,
         voice,
-        rate="+4%",
-        pitch="-2Hz",
+        rate="+15%",
+        pitch="+3Hz",
+        volume="+10%",
     )
     await communicate.save(output_file)
 
@@ -724,7 +718,7 @@ def main():
     full_narration = " ".join(s["narration"] for s in scenes)
     print(f"{len(scenes)} scenes | Hook: {scenes[0]['narration']}")
 
-    print("\nGenerating scene-wise Voiceover...")
+    print("\nGenerating scene-wise Voiceover (Pakistani Urdu Male - Asad)...")
     try:
         voice_paths = build_scene_voiceovers(scenes)
     except Exception as e:
