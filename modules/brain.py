@@ -28,7 +28,7 @@ MODELS = [
 ]
 
 MIN_SCENES = 8
-MAX_SCENES = 13
+MAX_SCENES = 12
 HISTORY_KEY = "_recent"
 HISTORY_LIMIT = 90
 
@@ -81,8 +81,9 @@ FORMATS = {
 }
 
 CTA_STYLES = [
+    "a loop line whose last words complete the hook sentence, so the video replays naturally",
+    "a loop line whose last words complete the hook sentence, so the video replays naturally",
     "a soft question that invites a comment (e.g. which one surprised you most)",
-    "a loop line that flows straight back into the hook, so the video replays naturally",
     "a curiosity teaser for the next video, no begging for likes",
 ]
 
@@ -238,12 +239,12 @@ def normalize_and_validate(data):
         if not sc["search_keyword"]:
             problems.append(f"scene {i} missing search_keyword")
 
-    if scenes and len(scenes[0]["narration"].split()) > 9:
-        problems.append("hook longer than 9 words")
+    if scenes and len(scenes[0]["narration"].split()) > 8:
+        problems.append("hook longer than 8 words")
 
     total_words = sum(len(s["narration"].split()) for s in scenes)
-    if scenes and not (70 <= total_words <= 135):
-        problems.append(f"total words {total_words} outside 70-135")
+    if scenes and not (65 <= total_words <= 105):
+        problems.append(f"total words {total_words} outside 65-105")
 
     tags = data.get("tags") or []
     script = {
@@ -278,7 +279,8 @@ def _writer_prompt(plan):
     avoid = "\n".join(f"- {a}" for a in plan["avoid"]) or "- (nothing yet)"
     return f"""
 You are the head writer of a top Hindi/Urdu-audience YouTube Shorts facts channel.
-Write ONE fresh 33-42 second Short.
+Write ONE fresh 28-34 second Short. Retention is everything: most viewers decide
+to swipe in the first 2-3 seconds.
 
 CATEGORY: {plan['category']}
 FORMAT: {plan['format']} -> {FORMATS[plan['format']]}
@@ -289,6 +291,19 @@ DO NOT repeat or paraphrase any of these earlier videos:
 Also avoid the internet's most overused facts (honey never spoils, octopus has three hearts,
 we use only 10% of the brain, banana radiation, Great Wall visible from space, etc).
 Pick something a curious person would say "sach mein?" to.
+
+HOOK (scene 1) - THE MOST IMPORTANT LINE
+- Max 7 words. The first 3 words must already create shock, danger, or an open question.
+- No greeting, no intro, never start with 'क्या आप जानते हैं'. Start mid-action, like the
+  story is already happening.
+- Use ONE of these patterns (styles only, do NOT copy the examples):
+  1. Bold true claim that sounds wrong: 'आपका दिमाग़ आपसे रोज़ झूठ बोलता है।'
+  2. Warning to the viewer: 'रात को ये गलती कभी मत करना।'
+  3. Impossible thing: 'ये जानवर मरकर भी ज़िंदा रहता है।'
+  4. Direct 'aap' question: 'आप रोज़ ये करते हैं, पर क्यों?'
+  5. Countdown/stakes: 'सिर्फ़ तीन सेकंड, और सब बदल जाता है।'
+- The hook must promise something the LAST scenes actually deliver. No clickbait lies.
+- Scene 1 caption = the 2-3 most shocking words, in Roman, UPPERCASE-friendly.
 
 ACCURACY (non-negotiable)
 - Only real, well-established facts. If you are not sure, choose a different fact.
@@ -303,21 +318,25 @@ LANGUAGE
   (सौ, हज़ार, पचास प्रतिशत). Any English term must be written in Devanagari the way people say it
   (जैसे 'लेज़र', 'सैटेलाइट').
 - Use commas and the danda (।) or ? naturally so the voice gets rhythm and breath.
-- Each scene = EXACTLY ONE short sentence, 6-11 words. Read it aloud in your head: it must
-  sound like a friend telling a story, not a textbook.
+- Each scene = EXACTLY ONE short sentence, 6-10 words. It must sound like a friend telling a
+  story, not a textbook.
 
-STRUCTURE (9 to 12 scenes, 85-115 words total)
-1. HOOK (max 7 words): a curiosity gap or bold true claim. Never start with 'क्या आप जानते हैं'.
-2. Context in one line - why should I care?
-3-7. The story: concrete detail, a real number, then the WHY in simple words. Each scene must add
-   NEW information and end on a small open loop that the next scene resolves.
-8. Twist / most surprising part (second-last scene).
-9. Last scene: {plan['cta']}. Max 9 words. No 'like/subscribe' begging.
+STRUCTURE (8 to 11 scenes, 75-95 words total)
+1. HOOK (see above).
+2. One line of context - why should I care? Zero filler, go straight into the story.
+3-4. Concrete detail, a real number, then the WHY in simple words.
+5. RE-HOOK: a line that flips or escalates ('पर असली बात अभी बाकी है' style, in your own words)
+   and still adds NEW information. This stops the mid-video drop-off.
+6-7. The story continues. Every scene adds new info and ends on a small open loop.
+Second-last: the twist / most surprising part.
+Last scene: {plan['cta']}. Max 9 words. No 'like/subscribe' begging.
 
 VISUALS
 - search_keyword: English, 2-4 words, BROAD footage that certainly exists on free stock sites
   (space galaxy, ocean waves, lion running, human eye closeup, city traffic night, gold coins,
   ancient temple ruins, scientist microscope, lightning storm, sleeping person, clock ticking...).
+- Scene 1 keyword must be the most dramatic, eye-catching footage (fast motion, closeup, dark
+  and moody), because it is the first frame the viewer sees.
 - Never a brand, a person's name, or a rare species. Every scene must have a DIFFERENT keyword.
 - Make the keyword match what is SAID in that scene, so picture and voice agree.
 
@@ -334,10 +353,12 @@ Below is a draft script (JSON). Improve it and return the FINAL JSON in the exac
 CHECKLIST
 1. Fact-check every claim. If any claim is wrong, exaggerated or unverifiable, replace it with a
    verified detail (or rewrite the scene) so the whole video is true. Remove invented numbers.
-2. Hook: max 7 words, makes the viewer need the answer. Rewrite if weak or generic.
-3. Every scene: one sentence, 6-11 words, Devanagari only, no digits, no Latin letters, natural
+2. Hook: max 7 words. First 3 words must create shock, danger or a burning question. Rewrite it
+   if it sounds like an intro, a greeting or a textbook line. The hook must be truthfully paid off.
+3. Every scene: one sentence, 6-10 words, Devanagari only, no digits, no Latin letters, natural
    spoken Hindustani that an Indian and a Pakistani viewer both understand.
-4. Cut filler. Each scene must add new info. Keep 9-12 scenes, 85-115 words total.
+4. Cut filler. Each scene must add new info. Keep 8-11 scenes, 75-95 words total. Scene 5 must
+   work as a re-hook (a flip or escalation).
 5. Last scene: short, natural, no begging for likes. It should make the viewer want to replay or comment.
 6. Keep search_keyword broad, English, 2-4 words, different for every scene, matching the spoken line.
 7. Title: Roman Hinglish, max 58 chars, one emoji, honest (no false promise).
