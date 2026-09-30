@@ -116,7 +116,16 @@ class ShortsComposer:
                 clip.close()
                 raise RuntimeError("Subclip fail: " + path + ": " + str(e))
 
-        return ShortsComposer._fit_vertical(clip)
+        fitted = ShortsComposer._fit_vertical(clip)
+        # slow punch-in = constant motion, keeps eyes on the screen
+        try:
+            d = max(duration, 0.5)
+            zoomed = fitted.resize(lambda t: 1 + 0.08 * min(t, d) / d)
+            return CompositeVideoClip(
+                [zoomed.set_position("center")], size=(TARGET_W, TARGET_H)
+            ).set_duration(fitted.duration)
+        except Exception:
+            return fitted
 
     # ========================================================
     # PIL CAPTION — ImageMagick ki zaroorat NAHI
