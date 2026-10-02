@@ -190,6 +190,13 @@
       "format": "mystery_explained",
       "title": "Captcha ko aapka sach kaise pata chalta hai? 🤖",
       "fact": "CAPTCHA tests verify humanity not by the click itself, but by tracking the micro-fluctuations of the mouse cursor before the click, which bots cannot replicate."
+    },
+    {
+      "date": "2026-10-02T19:28:04",
+      "category": "fire, ice and extreme temperatures",
+      "format": "myth_vs_truth",
+      "title": "Garam paani jaldi barf banta hai? 🤯",
+      "fact": "Hot water can freeze faster than cold water under certain specific conditions, a phenomenon known as the Mpemba effect."
     }
   ]
 }
