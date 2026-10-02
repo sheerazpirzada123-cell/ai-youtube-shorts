@@ -183,6 +183,13 @@
       "format": "top3",
       "title": "Aapke Body Ke 3 Hidden Secrets 👁️",
       "fact": "The human body has unique traits: eye muscles move rapidly, stomach acid is strong, and the cornea gets oxygen directly from the air without blood vessels."
+    },
+    {
+      "date": "2026-10-02T14:01:41",
+      "category": "technology, robots, computers and smartphones",
+      "format": "mystery_explained",
+      "title": "Captcha ko aapka sach kaise pata chalta hai? 🤖",
+      "fact": "CAPTCHA tests verify humanity not by the click itself, but by tracking the micro-fluctuations of the mouse cursor before the click, which bots cannot replicate."
     }
   ]
 }
