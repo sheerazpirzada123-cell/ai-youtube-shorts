@@ -1,8 +1,8 @@
 """
 Audio engine for the Shorts pipeline.
 
-- Voice: edge-tts (Hindi neural voice) with gTTS fallback, tight silence trim,
-  light EQ + de-click fades.
+- Voice: edge-tts (Hindi MALE neural voice only, retried - no female fallback),
+  tight silence trim, light EQ + de-click fades.
 - SFX: generated locally with numpy (no downloads, never fails, no copyright).
 - Mix: ffmpeg only. BGM is ducked under the voice (sidechain), voice is
   compressed for clarity, and the master is loudness-normalised for Shorts.
@@ -12,16 +12,20 @@ import asyncio
 import os
 import random
 import subprocess
+import time
 import wave
 
 import numpy as np
 import edge_tts
-from gtts import gTTS
 
 SR = 44100
 
 # ---------------------------------------------------------------- voice ----
+# Male voice is LOCKED for every scene. gTTS fallback was removed because gTTS
+# only has a female voice, which made the gender flip between scenes whenever
+# Edge TTS failed once. If Edge TTS fails we retry the SAME voice instead.
 VOICE = os.getenv("TTS_VOICE", "hi-IN-MadhurNeural")
+TTS_RETRIES = 5
 VOICE_RATE = os.getenv("TTS_RATE", "+8%")
 VOICE_PITCH = "+0Hz"
 VOICE_VOLUME = "+0%"
@@ -70,25 +74,29 @@ def _trim_silence(path):
 
 
 def generate_voiceover(text, output_path, rate=None, pitch=None):
-    """One scene of narration -> mp3 (trimmed). Edge TTS first, gTTS fallback."""
+    """One scene of narration -> mp3 (trimmed). Always the same male Edge voice."""
     os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
     clean = " ".join(str(text).split())
     if not clean:
         raise ValueError("Voiceover text empty hai.")
 
-    try:
-        asyncio.run(_tts_async(clean, output_path, rate or VOICE_RATE, pitch or VOICE_PITCH))
-        if os.path.exists(output_path) and os.path.getsize(output_path) > 1000:
-            _trim_silence(output_path)
-            return output_path
-        raise RuntimeError("Edge TTS ne valid audio nahi di.")
-    except Exception as e:
-        print(f"Edge TTS failed: {e}. gTTS fallback...")
+    last_err = None
+    for attempt in range(1, TTS_RETRIES + 1):
+        try:
+            if os.path.exists(output_path):
+                os.remove(output_path)
+            asyncio.run(_tts_async(clean, output_path, rate or VOICE_RATE, pitch or VOICE_PITCH))
+            if os.path.exists(output_path) and os.path.getsize(output_path) > 1000:
+                _trim_silence(output_path)
+                return output_path
+            raise RuntimeError("Edge TTS ne valid audio nahi di.")
+        except Exception as e:
+            last_err = e
+            print(f"Edge TTS ({VOICE}) attempt {attempt}/{TTS_RETRIES} failed: {e}")
+            time.sleep(1.5 * attempt)
 
-    tts = gTTS(text=clean, lang="hi", slow=False)
-    tts.save(output_path)
-    _trim_silence(output_path)
-    return output_path
+    # Do NOT fall back to another (female) voice - fail loudly instead.
+    raise RuntimeError(f"Male voice ({VOICE}) generate nahi hui: {last_err}")
 
 
 # ------------------------------------------------------------ synth SFX ----
