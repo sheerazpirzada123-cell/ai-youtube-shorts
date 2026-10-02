@@ -85,6 +85,29 @@ BASE_TAGS = [
 ]
 
 
+def get_youtube_channels():
+    """Channel 1 = existing secrets. Channel 2 is OPTIONAL: it is used only when
+    YOUTUBE_REFRESH_TOKEN_2 is set. If CLIENT_ID_2 / CLIENT_SECRET_2 are not set,
+    channel 1's client id/secret are reused. Playlist ids are per-channel."""
+    channels = [{
+        "name": "Channel 1",
+        "client_id": YOUTUBE_CLIENT_ID,
+        "client_secret": YOUTUBE_CLIENT_SECRET,
+        "refresh_token": YOUTUBE_REFRESH_TOKEN,
+        "playlist_id": YOUTUBE_PLAYLIST_ID,
+    }]
+    token2 = os.getenv("YOUTUBE_REFRESH_TOKEN_2")
+    if token2:
+        channels.append({
+            "name": "Channel 2",
+            "client_id": os.getenv("YOUTUBE_CLIENT_ID_2") or YOUTUBE_CLIENT_ID,
+            "client_secret": os.getenv("YOUTUBE_CLIENT_SECRET_2") or YOUTUBE_CLIENT_SECRET,
+            "refresh_token": token2,
+            "playlist_id": os.getenv("YOUTUBE_PLAYLIST_ID_2", ""),
+        })
+    return channels
+
+
 def notify_telegram(message: str):
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
         return
@@ -353,52 +376,55 @@ def main():
     print(f"Title: {title}")
     print(f"Tags: {len(tags)} tags")
 
-    video_id = None
-    try:
-        video_id = upload_video(
-            video_path=final_video_path,
-            title=title,
-            description=description,
-            tags=tags,
-            privacy_status="public",
-            client_id=YOUTUBE_CLIENT_ID,
-            client_secret=YOUTUBE_CLIENT_SECRET,
-            refresh_token=YOUTUBE_REFRESH_TOKEN,
-        )
-        print(f"Video uploaded! ID: {video_id}")
-        print(f"https://youtube.com/shorts/{video_id}")
+    # Each channel is independent: if one fails, the other still gets its upload.
+    for ch in get_youtube_channels():
+        name = ch["name"]
+        print(f"\n[{name}] Uploading...")
+        try:
+            video_id = upload_video(
+                video_path=final_video_path,
+                title=title,
+                description=description,
+                tags=tags,
+                privacy_status="public",
+                client_id=ch["client_id"],
+                client_secret=ch["client_secret"],
+                refresh_token=ch["refresh_token"],
+            )
+            print(f"[{name}] Video uploaded! ID: {video_id}")
+            print(f"https://youtube.com/shorts/{video_id}")
 
-        if os.path.exists(thumb_path):
-            print("\nSetting thumbnail...")
-            set_thumbnail(
-                video_id,
-                thumb_path,
-                YOUTUBE_CLIENT_ID,
-                YOUTUBE_CLIENT_SECRET,
-                YOUTUBE_REFRESH_TOKEN,
+            if os.path.exists(thumb_path):
+                print(f"[{name}] Setting thumbnail...")
+                set_thumbnail(
+                    video_id,
+                    thumb_path,
+                    ch["client_id"],
+                    ch["client_secret"],
+                    ch["refresh_token"],
+                )
+
+            if ch["playlist_id"]:
+                print(f"[{name}] Adding to playlist...")
+                add_to_playlist(
+                    video_id,
+                    ch["playlist_id"],
+                    ch["client_id"],
+                    ch["client_secret"],
+                    ch["refresh_token"],
+                )
+
+            elapsed = time.time() - start_time
+            notify_telegram(
+                f"[{name}] Video uploaded!\n"
+                f"{title}\n"
+                f"https://youtube.com/shorts/{video_id}\n"
+                f"{elapsed:.0f}s"
             )
 
-        if YOUTUBE_PLAYLIST_ID:
-            print("\nAdding to playlist...")
-            add_to_playlist(
-                video_id,
-                YOUTUBE_PLAYLIST_ID,
-                YOUTUBE_CLIENT_ID,
-                YOUTUBE_CLIENT_SECRET,
-                YOUTUBE_REFRESH_TOKEN,
-            )
-
-        elapsed = time.time() - start_time
-        notify_telegram(
-            f"Video uploaded!\n"
-            f"{title}\n"
-            f"https://youtube.com/shorts/{video_id}\n"
-            f"{elapsed:.0f}s"
-        )
-
-    except Exception as e:
-        print(f"YouTube Upload Failed: {e}")
-        notify_telegram(f"YouTube upload failed: {e}")
+        except Exception as e:
+            print(f"[{name}] YouTube Upload Failed: {e}")
+            notify_telegram(f"[{name}] YouTube upload failed: {e}")
 
     if TIKTOK_CLIENT_KEY and TIKTOK_CLIENT_SECRET and TIKTOK_REFRESH_TOKEN:
         print("\nUploading Video to TikTok (draft)...")
