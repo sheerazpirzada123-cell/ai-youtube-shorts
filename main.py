@@ -40,6 +40,9 @@ USED_TOPICS_FILE = "used_topics.json"
 # Captions: short punchy key-phrase on screen (Roman, so fonts never break).
 # You removed captions earlier, so default is OFF. Set ENABLE_CAPTIONS: '1' in run.yml to enable.
 ENABLE_CAPTIONS = os.getenv("ENABLE_CAPTIONS", "0") == "1"
+# Word-by-word Hinglish captions (different fonts/sizes, spoken word highlighted).
+# When ON it replaces the two caption modes below. Set WORD_CAPTIONS: '0' to turn off.
+WORD_CAPTIONS = os.getenv("WORD_CAPTIONS", "1") == "1"
 # Big text only on the hook scene (+ twist scene). This is what grabs the first 3 seconds.
 HOOK_CAPTION = os.getenv("HOOK_CAPTION", "1") == "1"
 
@@ -335,7 +338,9 @@ def main():
             print(f"BG music: {bg_music_path}")
             break
 
-    if ENABLE_CAPTIONS:
+    if WORD_CAPTIONS:
+        captions = None
+    elif ENABLE_CAPTIONS:
         captions = [s.get("caption", "") for s in scenes]
     elif HOOK_CAPTION:
         captions = [""] * len(scenes)
@@ -352,6 +357,7 @@ def main():
             bg_music_path=bg_music_path,
             add_cta=False,
             scene_narrations=captions,
+            word_scenes=scenes if WORD_CAPTIONS else None,
         )
     except Exception as e:
         print(f"Composition failed: {e}")
