@@ -211,6 +211,20 @@
       "format": "mystery_explained",
       "title": "Kya aapka sir pairon se boodha hai? 🤯",
       "fact": "Time moves slower closer to Earth's surface due to gravitational time dilation, meaning a person's feet are fractionally younger than their head."
+    },
+    {
+      "date": "2026-10-03T13:53:24",
+      "category": "extreme weather (lightning, storms, ice, rain)",
+      "format": "myth_vs_truth",
+      "title": "Gaadi Pe Bijli Gire Toh Kya Hoga? ⚡",
+      "fact": "A car protects you from lightning because of its metal frame acting as a Faraday cage, not because of its rubber tires."
+    },
+    {
+      "date": "2026-10-03T14:00:04",
+      "category": "insects and tiny creatures",
+      "format": "personal_what_if",
+      "title": "Chehre Par Rengne Wale Microscopic Jeev! 😨",
+      "fact": "Demodex mites live on human faces, lack an anus to excrete waste, and explode inside skin pores when they die."
     }
   ]
 }
