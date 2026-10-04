@@ -239,6 +239,20 @@
       "format": "mystery_explained",
       "title": "इस पेंटिंग के पीछे क्या छिपा है? 😱",
       "fact": "A painting in the Louvre called The Chess Players contains a secret optical illusion where the figures are actually painted over a living human person."
+    },
+    {
+      "date": "2026-10-04T08:43:15",
+      "category": "human body and brain (eyes, heart, hands, sleep)",
+      "format": "myth_vs_truth",
+      "title": "Ungliyon Mein Muscle Nahi Hoti? 🖐️",
+      "fact": "Human fingers contain zero muscles and are moved remotely by muscles in the forearm pulling tendons like cables."
+    },
+    {
+      "date": "2026-10-04T08:48:09",
+      "category": "space, planets, stars and astronauts",
+      "format": "top3",
+      "title": "Titan Par Methane Ki Baarish! 🪐",
+      "fact": "Saturn's moon Titan has a thick nitrogen-rich atmosphere with liquid methane rain, rivers, and lakes, making it the only world in our solar system besides Earth with liquid on its surface."
     }
   ]
 }
