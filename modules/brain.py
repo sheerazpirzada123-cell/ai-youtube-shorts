@@ -272,6 +272,8 @@ def normalize_and_validate(data):
         "description": str(data.get("description", "")).strip(),
         "tags": [str(t) for t in tags] if isinstance(tags, list) else [],
         "core_fact": str(data.get("core_fact", "")).strip(),
+        "thumb_text": " ".join(str(data.get("thumb_text", "")).split()[:5]),
+        "thumb_prompt": " ".join(str(data.get("thumb_prompt", "")).split())[:400],
         "scenes": scenes,
     }
     if not script["title"]:
@@ -283,6 +285,8 @@ def normalize_and_validate(data):
 _SCHEMA = """{
   "core_fact": "one English sentence stating the main fact (used to avoid repeats)",
   "title": "Roman Hinglish title, max 58 chars, one emoji, no hashtags",
+  "thumb_text": "2-4 word thumbnail text in Roman Hinglish/English, UPPERCASE, a curiosity gap that makes people NEED to click (an open question or shock) without giving the answer, e.g. 'DIL SLOW KYUN?'. No emoji.",
+  "thumb_prompt": "ENGLISH image prompt (25-45 words) for an AI image generator: ONE striking, emotional, easy-to-read main subject of THIS exact fact, close-up, dramatic lighting, bold colors, a clear 'whoa' moment. Describe only the picture. No text/words/letters in the image, no real celebrities.",
   "description": "2-3 short Roman Hinglish lines + one line of English search keywords. No hashtags.",
   "tags": ["15-20 lowercase tags mixing english + roman hindi/urdu"],
   "scenes": [
