@@ -82,11 +82,10 @@ BASE_TAGS = [
 
 
 def get_youtube_channels():
-    """
-    Channel 1 = existing secrets.
-    Channel 2 is OPTIONAL: used only when YOUTUBE_REFRESH_TOKEN_2 is set.
-    Har channel ka apna independent pipeline chalega.
-    """
+    """Channel 1 = existing secrets. Extra channels (2, 3, 4, 5) are OPTIONAL:
+    each is used only when YOUTUBE_REFRESH_TOKEN_<n> is set. Agar CLIENT_ID_<n> /
+    CLIENT_SECRET_<n> set nahi hain to channel 1 ke client id/secret reuse honge.
+    Playlist id per-channel hai."""
     channels = [{
         "name": "Channel 1",
         "client_id": YOUTUBE_CLIENT_ID,
@@ -94,14 +93,16 @@ def get_youtube_channels():
         "refresh_token": YOUTUBE_REFRESH_TOKEN,
         "playlist_id": YOUTUBE_PLAYLIST_ID,
     }]
-    token2 = os.getenv("YOUTUBE_REFRESH_TOKEN_2")
-    if token2:
+    for n in range(2, 6):  # 2, 3, 4, 5
+        token = os.getenv(f"YOUTUBE_REFRESH_TOKEN_{n}")
+        if not token:
+            continue
         channels.append({
-            "name": "Channel 2",
-            "client_id": os.getenv("YOUTUBE_CLIENT_ID_2") or YOUTUBE_CLIENT_ID,
-            "client_secret": os.getenv("YOUTUBE_CLIENT_SECRET_2") or YOUTUBE_CLIENT_SECRET,
-            "refresh_token": token2,
-            "playlist_id": os.getenv("YOUTUBE_PLAYLIST_ID_2", ""),
+            "name": f"Channel {n}",
+            "client_id": os.getenv(f"YOUTUBE_CLIENT_ID_{n}") or YOUTUBE_CLIENT_ID,
+            "client_secret": os.getenv(f"YOUTUBE_CLIENT_SECRET_{n}") or YOUTUBE_CLIENT_SECRET,
+            "refresh_token": token,
+            "playlist_id": os.getenv(f"YOUTUBE_PLAYLIST_ID_{n}", ""),
         })
     return channels
 
@@ -125,7 +126,7 @@ def get_optimized_search_query(text):
 
 
 def build_scene_voiceovers(scenes, audio_dir):
-    """Har channel ke liye alag audio_dir use hoga, taake files overwrite na hon."""
+    """Har channel ke liye alag audio_dir use hoga."""
     paths = []
     for index, scene in enumerate(scenes, start=1):
         path = os.path.join(audio_dir, f"scene_{index:02d}.mp3")
@@ -282,17 +283,15 @@ def generate_thumbnail(video_path: str, output_path: str, title_text: str):
 
 def run_channel_pipeline(channel: dict, channel_index: int) -> bool:
     """
-    Ek channel ke liye poora pipeline chalata hai:
-    script -> voiceover -> clips -> compose -> upload.
-    Har channel ke liye alag temp directories use hoti hain taake
-    parallel/sequential dono cases mein files clash na karein.
+    Ek channel ke liye poora pipeline:
+    fresh script -> voiceover -> clips -> compose -> thumbnail -> upload.
+    Har channel ke liye alag temp dirs, taake files clash na karein.
     """
     name = channel["name"]
     print(f"\n{'='*60}")
     print(f"  Starting pipeline for {name}")
     print(f"{'='*60}\n")
 
-    # Channel-specific temp dirs (avoid overlap between channels)
     ch_audio_dir = os.path.join(TEMP_AUDIO_DIR, f"channel_{channel_index}")
     ch_clip_dir = os.path.join(SCENE_CLIP_DIR, f"channel_{channel_index}")
     ch_output_dir = os.path.join(OUTPUT_DIR, f"channel_{channel_index}")
@@ -301,7 +300,7 @@ def run_channel_pipeline(channel: dict, channel_index: int) -> bool:
 
     start_time = time.time()
 
-    # ---------- 1. Script (unique per channel) ----------
+    # ---------- 1. Fresh script (unique per channel) ----------
     print(f"\n[{name}] Generating fresh script...")
     script = generate_script(client, USED_TOPICS_FILE)
     if not script:
@@ -393,7 +392,12 @@ def run_channel_pipeline(channel: dict, channel_index: int) -> bool:
     # ---------- 5. Thumbnail ----------
     print(f"\n[{name}] Generating thumbnail...")
     thumb_path = os.path.join(ch_output_dir, f"thumbnail_{channel_index}.jpg")
-    generate_thumbnail(final_video_path, thumb_path, script.get("title", "Amazing Fact"))
+    from modules.thumbnail import make_thumbnail
+    thumb_text = script.get("thumb_text") or (scenes[0].get("caption") if scenes else "") or script.get("title", "")
+    src_video = clip_paths[0] if clip_paths and os.path.exists(clip_paths[0]) else final_video_path
+    if not make_thumbnail(src_video, thumb_path, thumb_text, script.get("title", "Amazing Fact"),
+                          image_prompt=script.get("thumb_prompt")):
+        generate_thumbnail(final_video_path, thumb_path, script.get("title", "Amazing Fact"))
 
     # ---------- 6. Upload to YouTube ----------
     print(f"\n[{name}] Uploading to YouTube...")
@@ -448,9 +452,7 @@ def run_channel_pipeline(channel: dict, channel_index: int) -> bool:
         notify_telegram(msg)
         return False
 
-    # ---------- 7. TikTok (sirf channel 1 ke liye, ya jis channel par chahiye) ----------
-    # NOTE: TikTok par same video dono channels se post karna weird lagega,
-    # isliye sirf pehle channel ke liye TikTok upload kar rahe hain.
+    # ---------- 7. TikTok (sirf channel 1 ke liye) ----------
     if channel_index == 0 and TIKTOK_CLIENT_KEY and TIKTOK_CLIENT_SECRET and TIKTOK_REFRESH_TOKEN:
         print(f"\n[{name}] Uploading to TikTok (draft)...")
         try:
@@ -503,7 +505,6 @@ def main():
         status = "✅ SUCCESS" if ok else "❌ FAILED"
         print(f"  {name}: {status}")
 
-    # Agar koi bhi channel fail hua to overall exit non-zero
     if not all(ok for _, ok in results):
         raise SystemExit(1)
 
