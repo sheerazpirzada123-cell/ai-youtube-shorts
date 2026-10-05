@@ -295,6 +295,27 @@
       "format": "personal_what_if",
       "title": "Sona Khane Se Kya Hoga? 🤔",
       "fact": "Pure 24-karat gold is chemically inert and passes through the human digestive tract completely untouched, but impure gold containing copper can cause metal poisoning."
+    },
+    {
+      "date": "2026-10-05T09:04:27",
+      "category": "food and cooking science",
+      "format": "mystery_explained",
+      "title": "Garam Tave Par Paani Floating Science Magic! 🍳",
+      "fact": "Due to the Leidenfrost effect, water dropped onto a surface significantly hotter than its boiling point forms a protective steam layer that prevents it from evaporating immediately."
+    },
+    {
+      "date": "2026-10-05T09:09:57",
+      "category": "ancient civilizations, temples and ruins",
+      "format": "shocking_fact",
+      "title": "Taali bajaate hi gaata hai yeh mandir! 🛕",
+      "fact": "The ancient Mayan pyramid of El Castillo acts as a natural sound synthesizer, transforming a handclap at its base into an echo that mimics the chirp of the sacred Quetzal bird."
+    },
+    {
+      "date": "2026-10-05T09:15:18",
+      "category": "technology, robots, computers and smartphones",
+      "format": "top3",
+      "title": "Internet aur computer ke 3 anokhe sach 🤯",
+      "fact": "Three fascinating technology secrets: the first webcam was built to monitor a coffee pot, deep ocean cables are protected from shark bites caused by electromagnetic fields, and Deep Blue's victory over Kasparov was influenced by a software glitch."
     }
   ]
 }
