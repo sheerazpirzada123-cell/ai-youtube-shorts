@@ -379,6 +379,27 @@
       "format": "myth_vs_truth",
       "title": "Jute apko khud bhagate hain! 👟",
       "fact": "High-speed running shoes with carbon fiber plates act like springs, returning energy to runners and lowering the metabolic cost of running."
+    },
+    {
+      "date": "2026-10-06T09:19:13",
+      "category": "wild animals and their survival tricks",
+      "format": "shocking_fact",
+      "title": "Bina Dil Dhadke Kaise Zinda Hai? 🐸",
+      "fact": "The Alaskan wood frog survives the freezing winter temperatures by allowing up to two-thirds of its body to freeze solid, stopping its heart and respiration, while a high concentration of glucose protects its vital organs."
+    },
+    {
+      "date": "2026-10-06T09:26:49",
+      "category": "space, planets, stars and astronauts",
+      "format": "personal_what_if",
+      "title": "Space mein height sach mein badhti hai? 🚀",
+      "fact": "Astronauts grow up to two inches taller in space due to the lack of gravity decompressing their spines, but return to their normal height shortly after returning to Earth."
+    },
+    {
+      "date": "2026-10-06T09:31:51",
+      "category": "technology, robots, computers and smartphones",
+      "format": "myth_vs_truth",
+      "title": "Night Mode Se Neend Kyun Nahi Aati? 📱",
+      "fact": "Your phone's Night Mode or blue light filter does not actually improve sleep quality because the cognitive stimulation of using the device keeps your brain active anyway."
     }
   ]
 }
