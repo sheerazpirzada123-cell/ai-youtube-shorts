@@ -400,6 +400,27 @@
       "format": "myth_vs_truth",
       "title": "Night Mode Se Neend Kyun Nahi Aati? 📱",
       "fact": "Your phone's Night Mode or blue light filter does not actually improve sleep quality because the cognitive stimulation of using the device keeps your brain active anyway."
+    },
+    {
+      "date": "2026-10-06T14:19:26",
+      "category": "volcanoes, earthquakes and how the Earth works",
+      "format": "shocking_fact",
+      "title": "Zameen achanak paani kaise ban jaati hai? 🌊",
+      "fact": "Soil liquefaction causes saturated granular soil to temporarily lose strength and stiffness during earthquakes, causing heavy structures to sink."
+    },
+    {
+      "date": "2026-10-06T14:26:02",
+      "category": "science labs, experiments and discoveries",
+      "format": "top3",
+      "title": "Awaaz se cheezein hawa mein udti hain 🤯",
+      "fact": "Acoustic levitation uses sound waves to suspend small objects in mid-air."
+    },
+    {
+      "date": "2026-10-06T14:32:39",
+      "category": "money, gold and strange facts about wealth",
+      "format": "personal_what_if",
+      "title": "कुत्ते को कड़वा लगता है यह नमक 🧂",
+      "fact": "Potassium chloride, used as a salt substitute by humans, tastes salty to us but triggers a strong bitter taste in dogs due to differences in their taste receptors."
     }
   ]
 }
