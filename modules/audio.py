@@ -273,7 +273,7 @@ def build_final_audio(voice_paths, scene_timings, total_duration, bg_music_path,
     Returns the path of the finished master (WAV; moviepy encodes AAC once).
     Chain:
       voice -> EQ + compressor (clear, forward)      \
-      bgm   -> looped, ducked by the voice (sidechain) }-> amix -> loudnorm -14 LUFS -> limiter
+      bgm   -> looped, ducked by the voice (sidechain) }-> amix -> dynaudnorm -> limiter
       sfx   -> synthesized track                     /
     """
     os.makedirs(out_dir, exist_ok=True)
@@ -328,7 +328,7 @@ def build_final_audio(voice_paths, scene_timings, total_duration, bg_music_path,
         )
 
     graph += (
-        "[mix]loudnorm=I=-14:TP=-1.5:LRA=9,"
+        "[mix]dynaudnorm=f=150:g=15:p=0.9,"
         f"atrim=0:{total_duration:.3f},"
         "alimiter=limit=0.97[master]"
     )
