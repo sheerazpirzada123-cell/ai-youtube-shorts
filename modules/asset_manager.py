@@ -103,10 +103,11 @@ def normalize_video(source_path, target_path):
         "-an",
         "-vf", "scale='min(1080,iw)':-2",
         "-c:v", "libx264",
-        "-preset", "fast",
-        "-crf", "23",
+        "-preset", "ultrafast",      # fast se ultrafast (bohat tez)
+        "-crf", "26",                # 23 se 26 (tez, thodi quality kam)
         "-pix_fmt", "yuv420p",
         "-movflags", "+faststart",
+        "-threads", "4",             # multi-threading
         temp_output
     ]
 
@@ -398,11 +399,12 @@ def fetch_fallback_ai_clip(keyword, target_path, duration=6):
         "fps=30",
         "-t", str(max(duration, 5)),
         "-c:v", "libx264",
-        "-preset", "medium",
-        "-crf", "20",
+        "-preset", "ultrafast",      # medium se ultrafast (bohat tez)
+        "-crf", "23",
         "-pix_fmt", "yuv420p",
         "-movflags", "+faststart",
         "-an",
+        "-threads", "4",
         target_path
     ]
 
