@@ -463,6 +463,27 @@
       "format": "mystery_explained",
       "title": "Aapka Phone Kaise Touch Samajhta Hai 📱",
       "fact": "Capacitive touchscreens detect human touch by measuring disruptions in an electrostatic field."
+    },
+    {
+      "date": "2026-10-07T16:01:37",
+      "category": "sports and the limits of the human body",
+      "format": "personal_what_if",
+      "title": "Aapki ek taang doosri se choti hai 😱",
+      "fact": "Zero gravity in space stretches the human spine, making astronauts temporarily taller."
+    },
+    {
+      "date": "2026-10-07T16:02:16",
+      "category": "psychology and everyday human habits",
+      "format": "top3",
+      "title": "Aapka dimaag aapko roz dhokha deta hai 🤯",
+      "fact": "Human brain uses a predictive coding mechanism that constantly processes internal simulations of sensory input rather than direct raw reality."
+    },
+    {
+      "date": "2026-10-07T16:03:04",
+      "category": "food and cooking science",
+      "format": "myth_vs_truth",
+      "title": "Microwave Ka Yeh Sach Nahi Jaante Aap 🤯",
+      "fact": "Microwaves cook food from the outside in by vibrating water molecules, contrary to the popular myth that they cook from the inside out."
     }
   ]
 }
