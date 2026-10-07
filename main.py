@@ -1,3 +1,8 @@
+# --- Pillow>=10 compat: moviepy 1.0.3 still uses Image.ANTIALIAS ---
+import PIL.Image
+if not hasattr(PIL.Image, "ANTIALIAS"):
+    PIL.Image.ANTIALIAS = PIL.Image.LANCZOS
+# ---------------------------------------------------------------------
 import os
 import json
 import time
@@ -17,7 +22,7 @@ from modules.youtube_uploader import (
 from modules.tiktok_uploader import upload_to_tiktok
 from modules.asset_manager import fetch_scene_video
 from modules.audio import generate_voiceover
-from modules.brain import generate_script, record_history
+from modules.brain import generate_script, record_history, attach_video_id
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 PEXELS_API_KEY = os.getenv("PEXELS_API_KEY")
@@ -40,6 +45,8 @@ USED_TOPICS_FILE = "used_topics.json"
 ENABLE_CAPTIONS = os.getenv("ENABLE_CAPTIONS", "0") == "1"
 WORD_CAPTIONS = os.getenv("WORD_CAPTIONS", "1") == "1"
 HOOK_CAPTION = os.getenv("HOOK_CAPTION", "1") == "1"
+HOOK_TEXT = os.getenv("HOOK_TEXT", "1") == "1"        # curiosity-gap opening text on frame 0
+FIRST_FRAME_MIN_BRIGHTNESS = int(os.getenv("FIRST_FRAME_MIN_BRIGHTNESS", "55"))  # 0-255, 0 = off
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 
@@ -82,10 +89,11 @@ BASE_TAGS = [
 
 
 def get_youtube_channels():
-    """Channel 1 = existing secrets. Extra channels (2, 3, 4, 5) are OPTIONAL:
-    each is used only when YOUTUBE_REFRESH_TOKEN_<n> is set. Agar CLIENT_ID_<n> /
-    CLIENT_SECRET_<n> set nahi hain to channel 1 ke client id/secret reuse honge.
-    Playlist id per-channel hai."""
+    """
+    Channel 1 = existing secrets.
+    Channel 2 is OPTIONAL: used only when YOUTUBE_REFRESH_TOKEN_2 is set.
+    Har channel ka apna independent pipeline chalega.
+    """
     channels = [{
         "name": "Channel 1",
         "client_id": YOUTUBE_CLIENT_ID,
@@ -93,16 +101,14 @@ def get_youtube_channels():
         "refresh_token": YOUTUBE_REFRESH_TOKEN,
         "playlist_id": YOUTUBE_PLAYLIST_ID,
     }]
-    for n in range(2, 6):  # 2, 3, 4, 5
-        token = os.getenv(f"YOUTUBE_REFRESH_TOKEN_{n}")
-        if not token:
-            continue
+    token2 = os.getenv("YOUTUBE_REFRESH_TOKEN_2")
+    if token2:
         channels.append({
-            "name": f"Channel {n}",
-            "client_id": os.getenv(f"YOUTUBE_CLIENT_ID_{n}") or YOUTUBE_CLIENT_ID,
-            "client_secret": os.getenv(f"YOUTUBE_CLIENT_SECRET_{n}") or YOUTUBE_CLIENT_SECRET,
-            "refresh_token": token,
-            "playlist_id": os.getenv(f"YOUTUBE_PLAYLIST_ID_{n}", ""),
+            "name": "Channel 2",
+            "client_id": os.getenv("YOUTUBE_CLIENT_ID_2") or YOUTUBE_CLIENT_ID,
+            "client_secret": os.getenv("YOUTUBE_CLIENT_SECRET_2") or YOUTUBE_CLIENT_SECRET,
+            "refresh_token": token2,
+            "playlist_id": os.getenv("YOUTUBE_PLAYLIST_ID_2", ""),
         })
     return channels
 
@@ -125,33 +131,38 @@ def get_optimized_search_query(text):
     return KEYWORD_MAP.get(key, text)
 
 
-def _scene_prosody(index, scene, total, rng):
-    """(rate, pitch) per scene so the AI voice is not one flat line.
-    hook = punchy and low, questions = lifted, twist = slower + dramatic,
-    last = brisk. Middle scenes get small random variation."""
-    text = scene["narration"].strip()
-    is_question = text.endswith("?")
+def scene_prosody(index, total, text):
+    """
+    Edge TTS only exposes rate/pitch, so vary those by the role of the line to avoid a flat read:
+    hook = firm and slightly slower, twist = slow + low (weight), last = a touch faster,
+    questions rise, exclamations push, everything else gets small random variation so no two
+    neighbouring sentences have the identical melody.
+    """
+    text = (text or "").strip()
     if index == 1:
-        return "+6%", "-3Hz"
-    if index == total - 1 and total > 4:          # twist (second-last)
-        return "-4%", "-4Hz"
-    if index == total:                            # last line
-        return "+3%", "+0Hz"
-    if is_question:
-        return f"{rng.randint(4, 8):+d}%", f"{rng.randint(2, 4):+d}Hz"
-    return f"{rng.randint(6, 12):+d}%", f"{rng.randint(-3, 2):+d}Hz"
+        return "+2%", "-3Hz"
+    if index == total - 1 and total > 4:
+        return "-6%", "-4Hz"
+    if index == total:
+        return "+4%", "+0Hz"
+    if text.endswith("?"):
+        return "+6%", "+4Hz"
+    if text.endswith("!"):
+        return "+11%", "+2Hz"
+    rate = random.choice([6, 8, 10, 12])
+    pitch = random.choice([-2, -1, 0, 1, 2])
+    return f"+{rate}%", f"{pitch:+d}Hz"
 
 
 def build_scene_voiceovers(scenes, audio_dir):
-    """Har channel ke liye alag audio_dir use hoga."""
+    """Har channel ke liye alag audio_dir use hoga, taake files overwrite na hon."""
     paths = []
-    rng = random.Random()
     for index, scene in enumerate(scenes, start=1):
         path = os.path.join(audio_dir, f"scene_{index:02d}.mp3")
         if os.path.exists(path):
             os.remove(path)
 
-        rate, pitch = _scene_prosody(index, scene, len(scenes), rng)
+        rate, pitch = scene_prosody(index, len(scenes), scene["narration"])
 
         for attempt in range(1, 4):
             try:
@@ -180,7 +191,16 @@ def build_scene_clips(scenes, clip_dir):
         print(f"Scene {index}: '{query}'")
 
         try:
-            fetch_scene_video(query, target, min_duration=3)
+            if index == 1 and FIRST_FRAME_MIN_BRIGHTNESS:
+                # first frame = what decides swipe vs. watch: do not accept a dark/murky clip
+                try:
+                    fetch_scene_video(query, target, min_duration=3,
+                                      min_brightness=FIRST_FRAME_MIN_BRIGHTNESS)
+                except Exception as bright_err:
+                    print(f"No bright clip for scene 1 ({bright_err}); accepting any clip")
+                    fetch_scene_video(query, target, min_duration=3)
+            else:
+                fetch_scene_video(query, target, min_duration=3)
             paths.append(target)
         except Exception as e:
             print(f"Scene {index} ka clip nahi mila: {e}")
@@ -294,15 +314,17 @@ def generate_thumbnail(video_path: str, output_path: str, title_text: str):
 
 def run_channel_pipeline(channel: dict, channel_index: int) -> bool:
     """
-    Ek channel ke liye poora pipeline:
-    fresh script -> voiceover -> clips -> compose -> thumbnail -> upload.
-    Har channel ke liye alag temp dirs, taake files clash na karein.
+    Ek channel ke liye poora pipeline chalata hai:
+    script -> voiceover -> clips -> compose -> upload.
+    Har channel ke liye alag temp directories use hoti hain taake
+    parallel/sequential dono cases mein files clash na karein.
     """
     name = channel["name"]
     print(f"\n{'='*60}")
     print(f"  Starting pipeline for {name}")
     print(f"{'='*60}\n")
 
+    # Channel-specific temp dirs (avoid overlap between channels)
     ch_audio_dir = os.path.join(TEMP_AUDIO_DIR, f"channel_{channel_index}")
     ch_clip_dir = os.path.join(SCENE_CLIP_DIR, f"channel_{channel_index}")
     ch_output_dir = os.path.join(OUTPUT_DIR, f"channel_{channel_index}")
@@ -311,7 +333,7 @@ def run_channel_pipeline(channel: dict, channel_index: int) -> bool:
 
     start_time = time.time()
 
-    # ---------- 1. Fresh script (unique per channel) ----------
+    # ---------- 1. Script (unique per channel) ----------
     print(f"\n[{name}] Generating fresh script...")
     script = generate_script(client, USED_TOPICS_FILE)
     if not script:
@@ -377,6 +399,11 @@ def run_channel_pipeline(channel: dict, channel_index: int) -> bool:
     else:
         captions = None
 
+    hook_text = None
+    if HOOK_TEXT:
+        hook_text = scenes[0].get("caption") or scenes[0].get("roman") or ""
+        print(f"[{name}] Opening text: {hook_text!r}")
+
     output_filename = f"final_short_{channel_index}.mp4"
     try:
         final_video_path = composer.create_multi_scene_short(
@@ -387,7 +414,7 @@ def run_channel_pipeline(channel: dict, channel_index: int) -> bool:
             add_cta=False,
             scene_narrations=captions,
             word_scenes=scenes if WORD_CAPTIONS else None,
-            hook_text=script.get("hook_text") or scenes[0].get("caption", ""),
+            hook_text=hook_text,
         )
     except Exception as e:
         msg = f"[{name}] Composition failed: {e}"
@@ -424,6 +451,7 @@ def run_channel_pipeline(channel: dict, channel_index: int) -> bool:
         )
         print(f"[{name}] Video uploaded! ID: {video_id}")
         print(f"https://youtube.com/shorts/{video_id}")
+        attach_video_id(USED_TOPICS_FILE, video_id, name)
 
         if os.path.exists(thumb_path):
             print(f"[{name}] Setting thumbnail...")
@@ -459,7 +487,9 @@ def run_channel_pipeline(channel: dict, channel_index: int) -> bool:
         notify_telegram(msg)
         return False
 
-    # ---------- 7. TikTok (sirf channel 1 ke liye) ----------
+    # ---------- 7. TikTok (sirf channel 1 ke liye, ya jis channel par chahiye) ----------
+    # NOTE: TikTok par same video dono channels se post karna weird lagega,
+    # isliye sirf pehle channel ke liye TikTok upload kar rahe hain.
     if channel_index == 0 and TIKTOK_CLIENT_KEY and TIKTOK_CLIENT_SECRET and TIKTOK_REFRESH_TOKEN:
         print(f"\n[{name}] Uploading to TikTok (draft)...")
         try:
@@ -512,6 +542,7 @@ def main():
         status = "✅ SUCCESS" if ok else "❌ FAILED"
         print(f"  {name}: {status}")
 
+    # Agar koi bhi channel fail hua to overall exit non-zero
     if not all(ok for _, ok in results):
         raise SystemExit(1)
 
