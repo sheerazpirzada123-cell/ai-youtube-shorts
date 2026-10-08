@@ -556,6 +556,33 @@
       "fact": "People automatically conform to the behavior of others in a crowd due to informational social influence and mirror neurons.",
       "video_id": "zs9hmD8e9mk",
       "channel": "Channel 3"
+    },
+    {
+      "date": "2026-10-08T10:46:05",
+      "category": "everyday human behaviour: why people do small things in daily life (phone, friends, family, work)",
+      "format": "myth_vs_truth",
+      "title": "Adhura kaam dimaag se nikalta kyon nahi? 🤯",
+      "fact": "The Zeigarnik effect causes people to remember uncompleted tasks and cliffhangers much better than completed ones because the brain keeps active loops open until resolution.",
+      "video_id": "p-5NbFGV-Mg",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-10-08T10:48:38",
+      "category": "sleep, dreams and tiredness: what they do to mood and behaviour",
+      "format": "psychology_fact",
+      "title": "Kam sone se dimaag kharab hota hai 🧠",
+      "fact": "Sleep deprivation impairs the glymphatic system, causing toxic protein buildup and cognitive decline.",
+      "video_id": "yOXjFJzRbHw",
+      "channel": "Channel 2"
+    },
+    {
+      "date": "2026-10-08T10:50:47",
+      "category": "memory: why we forget, false memories, why we remember some things forever",
+      "format": "psychology_effect",
+      "title": "Aapki yaadon ke saath hota hai bada khel 🧠",
+      "fact": "The misinformation effect occurs when post-event information alters human memory, causing people to vividly remember details that never happened.",
+      "video_id": "ARnM696tuX4",
+      "channel": "Channel 3"
     }
   ]
 }
