@@ -484,6 +484,24 @@
       "format": "myth_vs_truth",
       "title": "Microwave Ka Yeh Sach Nahi Jaante Aap 🤯",
       "fact": "Microwaves cook food from the outside in by vibrating water molecules, contrary to the popular myth that they cook from the inside out."
+    },
+    {
+      "date": "2026-10-08T07:49:07",
+      "category": "human body and brain (eyes, heart, hands, sleep)",
+      "format": "mystery_explained",
+      "title": "Dimaag Aapko Roz Andha Kyun Banata Hai? 👁️",
+      "fact": "Saccadic masking causes the brain to temporarily block visual input during eye movements, resulting in about forty minutes of total functional blindness every day without us noticing.",
+      "video_id": "2b_cE7ZRY_U",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-10-08T07:53:53",
+      "category": "trees, plants and forests",
+      "format": "top3",
+      "title": "Duniya Ke 3 Sabse Anokhe Aur Khatarnak Ped! 🌳",
+      "fact": "Three incredible trees do impossible things: Eucalyptus absorbs gold into its leaves, Acacia trees warn each other of danger using ethylene gas, and the Manchineel tree produces smoke that can blind humans.",
+      "video_id": "2VW175jJ-4M",
+      "channel": "Channel 2"
     }
   ]
 }
