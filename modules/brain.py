@@ -135,6 +135,20 @@ def record_history(path, script):
     save_history(path, data)
 
 
+def attach_video_id(path, video_id, channel_name=""):
+    """Latest history entry (jisme abhi video_id nahi hai) par uploaded video ka ID jod do."""
+    data = load_history(path)
+    recent = data.get(HISTORY_KEY, [])
+    for entry in reversed(recent):
+        if not entry.get("video_id"):
+            entry["video_id"] = video_id
+            if channel_name:
+                entry["channel"] = channel_name
+            break
+    data[HISTORY_KEY] = recent
+    save_history(path, data)
+
+
 def pick_plan(history_path):
     recent = load_history(history_path).get(HISTORY_KEY, [])
     recent_cats = [r.get("category") for r in recent[-8:]]
