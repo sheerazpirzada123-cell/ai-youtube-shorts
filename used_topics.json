@@ -743,6 +743,33 @@
       "fact": "Pluralistic ignorance causes people to conform to a crowd's calm behavior during potential emergencies, mistakenly assuming others know more about the situation.",
       "video_id": "w0UMnvMW9NM",
       "channel": "Channel 3"
+    },
+    {
+      "date": "2026-10-09T09:51:33",
+      "category": "memory: why we forget, false memories, why we remember some things forever",
+      "format": "psychology_fact",
+      "title": "Why your memory zooms out on photos 📸",
+      "fact": "Boundary extension causes the human brain to automatically fill in details beyond the edges of a visual memory, making us falsely recall a wider field of view than we actually saw.",
+      "video_id": "RV4vHgFX8L0",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-10-09T09:54:59",
+      "category": "focus and attention: why the mind wanders, multitasking, distraction",
+      "format": "personal_what_if",
+      "title": "Why One Text Ruins Your Focus 🧠",
+      "fact": "It takes the human brain an average of twenty-three minutes and fifteen seconds to return to deep focus after a single minor distraction.",
+      "video_id": "6Hjyml9T6xM",
+      "channel": "Channel 2"
+    },
+    {
+      "date": "2026-10-09T09:57:49",
+      "category": "decision making, cognitive biases and why smart people make silly choices",
+      "format": "myth_vs_truth",
+      "title": "Why Smart People Never See Their Bias 🧠",
+      "fact": "The bias blind spot causes people to recognize cognitive flaws in others while failing to see their own, and individuals with higher cognitive ability are often more prone to it.",
+      "video_id": "klkD09b0Mn8",
+      "channel": "Channel 3"
     }
   ]
 }
