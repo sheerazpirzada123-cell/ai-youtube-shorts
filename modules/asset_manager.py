@@ -3,6 +3,7 @@ import os
 import random
 import subprocess
 import shutil
+import time
 
 
 # Clip IDs already used in this run - no same footage twice in one video
@@ -12,8 +13,6 @@ PEXELS_API_KEY = os.environ.get("PEXELS_API_KEY")
 PIXABAY_API_KEY = os.environ.get("PIXABAY_API_KEY")
 
 
-# Fallbacks only when the scene's own keywords find nothing. All show ordinary people so that
-# even a miss still looks like "psychology" instead of random space / volcano / ocean footage.
 PEXELS_SEARCH_TERMS = [
     "person thinking",
     "woman phone",
@@ -30,6 +29,242 @@ PEXELS_SEARCH_TERMS = [
 ]
 
 
+# ============================================================
+# POLLINATIONS AI - PRIMARY VISUAL SOURCE (Free, no API key)
+# ============================================================
+def _build_image_prompt(scene_narration, keyword, scene_index=0):
+    """
+    Scene ki narration se ek detailed, cinematic prompt banata hai.
+    Generic keyword ki jagah poori line use karta hai taake image match kare.
+    """
+    narration = (scene_narration or "").strip()
+    keyword = (keyword or "").strip()
+
+    # Style hints - har scene ke liye alag mood
+    styles = [
+        "cinematic dramatic lighting, high contrast, dark background, 9:16 vertical",
+        "moody atmospheric lighting, shallow depth of field, 9:16 vertical",
+        "bright clean studio lighting, sharp focus, 9:16 vertical",
+        "warm golden hour lighting, soft shadows, 9:16 vertical",
+        "cool blue tones, mysterious atmosphere, 9:16 vertical",
+        "high contrast black and white, dramatic shadows, 9:16 vertical",
+    ]
+    style = styles[scene_index % len(styles)]
+
+    # Pehle narration, phir keyword - dono se relevant image
+    if narration and keyword:
+        base = f"{narration}, {keyword}"
+    elif narration:
+        base = narration
+    else:
+        base = keyword or "person thinking"
+
+    # Abstract psychology concepts ko filmable banao
+    base = base.replace("brain", "human brain neurons glowing")
+    base = base.replace("mind", "human head silhouette with glowing particles")
+    base = base.replace("memory", "old photographs and memories floating")
+    base = base.replace("emotion", "human face with emotional expression")
+
+    prompt = f"{base}, {style}, photorealistic, detailed, professional photography"
+
+    # Prompt ko 400 chars tak limit karo (Pollinations ke liye)
+    return prompt[:400]
+
+
+def fetch_pollinations_image(narration, keyword, target_path, scene_index=0,
+                              width=1080, height=1920, retries=3):
+    """
+    Pollinations AI se scene-specific image generate karta hai.
+    Koi API key nahi chahiye. Bilkul free.
+    """
+    if not PEXELS_API_KEY and not PIXABAY_API_KEY:
+        print("Warning: No stock API keys - Pollinations will be primary")
+
+    prompt = _build_image_prompt(narration, keyword, scene_index)
+    print(f"  Pollinations prompt: {prompt[:120]}...")
+
+    encoded_prompt = requests.utils.quote(prompt)
+
+    # Models: flux (best quality), turbo (fastest)
+    models = ["flux", "turbo"]
+
+    for attempt in range(1, retries + 1):
+        model = models[(attempt - 1) % len(models)]
+
+        img_url = (
+            f"https://image.pollinations.ai/prompt/{encoded_prompt}"
+            f"?width={width}&height={height}&nologo=true&model={model}"
+            f"&seed={random.randint(1, 999999)}"
+        )
+
+        img_file = target_path + ".jpg"
+
+        try:
+            if os.path.exists(img_file):
+                os.remove(img_file)
+
+            response = requests.get(img_url, timeout=120)
+            response.raise_for_status()
+
+            content_type = response.headers.get("Content-Type", "").lower()
+            if "image" not in content_type and "octet-stream" not in content_type:
+                raise ValueError(f"Unexpected content type: {content_type}")
+
+            with open(img_file, "wb") as f:
+                f.write(response.content)
+
+            if not os.path.exists(img_file) or os.path.getsize(img_file) < 5000:
+                raise ValueError("Image too small or not created")
+
+            # Verify it's a valid image
+            from PIL import Image
+            with Image.open(img_file) as im:
+                im.verify()
+
+            print(f"  Pollinations image OK ({os.path.getsize(img_file)} bytes, model={model})")
+            return img_file
+
+        except Exception as e:
+            print(f"  Pollinations attempt {attempt}/{retries} failed: {e}")
+            if os.path.exists(img_file):
+                os.remove(img_file)
+            time.sleep(2 * attempt)
+
+    return None
+
+
+def animate_image_with_motion(image_path, target_path, duration=5, scene_index=0):
+    """
+    Static image ko zoom + pan effect ke saath video banata hai.
+    Har scene ke liye alag movement direction - boring nahi lagega.
+    """
+    if not os.path.exists(image_path):
+        raise RuntimeError(f"Image not found: {image_path}")
+
+    if os.path.exists(target_path):
+        os.remove(target_path)
+
+    fps = 30
+    total_frames = int(duration * fps)
+
+    # Har scene ke liye alag movement - zoom in, zoom out, pan left, pan right, diagonal
+    movements = [
+        # 0: Slow zoom in + slight pan right
+        (
+            f"zoompan=z='min(zoom+0.0012,1.25)':"
+            f"x='iw/2-(iw/zoom/2)+on*0.3':"
+            f"y='ih/2-(ih/zoom/2)':"
+            f"d={total_frames}:s=1080x1920:fps={fps}"
+        ),
+        # 1: Zoom out from slight zoom
+        (
+            f"zoompan=z='if(lte(zoom,1.0),1.25,max(1.001,zoom-0.0012))':"
+            f"x='iw/2-(iw/zoom/2)':"
+            f"y='ih/2-(ih/zoom/2)':"
+            f"d={total_frames}:s=1080x1920:fps={fps}"
+        ),
+        # 2: Pan left to right (fixed zoom)
+        (
+            f"zoompan=z='1.15':"
+            f"x='(iw-iw/zoom)*(on/{total_frames})':"
+            f"y='ih/2-(ih/zoom/2)':"
+            f"d={total_frames}:s=1080x1920:fps={fps}"
+        ),
+        # 3: Pan right to left (fixed zoom)
+        (
+            f"zoompan=z='1.15':"
+            f"x='(iw-iw/zoom)*(1-on/{total_frames})':"
+            f"y='ih/2-(ih/zoom/2)':"
+            f"d={total_frames}:s=1080x1920:fps={fps}"
+        ),
+        # 4: Slow zoom in + pan down (top to bottom)
+        (
+            f"zoompan=z='min(zoom+0.0010,1.2)':"
+            f"x='iw/2-(iw/zoom/2)':"
+            f"y='(ih-ih/zoom)*(on/{total_frames})':"
+            f"d={total_frames}:s=1080x1920:fps={fps}"
+        ),
+        # 5: Diagonal pan (zoom in + move up-left to down-right)
+        (
+            f"zoompan=z='min(zoom+0.0010,1.2)':"
+            f"x='(iw-iw/zoom)*(on/{total_frames})':"
+            f"y='(ih-ih/zoom)*(on/{total_frames})':"
+            f"d={total_frames}:s=1080x1920:fps={fps}"
+        ),
+    ]
+
+    movement = movements[scene_index % len(movements)]
+
+    # Pehle image ko upscale karo (jitter se bachne ke liye), phir zoompan, phir downscale
+    vf = (
+        "scale=2160:3840:force_original_aspect_ratio=increase,"
+        "crop=2160:3840,"
+        f"{movement},"
+        "scale=1080:1920"
+    )
+
+    command = [
+        "ffmpeg", "-y",
+        "-loop", "1",
+        "-i", image_path,
+        "-vf", vf,
+        "-t", str(duration),
+        "-c:v", "libx264",
+        "-preset", "ultrafast",
+        "-crf", "23",
+        "-pix_fmt", "yuv420p",
+        "-movflags", "+faststart",
+        "-an",
+        "-threads", "4",
+        target_path,
+    ]
+
+    result = subprocess.run(command, capture_output=True, text=True, timeout=240)
+
+    if result.returncode != 0:
+        raise RuntimeError("Image animation FFmpeg failed:\n" + result.stderr[-1500:])
+
+    if not validate_video(target_path):
+        raise RuntimeError("Animated image video is invalid.")
+
+    print(f"  Animated image ready: {target_path}")
+    return target_path
+
+
+def fetch_ai_scene_clip(narration, keyword, target_path, duration=5, scene_index=0):
+    """
+    Pollinations image + FFmpeg motion = video clip.
+    Yeh PRIMARY visual source hai.
+    """
+    img_path = target_path + ".ai.jpg"
+
+    try:
+        img = fetch_pollinations_image(narration, keyword, target_path, scene_index)
+        if not img:
+            raise RuntimeError("Pollinations image generation failed")
+
+        animate_image_with_motion(img, target_path, duration=duration, scene_index=scene_index)
+
+        # Cleanup
+        if os.path.exists(img_path):
+            os.remove(img_path)
+
+        return target_path
+
+    except Exception as e:
+        # Cleanup on failure
+        for f in [img_path, target_path]:
+            if os.path.exists(f):
+                try:
+                    os.remove(f)
+                except Exception:
+                    pass
+        raise
+
+
+# ============================================================
+# VALIDATION HELPERS
+# ============================================================
 def validate_video(video_path):
     if not os.path.exists(video_path):
         return False
@@ -95,6 +330,9 @@ def video_brightness(video_path, at=1.0):
             os.remove(frame)
 
 
+# ============================================================
+# STOCK VIDEO HELPERS (Fallback)
+# ============================================================
 def normalize_video(source_path, target_path):
     temp_output = target_path + ".normalized.mp4"
 
@@ -108,11 +346,11 @@ def normalize_video(source_path, target_path):
         "-an",
         "-vf", "scale='min(1080,iw)':-2",
         "-c:v", "libx264",
-        "-preset", "ultrafast",      # fast se ultrafast (bohat tez)
-        "-crf", "26",                # 23 se 26 (tez, thodi quality kam)
+        "-preset", "ultrafast",
+        "-crf", "26",
         "-pix_fmt", "yuv420p",
         "-movflags", "+faststart",
-        "-threads", "4",             # multi-threading
+        "-threads", "4",
         temp_output
     ]
 
@@ -213,8 +451,6 @@ def fetch_pexels_clip(keyword, target_path, min_duration=3, min_brightness=0, al
         simplified_queries.append(" ".join(keyword_words[:2]))
         simplified_queries.append(" ".join(keyword_words[-2:]))
 
-    # Order matters: the scene's own keyword first, then its backup, then simpler versions of it.
-    # Only after all of that fail do we use generic people footage (never random nature/space).
     queries_to_try, seen_q = [], set()
     for q in [keyword, alt_keyword] + simplified_queries + random.sample(PEXELS_SEARCH_TERMS, k=4):
         q = (q or "").strip()
@@ -245,8 +481,6 @@ def fetch_pexels_clip(keyword, target_path, min_duration=3, min_brightness=0, al
         if not videos:
             continue
 
-        # Pexels returns results by relevance. Keep that order (best match first) so the footage
-        # matches the spoken line; only a small shuffle between the top 2 for variety.
         videos = videos[:4]
         if len(videos) > 1 and random.random() < 0.3:
             videos[0], videos[1] = videos[1], videos[0]
@@ -372,65 +606,18 @@ def fetch_pixabay_clip(keyword, target_path, alt_keyword=""):
     raise RuntimeError(f"All Pixabay clips failed for '{keyword}': {last_error}")
 
 
-def fetch_fallback_ai_clip(keyword, target_path, duration=6):
-    if os.path.exists(target_path):
-        os.remove(target_path)
-
-    img_prompt = requests.utils.quote(f"{keyword}, cinematic background, vertical 9:16")
-    img_url = (
-        "https://image.pollinations.ai/prompt/"
-        f"{img_prompt}"
-        "?width=1080"
-        "&height=1920"
-        "&nologo=true"
-    )
-
-    img_file = target_path + ".jpg"
-    response = requests.get(img_url, timeout=90)
-    response.raise_for_status()
-
-    with open(img_file, "wb") as file:
-        file.write(response.content)
-
-    command = [
-        "ffmpeg", "-y",
-        "-loop", "1",
-        "-i", img_file,
-        "-vf",
-        "scale=1080:1920:"
-        "force_original_aspect_ratio=increase,"
-        "crop=1080:1920,"
-        "zoompan="
-        "z='min(zoom+0.0008,1.15)':"
-        "d=150:"
-        "s=1080x1920:"
-        "fps=30",
-        "-t", str(max(duration, 5)),
-        "-c:v", "libx264",
-        "-preset", "ultrafast",      # medium se ultrafast (bohat tez)
-        "-crf", "23",
-        "-pix_fmt", "yuv420p",
-        "-movflags", "+faststart",
-        "-an",
-        "-threads", "4",
-        target_path
-    ]
-
-    result = subprocess.run(command, check=False, capture_output=True, text=True, timeout=180)
-
-    if os.path.exists(img_file):
-        os.remove(img_file)
-
-    if result.returncode != 0:
-        raise RuntimeError("AI fallback FFmpeg failed:\n" + result.stderr[-1500:])
-
-    if not validate_video(target_path):
-        raise RuntimeError("AI fallback generated an invalid video.")
-
-    return target_path
-
-
-def fetch_scene_video(keyword, target_path, min_duration=3, min_brightness=0, alt_keyword=""):
+# ============================================================
+# MAIN SCENE VIDEO FETCHER - AI FIRST, STOCK FALLBACK
+# ============================================================
+def fetch_scene_video(keyword, target_path, min_duration=3, min_brightness=0,
+                       alt_keyword="", narration="", scene_index=0):
+    """
+    Priority:
+      1. Pollinations AI image + motion (PRIMARY - free, match karta hai)
+      2. Pexels stock video (fallback)
+      3. Pixabay stock video (fallback)
+      4. Pollinations simple fallback (last resort)
+    """
     if validate_video(target_path):
         return target_path
 
@@ -439,6 +626,23 @@ def fetch_scene_video(keyword, target_path, min_duration=3, min_brightness=0, al
 
     errors = []
 
+    # ---- 1. AI IMAGE + MOTION (PRIMARY) ----
+    try:
+        print(f"  [AI] Generating scene-specific visual...")
+        return fetch_ai_scene_clip(
+            narration=narration,
+            keyword=keyword,
+            target_path=target_path,
+            duration=max(min_duration, 5),
+            scene_index=scene_index,
+        )
+    except Exception as error:
+        errors.append(f"AI image: {error}")
+        print(f"  AI failed, trying stock footage...")
+        if os.path.exists(target_path):
+            os.remove(target_path)
+
+    # ---- 2. PEXELS ----
     try:
         return fetch_pexels_clip(keyword, target_path, min_duration=min_duration,
                                  min_brightness=min_brightness, alt_keyword=alt_keyword)
@@ -447,6 +651,7 @@ def fetch_scene_video(keyword, target_path, min_duration=3, min_brightness=0, al
         if os.path.exists(target_path):
             os.remove(target_path)
 
+    # ---- 3. PIXABAY ----
     try:
         return fetch_pixabay_clip(keyword, target_path, alt_keyword=alt_keyword)
     except Exception as error:
@@ -454,8 +659,15 @@ def fetch_scene_video(keyword, target_path, min_duration=3, min_brightness=0, al
         if os.path.exists(target_path):
             os.remove(target_path)
 
+    # ---- 4. LAST RESORT: simple AI image ----
     try:
-        return fetch_fallback_ai_clip(keyword, target_path, duration=max(min_duration, 4))
+        return fetch_ai_scene_clip(
+            narration=keyword,
+            keyword=keyword,
+            target_path=target_path,
+            duration=max(min_duration, 5),
+            scene_index=99,
+        )
     except Exception as error:
         errors.append(f"AI fallback: {error}")
 
@@ -476,9 +688,21 @@ def fetch_scene_clips(scenes, scene_durations, output_dir="assets/scene_clips"):
             or random.choice(PEXELS_SEARCH_TERMS)
         )
 
-        print(f"\nFetching scene {index + 1}: {keyword}")
+        narration = (scene.get("narration") or "").strip()
+        alt_keyword = (scene.get("search_alt") or "").strip()
 
-        fetch_scene_video(keyword, target_path, min_duration=max(2, int(duration)))
+        print(f"\nFetching scene {index + 1}: {keyword}")
+        if narration:
+            print(f"  Narration: {narration[:80]}...")
+
+        fetch_scene_video(
+            keyword=keyword,
+            target_path=target_path,
+            min_duration=max(2, int(duration)),
+            alt_keyword=alt_keyword,
+            narration=narration,
+            scene_index=index,
+        )
 
         if not validate_video(target_path):
             raise RuntimeError(
