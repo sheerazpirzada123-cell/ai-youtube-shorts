@@ -194,11 +194,7 @@ def build_scene_voiceovers(scenes, audio_dir):
 
 
 def build_scene_clips(scenes, clip_dir):
-    """
-    Har channel ke liye alag clip_dir use hoga.
-    AB: narration aur scene_index bhi AI ko pass hote hain taake
-    Pollinations image script se exactly match kare.
-    """
+    """Har channel ke liye alag clip_dir use hoga."""
     shutil.rmtree(clip_dir, ignore_errors=True)
     os.makedirs(clip_dir, exist_ok=True)
 
@@ -207,39 +203,20 @@ def build_scene_clips(scenes, clip_dir):
         target = os.path.join(clip_dir, f"scene_{index:02d}.mp4")
         keyword = scene.get("search_keyword") or "person thinking"
         alt = scene.get("search_alt") or ""
-        narration = (scene.get("narration") or "").strip()
         query = get_optimized_search_query(keyword)
-        print(f"Scene {index}: '{query}' (alt: '{alt}') | {narration[:70]}")
+        print(f"Scene {index}: '{query}' (alt: '{alt}') | {scene.get('narration', '')[:70]}")
 
         try:
             if index == 1 and FIRST_FRAME_MIN_BRIGHTNESS:
                 # first frame = what decides swipe vs. watch: do not accept a dark/murky clip
                 try:
-                    fetch_scene_video(
-                        query, target,
-                        min_duration=3,
-                        min_brightness=FIRST_FRAME_MIN_BRIGHTNESS,
-                        alt_keyword=alt,
-                        narration=narration,
-                        scene_index=index - 1,
-                    )
+                    fetch_scene_video(query, target, min_duration=3,
+                                      min_brightness=FIRST_FRAME_MIN_BRIGHTNESS, alt_keyword=alt)
                 except Exception as bright_err:
                     print(f"No bright clip for scene 1 ({bright_err}); accepting any clip")
-                    fetch_scene_video(
-                        query, target,
-                        min_duration=3,
-                        alt_keyword=alt,
-                        narration=narration,
-                        scene_index=index - 1,
-                    )
+                    fetch_scene_video(query, target, min_duration=3, alt_keyword=alt)
             else:
-                fetch_scene_video(
-                    query, target,
-                    min_duration=3,
-                    alt_keyword=alt,
-                    narration=narration,
-                    scene_index=index - 1,
-                )
+                fetch_scene_video(query, target, min_duration=3, alt_keyword=alt)
             paths.append(target)
         except Exception as e:
             print(f"Scene {index} ka clip nahi mila: {e}")
