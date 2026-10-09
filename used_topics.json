@@ -718,6 +718,31 @@
       "fact": "The Cheerleader Effect: individuals are perceived as more attractive when presented in a group because the brain averages out facial features, reducing the salience of individual asymmetries.",
       "video_id": "93lGdDlRUww",
       "channel": "Channel 3"
+    },
+    {
+      "date": "2026-10-09T09:20:11",
+      "category": "emotions, mood, stress and how people react to them",
+      "format": "myth_vs_truth",
+      "title": "Why your bad moods feel permanent 🧠",
+      "fact": "The durability bias causes people to overestimate the duration of their future negative emotional states, making temporary bad moods feel permanent.",
+      "video_id": "RVzNlc7bmWo",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-10-09T09:23:35",
+      "category": "sleep, dreams and tiredness: what they do to mood and behaviour",
+      "format": "personal_what_if",
+      "title": "Why you only remember the bad days 🧠",
+      "fact": "Sleep deprivation selectively impairs the encoding of positive and neutral memories while preserving negative ones, creating a negative memory bias."
+    },
+    {
+      "date": "2026-10-09T09:26:23",
+      "category": "social psychology: crowds, conformity, persuasion, why we copy others",
+      "format": "psychology_effect",
+      "title": "Why we ignore danger in public 🚨",
+      "fact": "Pluralistic ignorance causes people to conform to a crowd's calm behavior during potential emergencies, mistakenly assuming others know more about the situation.",
+      "video_id": "w0UMnvMW9NM",
+      "channel": "Channel 3"
     }
   ]
 }
