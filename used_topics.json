@@ -101,20 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-09-30T09:41:55",
-      "category": "science labs, experiments and discoveries",
-      "format": "top3",
-      "title": "क्या आपका शरीर खाली है? ये 3 चीज़ें जानें! 🤯",
-      "fact": "Three fundamental aspects of reality (space, atoms, and even our bodies) are far emptier and more permeable than commonly perceived, exemplified by the constant passage of neutrinos through us."
-    },
-    {
-      "date": "2026-09-30T13:33:54",
-      "category": "ancient civilizations, temples and ruins",
-      "format": "personal_what_if",
-      "title": "Pyramid ka raaz: Ek pathar ka wazan! 🤯",
-      "fact": "The immense weight of individual stone blocks used in ancient structures like the Great Pyramid of Giza, some weighing up to fifty thousand kilograms."
-    },
-    {
       "date": "2026-09-30T13:58:00",
       "category": "technology, robots, computers and smartphones",
       "format": "myth_vs_truth",
@@ -797,6 +783,24 @@
       "fact": "The closeness-communication bias causes people to communicate less effectively and send vaguer messages to close friends and partners than to strangers, leading to more frequent misunderstandings.",
       "video_id": "UpONiJRIRS0",
       "channel": "Channel 3"
+    },
+    {
+      "date": "2026-10-09T17:19:34",
+      "category": "shopping, money and attention psychology: why we buy, scroll and get hooked",
+      "format": "top3",
+      "title": "Why your brain loves wasting money 💸",
+      "fact": "Digital payments and pricing strategies exploit cognitive biases to reduce the perceived pain of spending and drive impulse purchases.",
+      "video_id": "J5OB8dW_e5k",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-10-09T17:23:10",
+      "category": "emotions, mood, stress and how people react to them",
+      "format": "psychology_effect",
+      "title": "Why coffee makes you panic ☕",
+      "fact": "The brain misattributes the physical symptoms of caffeine arousal (like a racing heart) to emotional anxiety, creating a state of false panic.",
+      "video_id": "QSL0n3y-VAM",
+      "channel": "Channel 2"
     }
   ]
 }
