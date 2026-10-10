@@ -26,6 +26,7 @@ from modules import audio as audio_mod
 from modules.audio import generate_voiceover, load_word_timings, get_duration
 from modules.brain import generate_script, record_history, attach_video_id
 from modules.post_schedule import mark_posted
+from modules.style_variation import get_style
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 PEXELS_API_KEY = os.getenv("PEXELS_API_KEY")
@@ -48,15 +49,14 @@ USED_TOPICS_FILE = "used_topics.json"
 ENABLE_CAPTIONS = os.getenv("ENABLE_CAPTIONS", "0") == "1"
 WORD_CAPTIONS = os.getenv("WORD_CAPTIONS", "1") == "1"
 HOOK_CAPTION = os.getenv("HOOK_CAPTION", "1") == "1"
-HOOK_TEXT = os.getenv("HOOK_TEXT", "1") == "1"        # curiosity-gap opening text on frame 0
-LOOP_VIDEO = os.getenv("LOOP_VIDEO", "1") == "1"       # last scene = first scene's footage (visual loop)
-FIRST_FRAME_MIN_BRIGHTNESS = int(os.getenv("FIRST_FRAME_MIN_BRIGHTNESS", "55"))  # 0-255, 0 = off
-# a NEW stock clip roughly every SHOT_SECONDS (2-3 s feels like human editing)
+HOOK_TEXT = os.getenv("HOOK_TEXT", "1") == "1"
+LOOP_VIDEO = os.getenv("LOOP_VIDEO", "1") == "1"
+FIRST_FRAME_MIN_BRIGHTNESS = int(os.getenv("FIRST_FRAME_MIN_BRIGHTNESS", "55"))
 SHOT_SECONDS = float(os.getenv("SHOT_SECONDS", "2.0"))
 MAX_SHOTS_PER_SCENE = 3
 MIN_SHOT_LEN = 1.4
 
-# channel_index -> YouTube video ids uploaded in this run (used for the daily post marker)
+# channel_index -> YouTube video ids uploaded in this run
 UPLOADED_IDS = []
 
 client = genai.Client(api_key=GEMINI_API_KEY)
@@ -106,11 +106,6 @@ BASE_TAGS = [
 
 
 def get_youtube_channels():
-    """
-    Channel 1 = existing secrets.
-    Channel 2, 3... OPTIONAL: tab add hote hain jab YOUTUBE_REFRESH_TOKEN_2, _3 ... set ho.
-    Har channel ka apna independent pipeline chalega.
-    """
     channels = [{
         "name": "Channel 1",
         "client_id": YOUTUBE_CLIENT_ID,
@@ -118,7 +113,6 @@ def get_youtube_channels():
         "refresh_token": YOUTUBE_REFRESH_TOKEN,
         "playlist_id": YOUTUBE_PLAYLIST_ID,
     }]
-    # Channel 2, 3, 4... : jis number ka YOUTUBE_REFRESH_TOKEN_N set ho, wo channel add hoga
     for n in range(2, 11):
         token = os.getenv(f"YOUTUBE_REFRESH_TOKEN_{n}")
         if not token:
@@ -152,14 +146,6 @@ def get_optimized_search_query(text):
 
 
 def _scene_prosody(index, total):
-    """
-    Voice energy curve (index is 1-based), HUMAN pace (~1.0-1.09x):
-      hook      -> a bit faster + higher pitch
-      payoff    -> slower + lower pitch (weight, so the answer lands)
-      loop line -> quick, rolls straight back into the hook
-      others    -> small random variation so it never sounds like a metronome
-    Kokoro uses the % as speed (1 + pct/100); Edge-TTS uses it as `rate`.
-    """
     if index == 1:
         return "+9%", "+3Hz"
     if total >= 4 and index == total - 1:
@@ -196,12 +182,6 @@ def _voices_with_engine(scenes, audio_dir, engine):
 
 
 def build_scene_voiceovers(scenes, audio_dir):
-    """
-    Har channel ke liye alag audio_dir (files overwrite na hon).
-    ONE engine for the whole video (a voice that changes mid-video sounds fake):
-    try Kokoro first (natural); if any scene fails, redo ALL scenes with Edge-TTS.
-    Silence is trimmed and real word timings are saved next to each mp3 (<mp3>.words.json).
-    """
     pref = (audio_mod.TTS_ENGINE or "auto").lower()
     if pref in ("auto", "kokoro") and audio_mod.kokoro_available():
         try:
@@ -219,12 +199,10 @@ def build_scene_voiceovers(scenes, audio_dir):
     return paths
 
 
-def build_scene_clips(scenes, clip_dir, voice_paths):
+def build_scene_clips(scenes, clip_dir, voice_paths, style):
     """
-    Har channel ke liye alag clip_dir.
-    One main clip per scene (bot ke keywords: search_keyword -> search_alt) PLUS extra
-    different clips for the long middle scenes, so the picture changes every ~2 s.
-    Returns (paths, extras): extras[i] = additional clips for scene i.
+    One main clip per scene + extras for long middle scenes.
+    Uses style["shot_seconds"] to decide how many extra clips to fetch per scene.
     """
     shutil.rmtree(clip_dir, ignore_errors=True)
     os.makedirs(clip_dir, exist_ok=True)
@@ -232,6 +210,7 @@ def build_scene_clips(scenes, clip_dir, voice_paths):
     paths, extras = [], []
     total = len(scenes)
     loop_on = LOOP_VIDEO and total >= 4
+    shot_seconds = style.get("shot_seconds", SHOT_SECONDS)
 
     for index, scene in enumerate(scenes, start=1):
         extras.append([])
@@ -241,7 +220,6 @@ def build_scene_clips(scenes, clip_dir, voice_paths):
         query = get_optimized_search_query(keyword)
         print(f"Scene {index}: '{query}' (alt: '{alt}') | {scene.get('narration', '')[:70]}")
 
-        # visual loop: closing scene shows the hook footage again
         if loop_on and index == total and paths:
             loop_copy = os.path.join(clip_dir, f"scene_{index:02d}_loop.mp4")
             try:
@@ -255,14 +233,11 @@ def build_scene_clips(scenes, clip_dir, voice_paths):
         dur = get_duration(voice_paths[index - 1]) if index - 1 < len(voice_paths) else 3.0
         min_dur = max(3, int(math.ceil(dur)))
         if index == 1 and loop_on and len(voice_paths) >= 3:
-            # hook footage is reused for the loop ending: it needs room BEFORE the hook's
-            # in-point (last scene plays the seconds that precede the hook)
             tail = get_duration(voice_paths[-1])
             min_dur = min(9, max(min_dur, int(math.ceil(dur + tail + 0.7))))
 
         try:
             if index == 1 and FIRST_FRAME_MIN_BRIGHTNESS:
-                # first frame = what decides swipe vs. watch: do not accept a dark/murky clip
                 try:
                     fetch_scene_video(query, target, min_duration=min_dur,
                                       min_brightness=FIRST_FRAME_MIN_BRIGHTNESS, alt_keyword=alt)
@@ -284,11 +259,10 @@ def build_scene_clips(scenes, clip_dir, voice_paths):
             paths.append(paths[-1])
             continue
 
-        # middle scenes: more than one real clip when the sentence is long enough
-        # (hook + loop scenes keep ONE clip so the seamless loop stays intact)
         if 1 < index < total:
             scene_len = dur + 0.05
-            n_shots = max(1, min(MAX_SHOTS_PER_SCENE, int(round(scene_len / SHOT_SECONDS))))
+            n_shots = max(1, min(MAX_SHOTS_PER_SCENE,
+                                 int(round(scene_len / shot_seconds))))
             while n_shots > 1 and scene_len / n_shots < MIN_SHOT_LEN:
                 n_shots -= 1
             if n_shots > 1:
@@ -302,7 +276,7 @@ def build_scene_clips(scenes, clip_dir, voice_paths):
                     extras[-1] = []
 
     total_shots = sum(1 + len(x) for x in extras)
-    print(f"Shots in video: {total_shots} clips for {total} scenes")
+    print(f"Shots in video: {total_shots} clips for {total} scenes (shot_seconds={shot_seconds})")
     return paths, extras
 
 
@@ -310,7 +284,6 @@ def build_metadata(script, full_narration):
     title_core = re.sub(r"#\S+", "", script.get("title", "")).strip()
     if not title_core:
         title_core = random.choice(TITLE_POOL)
-
     title = f"{title_core[:75].strip()} #Shorts"[:95]
 
     tags, seen, total_chars = [], set(), 0
@@ -325,7 +298,8 @@ def build_metadata(script, full_narration):
         total_chars += len(tag) + 1
 
     hashtags, seen_h = [], set()
-    candidates = ["#Shorts", "#Psychology", "#PsychologyFacts", "#HumanBehavior", "#MindFacts", "#Facts"]
+    candidates = ["#Shorts", "#Psychology", "#PsychologyFacts", "#HumanBehavior",
+                  "#MindFacts", "#Facts"]
     candidates += [
         "#" + re.sub(r"[^0-9a-zA-Z]", "", t)
         for t in script.get("tags", [])
@@ -344,25 +318,20 @@ def build_metadata(script, full_narration):
     if cta_line:
         body = f"{body}\n\n💬 {cta_line} Tell me in the comments!"
     description = f"{body}\n\n{' '.join(hashtags)}"[:4900]
-
     return title, description, tags
 
 
 def generate_thumbnail(video_path: str, output_path: str, title_text: str):
     import subprocess
-
     if not os.path.exists(video_path):
         return None
 
     frame_path = output_path + ".frame.jpg"
     subprocess.run(
-        [
-            "ffmpeg", "-y", "-ss", "1", "-i", video_path,
-            "-frames:v", "1", "-q:v", "2", frame_path,
-        ],
+        ["ffmpeg", "-y", "-ss", "1", "-i", video_path,
+         "-frames:v", "1", "-q:v", "2", frame_path],
         capture_output=True,
     )
-
     if not os.path.exists(frame_path):
         print("Thumbnail frame extract nahi ho paya.")
         return None
@@ -382,7 +351,6 @@ def generate_thumbnail(video_path: str, output_path: str, title_text: str):
         "scale=1080:1920:force_original_aspect_ratio=increase",
         "crop=1080:1920",
     ]
-
     if font_file:
         vf_parts.append(
             f"drawtext=text='{safe_title}':"
@@ -392,38 +360,27 @@ def generate_thumbnail(video_path: str, output_path: str, title_text: str):
             f"fontfile={font_file}"
         )
 
-    cmd = [
-        "ffmpeg", "-y", "-i", frame_path,
-        "-vf", ",".join(vf_parts),
-        "-frames:v", "1", "-q:v", "2",
-        output_path,
-    ]
-
+    cmd = ["ffmpeg", "-y", "-i", frame_path,
+           "-vf", ",".join(vf_parts),
+           "-frames:v", "1", "-q:v", "2", output_path]
     result = subprocess.run(cmd, capture_output=True, text=True)
-
     if os.path.exists(frame_path):
         os.remove(frame_path)
-
     if result.returncode == 0 and os.path.exists(output_path):
         return output_path
-
     print(f"Thumbnail generate nahi hua: {result.stderr[-300:]}")
     return None
 
 
 def run_channel_pipeline(channel: dict, channel_index: int) -> bool:
-    """
-    Ek channel ke liye poora pipeline chalata hai:
-    script -> voiceover -> clips -> compose -> upload.
-    Har channel ke liye alag temp directories use hoti hain taake
-    parallel/sequential dono cases mein files clash na karein.
-    """
     name = channel["name"]
     print(f"\n{'='*60}")
     print(f"  Starting pipeline for {name}")
     print(f"{'='*60}\n")
 
-    # Channel-specific temp dirs (avoid overlap between channels)
+    # ---- style fingerprint: unique per video ----
+    style = get_style()
+
     ch_audio_dir = os.path.join(TEMP_AUDIO_DIR, f"channel_{channel_index}")
     ch_clip_dir = os.path.join(SCENE_CLIP_DIR, f"channel_{channel_index}")
     ch_output_dir = os.path.join(OUTPUT_DIR, f"channel_{channel_index}")
@@ -432,7 +389,7 @@ def run_channel_pipeline(channel: dict, channel_index: int) -> bool:
 
     start_time = time.time()
 
-    # ---------- 1. Script (unique per channel) ----------
+    # ---------- 1. Script ----------
     print(f"\n[{name}] Generating fresh script...")
     script = generate_script(client, USED_TOPICS_FILE)
     if not script:
@@ -459,7 +416,7 @@ def run_channel_pipeline(channel: dict, channel_index: int) -> bool:
     # ---------- 3. Stock clips ----------
     print(f"\n[{name}] Downloading stock clips...")
     try:
-        clip_paths, extra_clip_paths = build_scene_clips(scenes, ch_clip_dir, voice_paths)
+        clip_paths, extra_clip_paths = build_scene_clips(scenes, ch_clip_dir, voice_paths, style)
     except Exception as e:
         msg = f"[{name}] Video download failed: {e}"
         print(msg)
@@ -522,6 +479,7 @@ def run_channel_pipeline(channel: dict, channel_index: int) -> bool:
             comment_cta=comment_cta,
             word_timings=[load_word_timings(p) for p in voice_paths],
             loop_visual=LOOP_VIDEO,
+            style=style,
         )
     except Exception as e:
         msg = f"[{name}] Composition failed: {e}"
@@ -564,29 +522,21 @@ def run_channel_pipeline(channel: dict, channel_index: int) -> bool:
         if os.path.exists(thumb_path):
             print(f"[{name}] Setting thumbnail...")
             set_thumbnail(
-                video_id,
-                thumb_path,
-                channel["client_id"],
-                channel["client_secret"],
-                channel["refresh_token"],
+                video_id, thumb_path,
+                channel["client_id"], channel["client_secret"], channel["refresh_token"],
             )
 
         if channel["playlist_id"]:
             print(f"[{name}] Adding to playlist...")
             add_to_playlist(
-                video_id,
-                channel["playlist_id"],
-                channel["client_id"],
-                channel["client_secret"],
-                channel["refresh_token"],
+                video_id, channel["playlist_id"],
+                channel["client_id"], channel["client_secret"], channel["refresh_token"],
             )
 
         elapsed = time.time() - start_time
         notify_telegram(
-            f"[{name}] Video uploaded!\n"
-            f"{title}\n"
-            f"https://youtube.com/shorts/{video_id}\n"
-            f"{elapsed:.0f}s"
+            f"[{name}] Video uploaded!\n{title}\n"
+            f"https://youtube.com/shorts/{video_id}\n{elapsed:.0f}s"
         )
 
     except Exception as e:
@@ -595,9 +545,7 @@ def run_channel_pipeline(channel: dict, channel_index: int) -> bool:
         notify_telegram(msg)
         return False
 
-    # ---------- 7. TikTok (sirf channel 1 ke liye, ya jis channel par chahiye) ----------
-    # NOTE: TikTok par same video dono channels se post karna weird lagega,
-    # isliye sirf pehle channel ke liye TikTok upload kar rahe hain.
+    # ---------- 7. TikTok (only channel 1) ----------
     if channel_index == 0 and TIKTOK_CLIENT_KEY and TIKTOK_CLIENT_SECRET and TIKTOK_REFRESH_TOKEN:
         print(f"\n[{name}] Uploading to TikTok (draft)...")
         try:
@@ -609,12 +557,9 @@ def run_channel_pipeline(channel: dict, channel_index: int) -> bool:
                 refresh_token=TIKTOK_REFRESH_TOKEN,
             )
             print(f"[{name}] TikTok upload complete! Publish ID: {tiktok_publish_id}")
-
             notify_telegram(
-                f"[{name}] TikTok draft uploaded!\n"
-                f"{title}\n"
-                f"Publish ID: {tiktok_publish_id}\n"
-                f"Open TikTok app to post manually"
+                f"[{name}] TikTok draft uploaded!\n{title}\n"
+                f"Publish ID: {tiktok_publish_id}\nOpen TikTok app to post manually"
             )
         except Exception as e:
             msg = f"[{name}] TikTok Upload Failed: {e}"
@@ -633,8 +578,6 @@ def main():
     channels = get_youtube_channels()
     print(f"Found {len(channels)} channel(s) to process.\n")
 
-    # Posting time is decided by the `gate` job (modules/post_schedule.py): ONE random
-    # moment per day. When this runs, the videos simply go public right now.
     manual = os.getenv("EVENT_NAME", "") == "workflow_dispatch"
     print("Manual run: test post (does not use up today's daily slot)." if manual
           else "Scheduled run: posting now (random daily slot picked by the gate).")
@@ -656,9 +599,6 @@ def main():
         status = "✅ SUCCESS" if ok else "❌ FAILED"
         print(f"  {name}: {status}")
 
-    # Today's post is done as soon as at least one channel really uploaded - otherwise the next
-    # hourly wake-up would post the same day again. If everything failed we do NOT mark it,
-    # so the gate retries (catch-up) in the next hour.
     if UPLOADED_IDS and not manual:
         try:
             mark_posted(",".join(UPLOADED_IDS))
@@ -666,7 +606,6 @@ def main():
         except Exception as e:
             print(f"mark_posted failed (ignored): {e}")
 
-    # Agar koi bhi channel fail hua to overall exit non-zero
     if not all(ok for _, ok in results):
         raise SystemExit(1)
 
