@@ -2,11 +2,11 @@ name: Auto Generate and Post YouTube Shorts
 
 on:
   schedule:
-    # US trending hours ke hisaab se 2 runs (PKT = UTC+5):
+    # US trending hours (PKT = UTC+5):
     #   Run A: 11:00 UTC = 16:00 PKT = 6:00 AM ET  (US morning trending)
-    #   Run B: 23:00 UTC = 04:00 PKT = 6:00 PM ET  (US evening prime time, previous day)
-    - cron: '0 11 * * *'    # Run A -> Slot A (US morning)
-    - cron: '0 23 * * *'    # Run B -> Slot B (US evening)
+    #   Run B: 23:00 UTC = 04:00 PKT = 6:00 PM ET  (US evening prime time)
+    - cron: '0 11 * * *'
+    - cron: '0 23 * * *'
   workflow_dispatch:
     inputs:
       publish_now:
@@ -116,11 +116,14 @@ jobs:
         ENABLE_CAPTIONS: '0'
         CAPTION_WORDS: '2'
         LOOP_VIDEO: '1'
+        HOOK_TEXT: '1'
         SCHEDULE_CRON: ${{ github.event.schedule }}
         PUBLISH_NOW: ${{ github.event.inputs.publish_now }}
         HOOK_CAPTION: '1'
         TTS_VOICE: 'en-US-AndrewNeural'
         TTS_RATE: '+8%'
+        # SHOT_SECONDS no longer fixed here: modules/style_variation.py picks it per video
+        PRO_FX: '1'
       run: python main.py
 
     - name: Commit used_topics.json back to repo
