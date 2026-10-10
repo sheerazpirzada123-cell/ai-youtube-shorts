@@ -1,20 +1,23 @@
 """
-Word-by-word English captions (Submagic / Hormozi style).
+Word-by-word English captions (Submagic / Hormozi style) - STYLE-AWARE.
 
-- Text on screen = the exact English narration, word for word.
-- Words appear one by one, in sync with the voice. The word being spoken is
-  highlighted (accent colour + bigger). Already-spoken words of the same
-  phrase stay white.
+Changes in this version
+-----------------------
+- Captions accept a `style` dict (from modules.style_variation.get_style).
+  Every video gets its own caption Y position, X offset, rotation, size range,
+  accent palette, font family preference, words-per-chunk and stroke thickness.
+
+- The spoken word is highlighted (accent colour + bigger). Already-spoken words
+  of the same phrase stay white.
+
 - Every word gets its own font + size. Important words (long / "power" words)
   are drawn BIG in a loud display font, filler words (the, a, of ...) small.
-- Pure PIL rendering (no ImageMagick). Fonts are Google Fonts, auto-downloaded
-  into assets/fonts on first run; if a download fails the code falls back to
-  the system bold font, so the video never breaks.
 
-Timing: if the voiceover step saved REAL word timings (edge-tts WordBoundary
-events, <mp3>.words.json) they are used directly -> frame-accurate sync.
-If a scene has no timings, they are estimated from the spoken length of each
-word (letters + a pause after commas / full stops).
+- Pure PIL rendering. Google Fonts auto-downloaded into assets/fonts on first
+  run; if a download fails the code falls back to the system bold font.
+
+Timing: if the voiceover step saved REAL word timings (<mp3>.words.json) they
+are used directly -> frame-accurate sync.
 """
 
 import os
@@ -25,18 +28,18 @@ from PIL import Image, ImageDraw, ImageFont
 
 TARGET_W = 1080
 TARGET_H = 1920
-CAPTION_CENTER_RATIO = 0.62     # moved lower so face/motion stays visible
+
+DEFAULT_CAPTION_CENTER_RATIO = 0.62
 MAX_LINE_W = TARGET_W - 120
-WORDS_PER_CHUNK = max(1, min(3, int(os.getenv("CAPTION_WORDS", "2") or 2)))   # 2-word animated captions (fast, Shorts style)
+DEFAULT_WORDS_PER_CHUNK = 2
 WORD_GAP = 28
-ACTIVE_SCALE = 1.15              # bigger highlight = more eye-catch
-POP_SCALE = 1.14                 # extra scale for the first ~70ms of each word (pop-in)
+DEFAULT_ACTIVE_SCALE = 1.15
+POP_SCALE = 1.14
 POP_TIME = 0.07
 
 FONT_DIR = os.path.join("assets", "fonts")
 _GF = "https://raw.githubusercontent.com/google/fonts/main/ofl/"
 FONT_SPECS = {
-    # key: (filename, url, is_display_font)
     "anton":    ("Anton-Regular.ttf",         _GF + "anton/Anton-Regular.ttf", True),
     "bangers":  ("Bangers-Regular.ttf",       _GF + "bangers/Bangers-Regular.ttf", True),
     "luckiest": ("LuckiestGuy-Regular.ttf",   _GF + "luckiestguy/LuckiestGuy-Regular.ttf", True),
@@ -53,13 +56,11 @@ SYSTEM_FALLBACKS = [
     "C:/Windows/Fonts/arialbd.ttf",
 ]
 
-# Hormozi style: the spoken word flips between bold yellow and bold green
 ACCENTS = [
-    (255, 221, 0),    # yellow
-    (0, 255, 140),    # green
+    (255, 221, 0),
+    (0, 255, 140),
 ]
 
-# Small filler words -> drawn small
 STOP_WORDS = {
     "a", "an", "the", "is", "are", "was", "were", "be", "been", "am", "of", "to", "in", "on",
     "at", "and", "or", "but", "it", "its", "it's", "this", "that", "for", "with", "as", "by",
@@ -67,7 +68,6 @@ STOP_WORDS = {
     "so", "if", "from", "than", "then", "there", "their", "them", "us", "our", "my", "me",
     "can", "will", "just", "up", "out", "into", "over", "when", "what", "which", "who",
 }
-# Words that deserve the big hero treatment
 POWER_WORDS = {
     "never", "secret", "secrets", "truth", "lie", "lies", "dead", "die", "dies", "deadly",
     "danger", "dangerous", "impossible", "shocking", "alive", "brain", "heart", "money",
@@ -89,7 +89,6 @@ def _looks_like_font(data):
 
 
 def ensure_fonts():
-    """Return {key: path} of the display fonts that exist (downloading missing ones)."""
     global _available
     if _available is not None:
         return _available
@@ -150,7 +149,6 @@ def _clean_display(word):
 
 
 def _spoken_weight(tok):
-    """Rough spoken length of a word (letters/digits) + pauses after punctuation."""
     letters = len(re.findall(r"[A-Za-z0-9]", tok))
     w = float(max(letters, 2))
     if re.search(r"[,;:]$", tok):
@@ -161,7 +159,6 @@ def _spoken_weight(tok):
 
 
 def plan_scene_words(narration, _unused=None):
-    """Return [(display_word, weight, ends_phrase)] for one English scene."""
     words = []
     for tok in str(narration).split():
         disp = _clean_display(tok)
@@ -172,7 +169,6 @@ def plan_scene_words(narration, _unused=None):
 
 
 def _timed_from_real(real, start, scene_end):
-    """Words with REAL timings (seconds relative to the scene's mp3) -> absolute timeline."""
     timed = []
     for w in real:
         disp = _clean_display(w.get("text", ""))
@@ -181,10 +177,9 @@ def _timed_from_real(real, start, scene_end):
         timed.append({"text": disp, "t0": start + float(w["start"]), "t1": start + float(w["end"])})
     for k, w in enumerate(timed):
         nxt = timed[k + 1]["t0"] if k + 1 < len(timed) else None
-        # phrase break on a real pause (>150ms) or at the end of the scene
         w["ends"] = nxt is None or (nxt - w["t1"]) > 0.15
         if nxt is None:
-            w["t1"] = max(w["t1"], min(scene_end, w["t1"] + 0.25))   # hold last word briefly
+            w["t1"] = max(w["t1"], min(scene_end, w["t1"] + 0.25))
     return timed
 
 
@@ -205,30 +200,24 @@ def _timed_estimated(narration, start, dur, scene_end):
     return timed
 
 
-def plan_word_events(scenes, scene_timings, total_duration, word_timings=None):
-    """
-    scenes: [{'narration':...}]
-    scene_timings: [(start, voice_duration), ...]
-    word_timings: optional [[{'text','start','end'}...] or None per scene] (real TTS timings)
-    Returns list of chunks: each {'words': [{'text','t0','t1'}...]}
-    """
+def plan_word_events(scenes, scene_timings, total_duration,
+                     word_timings=None, words_per_chunk=None):
+    wpc = words_per_chunk or DEFAULT_WORDS_PER_CHUNK
     chunks = []
     count = min(len(scenes), len(scene_timings))
     for i in range(count):
         start, dur = scene_timings[i]
         scene_end = scene_timings[i + 1][0] if i + 1 < count else total_duration
-
         real = word_timings[i] if (word_timings and i < len(word_timings)) else None
         timed = _timed_from_real(real, start, scene_end) if real else []
         if not timed:
             timed = _timed_estimated(scenes[i].get("narration", ""), start, dur, scene_end)
         if not timed:
             continue
-
         cur = []
         for w in timed:
             cur.append(w)
-            if len(cur) >= WORDS_PER_CHUNK or w["ends"]:
+            if len(cur) >= wpc or w["ends"]:
                 chunks.append({"words": cur})
                 cur = []
         if cur:
@@ -238,7 +227,6 @@ def plan_word_events(scenes, scene_timings, total_duration, word_timings=None):
 
 # ---------------------------------------------------------------- styling ----
 def _importance(words):
-    """0 = filler, 1 = normal, 2 = hero word (at least one hero per phrase)."""
     importance = []
     for w in words:
         low = w["text"].lower()
@@ -249,17 +237,20 @@ def _importance(words):
         else:
             importance.append(1)
     if max(importance) < 2:
-        # make sure one word per phrase is the hero (longest non-stop word)
         best = max(range(len(words)), key=lambda j: (importance[j], len(words[j]["text"])))
         if importance[best] >= 1:
             importance[best] = 2
     return importance
 
 
-def hero_word_times(scenes, scene_timings, total_duration, word_timings=None):
-    """Start times (sec) of every hero caption word -> used for 'pop' sound effects."""
+def hero_word_times(scenes, scene_timings, total_duration,
+                    word_timings=None, style=None):
+    """Start times of every hero caption word -> used for 'pop' sound effects."""
+    style = style or {}
     times = []
-    for chunk in plan_word_events(scenes, scene_timings, total_duration, word_timings):
+    for chunk in plan_word_events(scenes, scene_timings, total_duration,
+                                  word_timings,
+                                  words_per_chunk=style.get("words_per_chunk")):
         imp = _importance(chunk["words"])
         for w, level in zip(chunk["words"], imp):
             if level == 2 and w["t0"] < total_duration - 0.2:
@@ -267,41 +258,58 @@ def hero_word_times(scenes, scene_timings, total_duration, word_timings=None):
     return times
 
 
-def _style_chunk(chunk, rng, fonts, fallback, state):
-    """Give every word a font, size and accent colour (stored in the chunk)."""
+def _style_chunk(chunk, rng, fonts, fallback, state, style):
     words = chunk["words"]
     display_keys = [k for k, s in FONT_SPECS.items() if s[2] and k in fonts]
     normal_keys = [k for k, s in FONT_SPECS.items() if not s[2] and k in fonts]
+
+    preferred = style.get("font_family")
+    pref_pool_display, pref_pool_normal = [], []
+    if preferred and preferred in fonts:
+        if FONT_SPECS[preferred][2]:
+            pref_pool_display = [preferred]
+        else:
+            pref_pool_normal = [preferred]
+
     all_keys = display_keys + normal_keys
+    size_range = style.get("size_range", (68, 94, 128))
+    accents = style.get("accents", ACCENTS)
 
     importance = _importance(words)
 
     for j, w in enumerate(words):
         imp = importance[j]
-        pool = (display_keys if imp == 2 else normal_keys if imp == 1 else normal_keys) or all_keys
+        if imp == 2:
+            pool = (pref_pool_display * 3) + display_keys or all_keys
+        elif imp == 1:
+            pool = (pref_pool_normal * 2) + normal_keys or all_keys
+        else:
+            pool = normal_keys or all_keys
         pool = [k for k in pool if k != state.get("last_font")] or pool
         key = rng.choice(pool) if pool else None
         state["last_font"] = key
         w["font_path"] = fonts.get(key) if key else fallback
-        w["size"] = {2: 132, 1: 98, 0: 72}[imp] + rng.randint(-6, 6)
-        w["accent"] = ACCENTS[state["accent_i"] % len(ACCENTS)]
+        base = {2: size_range[2], 1: size_range[1], 0: size_range[0]}[imp]
+        w["size"] = base + rng.randint(-8, 8)
+        w["accent"] = accents[state["accent_i"] % len(accents)]
         state["accent_i"] += 1
         w["hero"] = imp == 2
 
 
-def style_chunks(chunks, seed=None):
+def style_chunks(chunks, style=None, seed=None):
+    style = style or {}
     fonts = ensure_fonts()
     fallback = _fallback_font()
     rng = random.Random(seed)
-    state = {"last_font": None, "accent_i": rng.randrange(len(ACCENTS))}
+    state = {"last_font": None,
+             "accent_i": rng.randrange(len(style.get("accents", ACCENTS)))}
     for c in chunks:
-        _style_chunk(c, rng, fonts, fallback, state)
+        _style_chunk(c, rng, fonts, fallback, state, style)
     return chunks
 
 
 # -------------------------------------------------------------- rendering ----
 def _layout(chunk):
-    """Fixed layout for a chunk: returns (lines, canvas_h). Each word gets x, line, baseline info."""
     dummy = ImageDraw.Draw(Image.new("RGBA", (4, 4)))
     metrics = []
     for w in chunk["words"]:
@@ -339,8 +347,8 @@ def _layout(chunk):
     return placed, int(y + pad)
 
 
-def render_chunk_frame(chunk, active_idx, pop=False):
-    """Transparent RGBA frame: words 0..active_idx visible, word active_idx highlighted."""
+def render_chunk_frame(chunk, active_idx, pop=False, style=None):
+    style = style or {}
     if "layout" not in chunk:
         chunk["layout"] = _layout(chunk)
     placed, height = chunk["layout"]
@@ -348,43 +356,61 @@ def render_chunk_frame(chunk, active_idx, pop=False):
     img = Image.new("RGBA", (TARGET_W, height), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
 
+    active_scale = style.get("active_scale", DEFAULT_ACTIVE_SCALE)
+    stroke_scale = style.get("stroke_scale", 0.10)
+
     for j in range(active_idx + 1):
         w = chunk["words"][j]
         active = (j == active_idx)
-        size = w["size"] * ((ACTIVE_SCALE * (POP_SCALE if pop else 1.0)) if active else 1.0)
+        size = w["size"] * ((active_scale * (POP_SCALE if pop else 1.0)) if active else 1.0)
         font = _load_font(w["font_path"], size)
-        stroke = max(7, int(size * 0.10))   # thicker stroke = readable on any bg
+        stroke = max(6, int(size * stroke_scale))
         fill = w["accent"] if active else (255, 255, 255)
         cx, base = placed[j]["cx"], placed[j]["baseline"]
 
-        # hard black shadow (offset) for maximum contrast on any footage
         draw.text((cx + 4, base + 8), w["text"], font=font, fill=(0, 0, 0, 220),
                   stroke_width=stroke, stroke_fill=(0, 0, 0, 220), anchor="ms")
-        # main white/accent text with black outline
         draw.text((cx, base), w["text"], font=font, fill=fill + (255,),
                   stroke_width=stroke, stroke_fill=(0, 0, 0, 255), anchor="ms")
     return img
 
 
-def build_word_caption_clips(scenes, scene_timings, total_duration, seed=None, word_timings=None):
+def build_word_caption_clips(scenes, scene_timings, total_duration,
+                             seed=None, word_timings=None, style=None):
     """
     Return moviepy ImageClips ready for CompositeVideoClip.
-    Every spoken word -> a short 'pop' frame (slightly bigger) followed by the
-    normal highlighted frame, so each word animates in sync with the voice.
+    Every spoken word -> a short 'pop' frame followed by the normal highlighted frame.
     """
     import numpy as np
     from moviepy.editor import ImageClip
 
-    events = plan_word_events(scenes, scene_timings, total_duration, word_timings)
-    chunks = style_chunks(events, seed)
+    style = style or {}
+
+    events = plan_word_events(scenes, scene_timings, total_duration, word_timings,
+                              words_per_chunk=style.get("words_per_chunk"))
+    chunks = style_chunks(events, style=style, seed=seed)
     clips = []
+
+    y_ratio = style.get("caption_y_ratio", DEFAULT_CAPTION_CENTER_RATIO)
+    x_jit = style.get("caption_x_jitter", 0)
+    rotation = style.get("caption_rotation", 0)
 
     def _add(frame, t0, dur):
         if dur <= 0.02:
             return
         clip = ImageClip(np.array(frame), transparent=True).set_start(t0).set_duration(dur)
-        y = int(TARGET_H * CAPTION_CENTER_RATIO - frame.height / 2)
-        clips.append(clip.set_position(("center", y)))
+        y = int(TARGET_H * y_ratio - frame.height / 2)
+        if x_jit:
+            x = int(TARGET_W // 2 + x_jit - frame.shape[1] / 2)
+            clip = clip.set_position((x, y))
+        else:
+            clip = clip.set_position(("center", y))
+        if rotation:
+            try:
+                clip = clip.rotate(rotation, resample="bilinear", expand=False)
+            except Exception:
+                pass
+        clips.append(clip)
 
     for chunk in chunks:
         for idx, w in enumerate(chunk["words"]):
@@ -395,15 +421,16 @@ def build_word_caption_clips(scenes, scene_timings, total_duration, seed=None, w
                 continue
             dur = min(dur, total_duration - t0)
             pop = min(POP_TIME, dur * 0.5)
-            _add(render_chunk_frame(chunk, idx, pop=True), t0, pop)
-            _add(render_chunk_frame(chunk, idx, pop=False), t0 + pop, dur - pop)
+            _add(render_chunk_frame(chunk, idx, pop=True, style=style), t0, pop)
+            _add(render_chunk_frame(chunk, idx, pop=False, style=style),
+                 t0 + pop, dur - pop)
+
     print(str(len(clips)) + " word-caption frames built "
           + ("(real word timings)" if word_timings and any(word_timings) else "(estimated timings)"))
     return clips
 
 
 # ------------------------------------------------- comment-bait overlay ----
-# (kept from the original psychology bot: question pill for the last seconds)
 def _pop_scale(t, pop_dur=0.11):
     import math
     if t >= pop_dur:
@@ -412,19 +439,21 @@ def _pop_scale(t, pop_dur=0.11):
     return 0.80 + 0.20 * p + 0.12 * math.sin(math.pi * p)
 
 
-def build_comment_cta_clip(text, scene_timings, total_duration):
+def build_comment_cta_clip(text, scene_timings, total_duration, style=None):
     """
-    Pill with a question at the end of the video ('Have you noticed this? Comment below').
-    On-screen text only: the spoken last line stays the loop line, so the replay is seamless.
+    Pill with a question at the end of the video. Style-aware: position, colours,
+    pill fill and border are randomized per video.
     """
     import numpy as np
     from moviepy.editor import ImageClip
 
+    style = style or {}
     text = " ".join(str(text or "").split())
     if not text:
         return None
     fonts = ensure_fonts()
-    font_path = fonts.get("lilita") or fonts.get("anton") or _fallback_font()
+    font_path = fonts.get(style.get("font_family", "")) or fonts.get("lilita") \
+        or fonts.get("anton") or _fallback_font()
     if not font_path or not scene_timings:
         return None
     try:
@@ -451,12 +480,16 @@ def build_comment_cta_clip(text, scene_timings, total_duration):
         box_w = int(max([probe.textlength(label, font=l_font)] +
                         [probe.textlength(l, font=q_font) for l in lines])) + pad_x * 2
         box_h = l_h + q_h * len(lines) + pad_y * 2
+
+        fill = style.get("comment_pill_fill", (0, 0, 0, 190))
+        border = style.get("comment_pill_border", (255, 214, 0, 255))
+
         img = Image.new("RGBA", (box_w, box_h), (0, 0, 0, 0))
         d = ImageDraw.Draw(img)
-        d.rounded_rectangle([0, 0, box_w - 1, box_h - 1], radius=40, fill=(0, 0, 0, 190),
-                            outline=(255, 214, 0, 255), width=5)
+        d.rounded_rectangle([0, 0, box_w - 1, box_h - 1], radius=40,
+                            fill=fill, outline=border, width=5)
         lw = probe.textlength(label, font=l_font)
-        d.text(((box_w - lw) / 2, pad_y), label, font=l_font, fill=(255, 214, 0, 255))
+        d.text(((box_w - lw) / 2, pad_y), label, font=l_font, fill=border)
         y = pad_y + l_h
         for line in lines:
             w = probe.textlength(line, font=q_font)
@@ -464,12 +497,14 @@ def build_comment_cta_clip(text, scene_timings, total_duration):
                    stroke_width=3, stroke_fill=(0, 0, 0, 255))
             y += q_h
 
+        show = style.get("comment_duration", 2.8)
         last_start = scene_timings[-1][0]
-        start = max(last_start, total_duration - 2.8)
+        start = max(last_start, total_duration - show)
         start = min(start, max(0.0, total_duration - 1.0))
         arr = np.array(img)
         h0 = arr.shape[0]
-        yc = TARGET_H * 0.79
+        y_ratio = style.get("comment_y_ratio", 0.79)
+        yc = TARGET_H * y_ratio
         clip = ImageClip(arr, transparent=True).set_start(start).set_duration(max(0.05, total_duration - start))
         clip = clip.resize(_pop_scale)
         return clip.set_position(lambda t: ("center", int(yc - h0 * _pop_scale(t) / 2.0)))
