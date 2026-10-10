@@ -101,27 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-02T07:03:48",
-      "category": "insects and tiny creatures",
-      "format": "myth_vs_truth",
-      "title": "Makhi apne pairon se khana kaise chakhti hai? 🪰",
-      "fact": "Houseflies have taste receptors on their feet (tarsi) that allow them to taste food instantly upon landing, and they rub their legs to clean these sensors."
-    },
-    {
-      "date": "2026-10-02T07:50:36",
-      "category": "volcanoes, earthquakes and how the Earth works",
-      "format": "mystery_explained",
-      "title": "Japan Earthquake Ne Din Chota Kar Diya ⏱️",
-      "fact": "The 2011 magnitude 9.0 earthquake in Japan shifted Earth's mass closer to its axis, spinning it faster and shortening the day by about 1.8 microseconds."
-    },
-    {
-      "date": "2026-10-02T08:08:15",
-      "category": "science labs, experiments and discoveries",
-      "format": "personal_what_if",
-      "title": "World's Quietest Room Can Hallucinate You 🤫",
-      "fact": "In an anechoic chamber (the world's quietest room), the absence of ambient noise causes humans to hear internal bodily sounds like heartbeat, blood flow, and breathing, which eventually leads to auditory hallucinations and loss of balance due to sensory deprivation."
-    },
-    {
       "date": "2026-10-02T08:53:48",
       "category": "human body and brain (eyes, heart, hands, sleep)",
       "format": "top3",
@@ -812,6 +791,33 @@
       "title": "How Sleep Loss Warps Your Brain 🥱",
       "fact": "Sleep inertia upon waking causes cognitive impairment worse than legal alcohol intoxication, sleep debt suppresses prosocial helping behavior, and severe fatigue triggers open-eyed microsleeps.",
       "video_id": "fkmRSTtTIuw",
+      "channel": "Channel 3"
+    },
+    {
+      "date": "2026-10-10T10:08:52",
+      "category": "psychology of habits, procrastination, motivation and willpower",
+      "format": "personal_what_if",
+      "title": "Why One Tiny Mistake Destroys Habits 🍪",
+      "fact": "The what-the-hell effect is a psychological trap where a minor goal violation causes distress, prompting people to completely surrender self-control.",
+      "video_id": "6WdI6BzFgeM",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-10-10T10:14:41",
+      "category": "everyday human behaviour: why people do small things in daily life (phone, friends, family, work)",
+      "format": "psychology_fact",
+      "title": "How Borrowing a Pen Makes People Like You 🖊️",
+      "fact": "The Ben Franklin effect shows that getting someone to do you a small favor makes them like and trust you more, as their brain resolves cognitive dissonance by assuming they must value you.",
+      "video_id": "M0HtQyNkLw4",
+      "channel": "Channel 2"
+    },
+    {
+      "date": "2026-10-10T10:20:26",
+      "category": "emotions, mood, stress and how people react to them",
+      "format": "myth_vs_truth",
+      "title": "Why Venting Your Anger Actually Backfires 😡",
+      "fact": "Venting anger does not release emotional tension; instead, catharsis maintains high physiological arousal and reinforces aggressive neural associations, prolonging anger.",
+      "video_id": "OXBC3XY0VIs",
       "channel": "Channel 3"
     }
   ]
