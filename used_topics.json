@@ -101,27 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-01T14:40:08",
-      "category": "history's strangest records and museum objects",
-      "format": "myth_vs_truth",
-      "title": "Mummy Se Bani Paint Ka Sach 🎨",
-      "fact": "Mummy Brown pigment used in 18th and 19th-century paintings was made from ground-up ancient Egyptian mummies."
-    },
-    {
-      "date": "2026-10-01T19:44:16",
-      "category": "trees, plants and forests",
-      "format": "top3",
-      "title": "Ped Aapas Mein Baatein Karte Hain 🌲",
-      "fact": "Trees communicate and share nutrients underground through massive fungal networks called mycorrhizal networks, essentially acting as a forest internet."
-    },
-    {
-      "date": "2026-10-02T06:50:06",
-      "category": "space, planets, stars and astronauts",
-      "format": "shocking_fact",
-      "title": "Space Mein Bina Aag Metal Kaise Judta Hai? 🌌",
-      "fact": "In the vacuum of space, two pieces of the same type of metal will permanently bond or fuse together if they touch (cold welding)."
-    },
-    {
       "date": "2026-10-02T07:03:48",
       "category": "insects and tiny creatures",
       "format": "myth_vs_truth",
@@ -806,6 +785,33 @@
       "title": "Your brain is lying to you 🧠",
       "fact": "When multitasking, the brain rapidly switches between tasks rather than processing them simultaneously, creating a cognitive switching cost that increases error rates and mental fatigue.",
       "video_id": "uc5U8JLUnfA",
+      "channel": "Channel 3"
+    },
+    {
+      "date": "2026-10-10T09:30:47",
+      "category": "decision making, cognitive biases and why smart people make silly choices",
+      "format": "myth_vs_truth",
+      "title": "Why More Choices Secretly Ruin Everything 🤯",
+      "fact": "The paradox of choice shows that having too many options increases decision fatigue, elevates unrealistic expectations, and causes post-purchase regret.",
+      "video_id": "Omr8HdDDYj0",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-10-10T09:35:26",
+      "category": "social psychology: crowds, conformity, persuasion, why we copy others",
+      "format": "psychology_effect",
+      "title": "Why your initials control your choices 🔤",
+      "fact": "The Name-Letter Effect shows people unconsciously prefer letters in their own name, especially their initials, biasing evaluations and everyday consumer choices.",
+      "video_id": "8B6Qv72BU4g",
+      "channel": "Channel 2"
+    },
+    {
+      "date": "2026-10-10T09:40:35",
+      "category": "sleep, dreams and tiredness: what they do to mood and behaviour",
+      "format": "top3",
+      "title": "How Sleep Loss Warps Your Brain 🥱",
+      "fact": "Sleep inertia upon waking causes cognitive impairment worse than legal alcohol intoxication, sleep debt suppresses prosocial helping behavior, and severe fatigue triggers open-eyed microsleeps.",
+      "video_id": "fkmRSTtTIuw",
       "channel": "Channel 3"
     }
   ]
