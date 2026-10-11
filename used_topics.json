@@ -101,27 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-03T08:41:08",
-      "category": "food and cooking science",
-      "format": "top3",
-      "title": "Kya Pineapple Aapko Zinda Kha Raha Hai? 🍍",
-      "fact": "Chilies trick brain heat receptors without actual heat, onions produce mild sulfuric acid in tears, and pineapple contains bromelain enzymes that actively digest the proteins in your mouth."
-    },
-    {
-      "date": "2026-10-03T12:40:35",
-      "category": "time, clocks and calendars",
-      "format": "mystery_explained",
-      "title": "Kya aapka sir pairon se boodha hai? 🤯",
-      "fact": "Time moves slower closer to Earth's surface due to gravitational time dilation, meaning a person's feet are fractionally younger than their head."
-    },
-    {
-      "date": "2026-10-03T13:53:24",
-      "category": "extreme weather (lightning, storms, ice, rain)",
-      "format": "myth_vs_truth",
-      "title": "Gaadi Pe Bijli Gire Toh Kya Hoga? ⚡",
-      "fact": "A car protects you from lightning because of its metal frame acting as a Faraday cage, not because of its rubber tires."
-    },
-    {
       "date": "2026-10-03T14:00:04",
       "category": "insects and tiny creatures",
       "format": "personal_what_if",
@@ -824,6 +803,33 @@
       "title": "Why Doodling Actually Boosts Your Focus ✍️",
       "fact": "Doodling stabilizes physiological arousal and prevents the brain from drifting into high-demand daydreaming, allowing people to recall significantly more verbal information.",
       "video_id": "wXA0kL8ECJg",
+      "channel": "Channel 3"
+    },
+    {
+      "date": "2026-10-11T16:35:50",
+      "category": "psychology of first impressions, attraction and body language (only well-established findings)",
+      "format": "psychology_effect",
+      "title": "Why Small Blunders Make You More Likable ☕",
+      "fact": "The Pratfall Effect shows that competent people become more likable after making a minor blunder, while average or incompetent people become less likable.",
+      "video_id": "lGmlj4MWLec",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-10-11T16:43:53",
+      "category": "childhood, learning and curiosity: how people learn and why praise/habits stick",
+      "format": "personal_what_if",
+      "title": "Why Your Highlighter Tricks Your Brain 🧠",
+      "fact": "The illusion of competence causes people to mistake familiarity from re-reading and highlighting for actual memory retrieval.",
+      "video_id": "AT-6sxITazo",
+      "channel": "Channel 2"
+    },
+    {
+      "date": "2026-10-11T16:50:18",
+      "category": "social psychology: crowds, conformity, persuasion, why we copy others",
+      "format": "psychology_fact",
+      "title": "The One Word That Forces Agreement 🧠",
+      "fact": "Using the word 'because' triggers automatic compliance in small requests, even when followed by a completely redundant justification.",
+      "video_id": "CMbk1PHhEpc",
       "channel": "Channel 3"
     }
   ]
