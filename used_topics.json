@@ -101,27 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-04T08:43:15",
-      "category": "human body and brain (eyes, heart, hands, sleep)",
-      "format": "myth_vs_truth",
-      "title": "Ungliyon Mein Muscle Nahi Hoti? 🖐️",
-      "fact": "Human fingers contain zero muscles and are moved remotely by muscles in the forearm pulling tendons like cables."
-    },
-    {
-      "date": "2026-10-04T08:48:09",
-      "category": "space, planets, stars and astronauts",
-      "format": "top3",
-      "title": "Titan Par Methane Ki Baarish! 🪐",
-      "fact": "Saturn's moon Titan has a thick nitrogen-rich atmosphere with liquid methane rain, rivers, and lakes, making it the only world in our solar system besides Earth with liquid on its surface."
-    },
-    {
-      "date": "2026-10-04T13:22:02",
-      "category": "trees, plants and forests",
-      "format": "shocking_fact",
-      "title": "Ye Ped Goli Chalaata Hai! 🌳",
-      "fact": "The sandbox tree (Hura crepitans), also known as the dynamite tree, has explosive pumpkin-shaped fruits that burst with a loud gunshot-like sound and launch seeds at speeds up to 250 km/h."
-    },
-    {
       "date": "2026-10-04T13:27:41",
       "category": "dreams and sleep",
       "format": "personal_what_if",
@@ -836,6 +815,33 @@
       "title": "Why Healthy Choices Backfire on You 🥗",
       "fact": "Moral licensing causes people to unconsciously give themselves permission to indulge in unhealthy choices after making a small good decision.",
       "video_id": "jjI6LiLkzIo",
+      "channel": "Channel 3"
+    },
+    {
+      "date": "2026-10-12T20:10:16",
+      "category": "friendship, relationships, texting, jealousy and loneliness (well-established findings only)",
+      "format": "personal_what_if",
+      "title": "The Psychological Trick to Make Anyone Like You 🤝",
+      "fact": "People like someone significantly more after doing them a small favor due to the Ben Franklin effect resolving cognitive dissonance.",
+      "video_id": "fWiSRfriIZw",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-10-12T20:15:45",
+      "category": "psychology of habits, procrastination, motivation and willpower",
+      "format": "psychology_fact",
+      "title": "Why Sharing Goals Secretly Kills Motivation 🤫",
+      "fact": "Announcing your goals creates a premature sense of accomplishment known as social reality, which significantly reduces the motivation needed to actually complete them.",
+      "video_id": "ybmxaxrWnoo",
+      "channel": "Channel 2"
+    },
+    {
+      "date": "2026-10-12T20:21:49",
+      "category": "shopping, money and attention psychology: why we buy, scroll and get hooked",
+      "format": "psychology_effect",
+      "title": "The Sneaky Movie Popcorn Trick 🍿",
+      "fact": "The decoy effect causes consumers to choose a more expensive option when an asymmetric third option makes the higher price seem like a rational bargain.",
+      "video_id": "4qgf1_L7C3k",
       "channel": "Channel 3"
     }
   ]
