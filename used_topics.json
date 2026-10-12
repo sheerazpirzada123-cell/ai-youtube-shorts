@@ -101,27 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-03T14:00:04",
-      "category": "insects and tiny creatures",
-      "format": "personal_what_if",
-      "title": "Chehre Par Rengne Wale Microscopic Jeev! 😨",
-      "fact": "Demodex mites live on human faces, lack an anus to excrete waste, and explode inside skin pores when they die."
-    },
-    {
-      "date": "2026-10-03T18:08:14",
-      "category": "deserts, mountains and extreme places on Earth",
-      "format": "shocking_fact",
-      "title": "Everest Space Ke Sabse Paas Nahi Hai! 🏔️",
-      "fact": "Mount Chimborazo in Ecuador, not Mount Everest, is the closest point on Earth's surface to space due to Earth's equatorial bulge."
-    },
-    {
-      "date": "2026-10-03T18:12:42",
-      "category": "history's strangest records and museum objects",
-      "format": "mystery_explained",
-      "title": "इस पेंटिंग के पीछे क्या छिपा है? 😱",
-      "fact": "A painting in the Louvre called The Chess Players contains a secret optical illusion where the figures are actually painted over a living human person."
-    },
-    {
       "date": "2026-10-04T08:43:15",
       "category": "human body and brain (eyes, heart, hands, sleep)",
       "format": "myth_vs_truth",
@@ -830,6 +809,33 @@
       "title": "The One Word That Forces Agreement 🧠",
       "fact": "Using the word 'because' triggers automatic compliance in small requests, even when followed by a completely redundant justification.",
       "video_id": "CMbk1PHhEpc",
+      "channel": "Channel 3"
+    },
+    {
+      "date": "2026-10-12T01:58:02",
+      "category": "sleep, dreams and tiredness: what they do to mood and behaviour",
+      "format": "psychology_effect",
+      "title": "Why Tiny Annoyances Ruin Your Entire Day ☕",
+      "fact": "Sleep deprivation impairs emotional regulation by increasing amygdala reactivity while disconnecting it from prefrontal control regions, making minor everyday inconveniences feel like urgent threats.",
+      "video_id": "2r03xI2tZUg",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-10-12T02:02:33",
+      "category": "memory: why we forget, false memories, why we remember some things forever",
+      "format": "top3",
+      "title": "Why Your Brain Rewrites Your Past Memories 🧠",
+      "fact": "Human memory rewrites and reconsolidates past events upon recall rather than playing an exact recording, making false details feel completely real over time.",
+      "video_id": "H53Yiyuuw4o",
+      "channel": "Channel 2"
+    },
+    {
+      "date": "2026-10-12T02:06:00",
+      "category": "everyday human behaviour: why people do small things in daily life (phone, friends, family, work)",
+      "format": "myth_vs_truth",
+      "title": "Why Healthy Choices Backfire on You 🥗",
+      "fact": "Moral licensing causes people to unconsciously give themselves permission to indulge in unhealthy choices after making a small good decision.",
+      "video_id": "jjI6LiLkzIo",
       "channel": "Channel 3"
     }
   ]
