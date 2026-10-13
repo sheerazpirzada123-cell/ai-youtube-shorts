@@ -101,13 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-05T09:15:18",
-      "category": "technology, robots, computers and smartphones",
-      "format": "top3",
-      "title": "Internet aur computer ke 3 anokhe sach 🤯",
-      "fact": "Three fascinating technology secrets: the first webcam was built to monitor a coffee pot, deep ocean cables are protected from shark bites caused by electromagnetic fields, and Deep Blue's victory over Kasparov was influenced by a software glitch."
-    },
-    {
       "date": "2026-10-05T09:34:34",
       "category": "psychology and everyday human habits",
       "format": "mystery_explained",
@@ -857,6 +850,15 @@
       "fact": "When you receive a cold one-word text, your dorsal anterior cingulate cortex registers it as physical pain, instantly triggering self-protective withdrawal.",
       "video_id": "Ftu-vvBqY4Y",
       "channel": "Channel 1"
+    },
+    {
+      "date": "2026-10-13T21:51:40",
+      "category": "how prices, packaging and store layout change what we buy",
+      "format": "myth_vs_truth",
+      "title": "Why Stores Trick Your Brain #shorts #mindset",
+      "fact": "Retail store layouts use disorienting pathways to slow shoppers down and trigger unplanned purchases.",
+      "video_id": "soK6Ge-eMZw",
+      "channel": "Channel 2"
     }
   ]
 }
