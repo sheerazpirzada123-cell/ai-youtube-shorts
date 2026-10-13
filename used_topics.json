@@ -101,27 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-05T08:16:24",
-      "category": "fire, ice and extreme temperatures",
-      "format": "top3",
-      "title": "Hawa Mein Tairti Naav Ka Sach! 😲",
-      "fact": "Sulfur hexafluoride is an invisible gas that is about five times denser than air, allowing extremely light objects like a foil or paper boat to float on its surface inside a container."
-    },
-    {
-      "date": "2026-10-05T08:22:33",
-      "category": "money, gold and strange facts about wealth",
-      "format": "personal_what_if",
-      "title": "Sona Khane Se Kya Hoga? 🤔",
-      "fact": "Pure 24-karat gold is chemically inert and passes through the human digestive tract completely untouched, but impure gold containing copper can cause metal poisoning."
-    },
-    {
-      "date": "2026-10-05T09:04:27",
-      "category": "food and cooking science",
-      "format": "mystery_explained",
-      "title": "Garam Tave Par Paani Floating Science Magic! 🍳",
-      "fact": "Due to the Leidenfrost effect, water dropped onto a surface significantly hotter than its boiling point forms a protective steam layer that prevents it from evaporating immediately."
-    },
-    {
       "date": "2026-10-05T09:09:57",
       "category": "ancient civilizations, temples and ruins",
       "format": "shocking_fact",
@@ -848,6 +827,33 @@
       "title": "Why you agree with people who are wrong 😳",
       "fact": "The Asch conformity experiments demonstrate that individuals will often deny what they clearly see with their own eyes to conform to the consensus of a group.",
       "video_id": "O4u_-E6o5eI",
+      "channel": "Channel 3"
+    },
+    {
+      "date": "2026-10-13T12:30:54",
+      "category": "everyday human behaviour: why people do small things with family, friends and co-workers",
+      "format": "personal_what_if",
+      "title": "Why you always buy the medium popcorn #money",
+      "fact": "When you are offered an asymmetric decoy option, your brain shifts value judgment to make the most expensive choice feel like a logical bargain.",
+      "video_id": "AocJ9a0cvYE",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-10-13T12:34:46",
+      "category": "why free trials, discounts and 'limited time' actually work on the brain",
+      "format": "question_first",
+      "title": "Why buy junk just because it's on sale? #Shorts",
+      "fact": "The Scarcity Heuristic causes the brain to inflate the perceived value of items that are framed as limited in time or availability.",
+      "video_id": "ySANnVjoKTc",
+      "channel": "Channel 2"
+    },
+    {
+      "date": "2026-10-13T12:37:30",
+      "category": "childhood, learning and curiosity: how people learn and why habits stick",
+      "format": "top3",
+      "title": "Why your brain hides what you learn #shorts #mindset",
+      "fact": "The Generation Effect: information is better remembered when it is self-generated rather than passively received, and the Testing Effect proves that retrieving information from memory strengthens neural pathways better than reviewing it.",
+      "video_id": "QoDnJsViqbE",
       "channel": "Channel 3"
     }
   ]
