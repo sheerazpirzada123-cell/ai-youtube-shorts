@@ -101,13 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-05T09:09:57",
-      "category": "ancient civilizations, temples and ruins",
-      "format": "shocking_fact",
-      "title": "Taali bajaate hi gaata hai yeh mandir! 🛕",
-      "fact": "The ancient Mayan pyramid of El Castillo acts as a natural sound synthesizer, transforming a handclap at its base into an echo that mimics the chirp of the sacred Quetzal bird."
-    },
-    {
       "date": "2026-10-05T09:15:18",
       "category": "technology, robots, computers and smartphones",
       "format": "top3",
@@ -855,6 +848,15 @@
       "fact": "The Generation Effect: information is better remembered when it is self-generated rather than passively received, and the Testing Effect proves that retrieving information from memory strengthens neural pathways better than reviewing it.",
       "video_id": "QoDnJsViqbE",
       "channel": "Channel 3"
+    },
+    {
+      "date": "2026-10-13T16:58:33",
+      "category": "friendship, texting, jealousy and loneliness (well-established findings only)",
+      "format": "personal_what_if",
+      "title": "Why one cold text hurts so much #Shorts",
+      "fact": "When you receive a cold one-word text, your dorsal anterior cingulate cortex registers it as physical pain, instantly triggering self-protective withdrawal.",
+      "video_id": "Ftu-vvBqY4Y",
+      "channel": "Channel 1"
     }
   ]
 }
