@@ -101,27 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-04T13:27:41",
-      "category": "dreams and sleep",
-      "format": "personal_what_if",
-      "title": "Sote Samay Girne Ka Jhatka Kyun Lagta Hai? 😴",
-      "fact": "The brain misinterprets muscle relaxation during sleep onset as falling, triggering a sudden protective muscle twitch called a hypnic jerk."
-    },
-    {
-      "date": "2026-10-04T18:19:14",
-      "category": "sports and the limits of the human body",
-      "format": "mystery_explained",
-      "title": "Paani Mein Dil Slow Kyun Hota Hai? 🌊",
-      "fact": "The mammalian dive reflex triggers underwater, slowing human heart rate up to fifty percent and shifting blood from extremities to vital organs to prevent lung collapse under deep ocean pressure."
-    },
-    {
-      "date": "2026-10-04T18:24:43",
-      "category": "deep ocean and sea animals",
-      "format": "shocking_fact",
-      "title": "ब्लू व्हेल से भी लंबा समंदर का जीव! 🌊",
-      "fact": "Apolemia siphonophores are colonial deep-sea organisms that can grow longer than a blue whale, made of many specialized individual zooids."
-    },
-    {
       "date": "2026-10-05T08:16:24",
       "category": "fire, ice and extreme temperatures",
       "format": "top3",
@@ -842,6 +821,33 @@
       "title": "The Sneaky Movie Popcorn Trick 🍿",
       "fact": "The decoy effect causes consumers to choose a more expensive option when an asymmetric third option makes the higher price seem like a rational bargain.",
       "video_id": "4qgf1_L7C3k",
+      "channel": "Channel 3"
+    },
+    {
+      "date": "2026-10-13T03:20:04",
+      "category": "decision making, cognitive biases and why smart people make silly choices",
+      "format": "personal_what_if",
+      "title": "The Psychological Trap You Fall For Daily 🧠",
+      "fact": "The sunk cost fallacy causes people to persist in negative situations because they have already invested unrecoverable time or money.",
+      "video_id": "qgPiTEaMMns",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-10-13T03:24:37",
+      "category": "focus and attention: why the mind wanders, multitasking, distraction",
+      "format": "myth_vs_truth",
+      "title": "Why you speed up right at the finish line 🏁",
+      "fact": "The goal-gradient effect shows that people increase their effort and focus as they get closer to completing a goal, causing them to abandon parallel tasks.",
+      "video_id": "y5LEE9PvjJQ",
+      "channel": "Channel 2"
+    },
+    {
+      "date": "2026-10-13T03:28:20",
+      "category": "social psychology: crowds, conformity, persuasion, why we copy others",
+      "format": "psychology_effect",
+      "title": "Why you agree with people who are wrong 😳",
+      "fact": "The Asch conformity experiments demonstrate that individuals will often deny what they clearly see with their own eyes to conform to the consensus of a group.",
+      "video_id": "O4u_-E6o5eI",
       "channel": "Channel 3"
     }
   ]
