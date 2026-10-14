@@ -101,13 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-05T09:34:34",
-      "category": "psychology and everyday human habits",
-      "format": "mystery_explained",
-      "title": "Aankh Dabane Se Rang Kyun Dikhte Hain? 🤯",
-      "fact": "When humans close their eyes and press gently on their eyeballs, they perceive colorful swirling patterns of light called phosphenes, which occur because the visual cortex is stimulated by mechanical pressure rather than actual photons."
-    },
-    {
       "date": "2026-10-05T09:38:57",
       "category": "science labs, experiments and discoveries",
       "format": "myth_vs_truth",
@@ -859,6 +852,15 @@
       "fact": "Retail store layouts use disorienting pathways to slow shoppers down and trigger unplanned purchases.",
       "video_id": "soK6Ge-eMZw",
       "channel": "Channel 2"
+    },
+    {
+      "date": "2026-10-14T01:12:04",
+      "category": "sleep, dreams and tiredness: what they do to mood and behaviour",
+      "format": "question_first",
+      "title": "Why Tired Brains Misread Angry Faces #shorts #facts",
+      "fact": "Sleep deprivation impairs the brain's ability to recognize angry or threatening facial expressions, causing a shift toward misinterpreting neutral faces as positive or happy.",
+      "video_id": "6y3Xf2V44xQ",
+      "channel": "Channel 3"
     }
   ]
 }
