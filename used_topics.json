@@ -101,27 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-05T09:38:57",
-      "category": "science labs, experiments and discoveries",
-      "format": "myth_vs_truth",
-      "title": "लोहा तैरेगा इस जादुई लिक्विड पर 🤯",
-      "fact": "Liquid mercury is so dense that solid iron objects like a cannonball can easily float on its surface."
-    },
-    {
-      "date": "2026-10-05T09:42:57",
-      "category": "deserts, mountains and extreme places on Earth",
-      "format": "shocking_fact",
-      "title": "Registaan Ke Beech Yeh Ajeeb Haath Kya Hai? 🖐️",
-      "fact": "The Atacama Desert contains the Hand of the Desert, a giant metal sculpture built by artist Mario Irarrázabal to represent human loneliness."
-    },
-    {
-      "date": "2026-10-05T17:02:38",
-      "category": "insects and tiny creatures",
-      "format": "top3",
-      "title": "ये कीड़ा स्किन के अंदर रहता है 🐛",
-      "fact": "Botfly larvae burrow under mammalian skin, living and growing inside while breathing through a tiny opening."
-    },
-    {
       "date": "2026-10-05T17:08:18",
       "category": "history's strangest records and museum objects",
       "format": "mystery_explained",
@@ -860,6 +839,33 @@
       "title": "Why Tired Brains Misread Angry Faces #shorts #facts",
       "fact": "Sleep deprivation impairs the brain's ability to recognize angry or threatening facial expressions, causing a shift toward misinterpreting neutral faces as positive or happy.",
       "video_id": "6y3Xf2V44xQ",
+      "channel": "Channel 3"
+    },
+    {
+      "date": "2026-10-14T07:24:28",
+      "category": "psychology of first impressions, attraction and body language (well-established findings)",
+      "format": "personal_what_if",
+      "title": "Why You Unconsciously Copy People #shorts #facts",
+      "fact": "The chameleon effect causes people to unconsciously mimic the postures, gestures, and mannerisms of someone they like or want to bond with.",
+      "video_id": "EM9Mn5MsBhs",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-10-14T07:35:25",
+      "category": "emotions, mood and how people react when someone hurts them",
+      "format": "psychology_effect",
+      "title": "Why rejection makes you hate them ❄️ #relationships",
+      "fact": "When people face social rejection, they engage in defensive derogation, immediately devaluing the person or group who excluded them to protect their own self-esteem.",
+      "video_id": "m1RSj0mpmP4",
+      "channel": "Channel 2"
+    },
+    {
+      "date": "2026-10-14T07:41:29",
+      "category": "emotions, mood and how people react when someone hurts them",
+      "format": "myth_vs_truth",
+      "title": "Why Rejection Makes You Chase Them 💔",
+      "fact": "Social psychology demonstrates the social reconnection hypothesis: experiencing social rejection paradoxically triggers an immediate urge to affiliate and reconnect with others rather than withdraw.",
+      "video_id": "cs6wjzV_6Gw",
       "channel": "Channel 3"
     }
   ]
