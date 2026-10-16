@@ -101,20 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-05T17:13:38",
-      "category": "fire, ice and extreme temperatures",
-      "format": "personal_what_if",
-      "title": "माइनस सौ डिग्री हाथ क्यों नहीं जलाता? 🥶",
-      "fact": "Liquid nitrogen at minus 196 degrees Celsius can briefly be touched by a warm human hand due to the Leidenfrost effect forming an instant protective vapor layer."
-    },
-    {
-      "date": "2026-10-05T21:35:58",
-      "category": "time, clocks and calendars",
-      "format": "top3",
-      "title": "समय के बारे में यह चौंकाने वाला सच ⏰",
-      "fact": "Gravity makes time run slower near Earth's surface compared to higher up, meaning your feet are slightly younger than your head."
-    },
-    {
       "date": "2026-10-05T21:42:55",
       "category": "deep ocean and sea animals",
       "format": "mystery_explained",
@@ -869,6 +855,24 @@
       "fact": "When socially threatened or hurt, the human nervous system triggers an involuntary appeasement smile to signal submission and disarm potential conflict.",
       "video_id": "IQG1xfmVM2E",
       "channel": "Channel 2"
+    },
+    {
+      "date": "2026-10-16T00:20:41",
+      "category": "social psychology: crowds, conformity, persuasion, why we copy others",
+      "format": "story",
+      "title": "Why you refuse to check your bank account #Shorts",
+      "fact": "The Ostrich Effect causes people to actively avoid useful information when they fear it will confirm bad news.",
+      "video_id": "83SOe0wIhPM",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-10-16T00:28:35",
+      "category": "everyday human behaviour: why people do small things with family, friends and co-workers",
+      "format": "psychology_effect",
+      "title": "Why You Always Judge Others So Harshly #shorts #facts",
+      "fact": "The fundamental attribution error causes people to attribute others' mistakes to poor character while excusing their own identical mistakes with external circumstances.",
+      "video_id": "GRsEI_hL59A",
+      "channel": "Channel 3"
     }
   ]
 }
