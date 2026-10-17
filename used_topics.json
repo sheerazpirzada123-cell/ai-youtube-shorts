@@ -101,13 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-05T21:49:03",
-      "category": "sports and the limits of the human body",
-      "format": "myth_vs_truth",
-      "title": "Jute apko khud bhagate hain! 👟",
-      "fact": "High-speed running shoes with carbon fiber plates act like springs, returning energy to runners and lowering the metabolic cost of running."
-    },
-    {
       "date": "2026-10-06T09:19:13",
       "category": "wild animals and their survival tricks",
       "format": "shocking_fact",
@@ -875,6 +868,15 @@
       "fact": "Direct eye contact and verbal processing compete for the exact same cognitive resources, which is why people involuntarily look away to think clearly.",
       "video_id": "KjBQantbhQ0",
       "channel": "Channel 3"
+    },
+    {
+      "date": "2026-10-17T17:07:49",
+      "category": "friendship, texting, jealousy and loneliness (well-established findings only)",
+      "format": "myth_vs_truth",
+      "title": "Why Slow Texters Ignore You 📱 #shorts #mindset",
+      "fact": "Communication research shows that delayed text messages usually stem from digital fatigue and messaging burnout, but recipients instinctively misinterpret the delay as deliberate social rejection.",
+      "video_id": "gOgZY_ebHqw",
+      "channel": "Channel 1"
     }
   ]
 }
