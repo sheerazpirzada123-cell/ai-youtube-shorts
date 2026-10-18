@@ -101,13 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-06T14:19:26",
-      "category": "volcanoes, earthquakes and how the Earth works",
-      "format": "shocking_fact",
-      "title": "Zameen achanak paani kaise ban jaati hai? 🌊",
-      "fact": "Soil liquefaction causes saturated granular soil to temporarily lose strength and stiffness during earthquakes, causing heavy structures to sink."
-    },
-    {
       "date": "2026-10-06T14:26:02",
       "category": "science labs, experiments and discoveries",
       "format": "top3",
@@ -883,6 +876,15 @@
       "fact": "The spotlight effect causes people to drastically overestimate how much others notice their social blunders and physical appearance.",
       "video_id": "MnA8S3gSNoY",
       "channel": "Channel 1"
+    },
+    {
+      "date": "2026-10-18T23:01:24",
+      "category": "social psychology: crowds, conformity, persuasion, why we copy others",
+      "format": "psychology_effect",
+      "title": "Why Everyone Stays Silent in Confusing Meetings 🤫",
+      "fact": "Pluralistic ignorance causes individuals to privately feel confused while falsely assuming everyone else understands, leading the entire group into silent conformity.",
+      "video_id": "TylliB79LVI",
+      "channel": "Channel 2"
     }
   ]
 }
