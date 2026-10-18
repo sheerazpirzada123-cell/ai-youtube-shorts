@@ -101,13 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-06T09:26:49",
-      "category": "space, planets, stars and astronauts",
-      "format": "personal_what_if",
-      "title": "Space mein height sach mein badhti hai? 🚀",
-      "fact": "Astronauts grow up to two inches taller in space due to the lack of gravity decompressing their spines, but return to their normal height shortly after returning to Earth."
-    },
-    {
       "date": "2026-10-06T09:31:51",
       "category": "technology, robots, computers and smartphones",
       "format": "myth_vs_truth",
@@ -879,6 +872,15 @@
       "fact": "The presenter's paradox demonstrates that adding a modest or cheap bonus item to a valuable gift lowers the recipient's overall perceived value of the package because people average values rather than sum them.",
       "video_id": "lBRfigv2iOE",
       "channel": "Channel 2"
+    },
+    {
+      "date": "2026-10-18T17:17:20",
+      "category": "social psychology: crowds, conformity, persuasion, why we copy others",
+      "format": "story",
+      "title": "Why You Follow Strangers Into Danger 🚦 #habits",
+      "fact": "Pedestrian behavioral contagion causes people to unconsciously follow a stranger into an active street against a red light because the brain instinctively interprets another person's forward motion as evidence of safety.",
+      "video_id": "ifuOXYpdWrA",
+      "channel": "Channel 3"
     }
   ]
 }
