@@ -101,13 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-06T09:31:51",
-      "category": "technology, robots, computers and smartphones",
-      "format": "myth_vs_truth",
-      "title": "Night Mode Se Neend Kyun Nahi Aati? 📱",
-      "fact": "Your phone's Night Mode or blue light filter does not actually improve sleep quality because the cognitive stimulation of using the device keeps your brain active anyway."
-    },
-    {
       "date": "2026-10-06T14:19:26",
       "category": "volcanoes, earthquakes and how the Earth works",
       "format": "shocking_fact",
@@ -881,6 +874,15 @@
       "fact": "Pedestrian behavioral contagion causes people to unconsciously follow a stranger into an active street against a red light because the brain instinctively interprets another person's forward motion as evidence of safety.",
       "video_id": "ifuOXYpdWrA",
       "channel": "Channel 3"
+    },
+    {
+      "date": "2026-10-18T20:31:28",
+      "category": "everyday human behaviour: why people do small things with family, friends and co-workers",
+      "format": "myth_vs_truth",
+      "title": "Nobody Saw Your Embarrassing Slip 😳 #Shorts",
+      "fact": "The spotlight effect causes people to drastically overestimate how much others notice their social blunders and physical appearance.",
+      "video_id": "MnA8S3gSNoY",
+      "channel": "Channel 1"
     }
   ]
 }
