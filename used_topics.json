@@ -101,13 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-06T09:19:13",
-      "category": "wild animals and their survival tricks",
-      "format": "shocking_fact",
-      "title": "Bina Dil Dhadke Kaise Zinda Hai? 🐸",
-      "fact": "The Alaskan wood frog survives the freezing winter temperatures by allowing up to two-thirds of its body to freeze solid, stopping its heart and respiration, while a high concentration of glucose protects its vital organs."
-    },
-    {
       "date": "2026-10-06T09:26:49",
       "category": "space, planets, stars and astronauts",
       "format": "personal_what_if",
@@ -877,6 +870,15 @@
       "fact": "Communication research shows that delayed text messages usually stem from digital fatigue and messaging burnout, but recipients instinctively misinterpret the delay as deliberate social rejection.",
       "video_id": "gOgZY_ebHqw",
       "channel": "Channel 1"
+    },
+    {
+      "date": "2026-10-18T00:52:35",
+      "category": "friendship, texting, jealousy and loneliness (well-established findings only)",
+      "format": "psychology_effect",
+      "title": "Why small extra gifts ruin everything 🎁",
+      "fact": "The presenter's paradox demonstrates that adding a modest or cheap bonus item to a valuable gift lowers the recipient's overall perceived value of the package because people average values rather than sum them.",
+      "video_id": "lBRfigv2iOE",
+      "channel": "Channel 2"
     }
   ]
 }
