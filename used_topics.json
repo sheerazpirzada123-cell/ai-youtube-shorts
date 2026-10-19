@@ -101,20 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-06T14:26:02",
-      "category": "science labs, experiments and discoveries",
-      "format": "top3",
-      "title": "Awaaz se cheezein hawa mein udti hain 🤯",
-      "fact": "Acoustic levitation uses sound waves to suspend small objects in mid-air."
-    },
-    {
-      "date": "2026-10-06T14:32:39",
-      "category": "money, gold and strange facts about wealth",
-      "format": "personal_what_if",
-      "title": "कुत्ते को कड़वा लगता है यह नमक 🧂",
-      "fact": "Potassium chloride, used as a salt substitute by humans, tastes salty to us but triggers a strong bitter taste in dogs due to differences in their taste receptors."
-    },
-    {
       "date": "2026-10-06T19:45:21",
       "category": "trees, plants and forests",
       "format": "shocking_fact",
@@ -885,6 +871,24 @@
       "fact": "Pluralistic ignorance causes individuals to privately feel confused while falsely assuming everyone else understands, leading the entire group into silent conformity.",
       "video_id": "TylliB79LVI",
       "channel": "Channel 2"
+    },
+    {
+      "date": "2026-10-19T23:35:17",
+      "category": "everyday human behaviour: why people do small things with family, friends and co-workers",
+      "format": "personal_what_if",
+      "title": "Why You Grab Your Phone When Awkward 📱 #Shorts",
+      "fact": "When experiencing acute social awkwardness, the brain interprets stillness and empty hands as exposure to threat, triggering displacement activity where checking a phone acts as an automatic pacifier, though it ironically makes the person appear unapproachable.",
+      "video_id": "ZnLBlpW8OBY",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-10-19T23:41:07",
+      "category": "social psychology: crowds, conformity, persuasion, why we copy others",
+      "format": "story",
+      "title": "Why You Blindly Copy Strangers #relationships",
+      "fact": "When a small cluster of people look up at nothing, the gaze-following reflex and informational social influence compel up to eighty percent of passersby to copy them.",
+      "video_id": "PAN1ClaEPbo",
+      "channel": "Channel 3"
     }
   ]
 }
