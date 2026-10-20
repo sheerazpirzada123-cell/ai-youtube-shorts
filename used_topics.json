@@ -101,13 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-06T19:45:21",
-      "category": "trees, plants and forests",
-      "format": "shocking_fact",
-      "title": "पेड़ अंधेरे में भी सुबह गिनते हैं 🌲",
-      "fact": "Trees measure starch levels in their leaves to calculate the time until dawn even in total darkness."
-    },
-    {
       "date": "2026-10-06T19:50:47",
       "category": "ancient civilizations, temples and ruins",
       "format": "myth_vs_truth",
@@ -889,6 +882,15 @@
       "fact": "When a small cluster of people look up at nothing, the gaze-following reflex and informational social influence compel up to eighty percent of passersby to copy them.",
       "video_id": "PAN1ClaEPbo",
       "channel": "Channel 3"
+    },
+    {
+      "date": "2026-10-20T18:31:23",
+      "category": "emotions, mood and how people react when someone hurts them",
+      "format": "myth_vs_truth",
+      "title": "Why You Chase People Who Reject You 💔",
+      "fact": "When people experience social exclusion, social psychology research shows it triggers an immediate drive to re-establish social connections and seek approval.",
+      "video_id": "6Rb61avx0cM",
+      "channel": "Channel 1"
     }
   ]
 }
