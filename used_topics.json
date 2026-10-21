@@ -101,13 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-07T09:22:58",
-      "category": "technology, robots, computers and smartphones",
-      "format": "mystery_explained",
-      "title": "Aapka Phone Kaise Touch Samajhta Hai 📱",
-      "fact": "Capacitive touchscreens detect human touch by measuring disruptions in an electrostatic field."
-    },
-    {
       "date": "2026-10-07T16:01:37",
       "category": "sports and the limits of the human body",
       "format": "personal_what_if",
@@ -899,6 +892,15 @@
       "fact": "The Pratfall Effect shows that competent people become more likable after making a minor blunder.",
       "video_id": "Hlo-jxWu3d4",
       "channel": "Channel 3"
+    },
+    {
+      "date": "2026-10-21T22:19:57",
+      "category": "friendship, texting, jealousy and loneliness (well-established findings only)",
+      "format": "myth_vs_truth",
+      "title": "Why Close Friends Misread You 📱 #relationships",
+      "fact": "The closeness-communication bias demonstrates that people communicate less effectively with close friends than with strangers because they overestimate how well close companions understand their unspoken context.",
+      "video_id": "JKtiqG1zKlA",
+      "channel": "Channel 2"
     }
   ]
 }
