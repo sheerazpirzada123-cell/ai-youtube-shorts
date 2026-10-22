@@ -101,20 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-07T16:01:37",
-      "category": "sports and the limits of the human body",
-      "format": "personal_what_if",
-      "title": "Aapki ek taang doosri se choti hai 😱",
-      "fact": "Zero gravity in space stretches the human spine, making astronauts temporarily taller."
-    },
-    {
-      "date": "2026-10-07T16:02:16",
-      "category": "psychology and everyday human habits",
-      "format": "top3",
-      "title": "Aapka dimaag aapko roz dhokha deta hai 🤯",
-      "fact": "Human brain uses a predictive coding mechanism that constantly processes internal simulations of sensory input rather than direct raw reality."
-    },
-    {
       "date": "2026-10-07T16:03:04",
       "category": "food and cooking science",
       "format": "myth_vs_truth",
@@ -901,6 +887,24 @@
       "fact": "The closeness-communication bias demonstrates that people communicate less effectively with close friends than with strangers because they overestimate how well close companions understand their unspoken context.",
       "video_id": "JKtiqG1zKlA",
       "channel": "Channel 2"
+    },
+    {
+      "date": "2026-10-22T18:33:34",
+      "category": "emotions, mood and how people react when someone hurts them",
+      "format": "story",
+      "title": "Why You Freeze When Insulted #shorts #psychology",
+      "fact": "When someone insults or emotionally hurts you, the acute threat response redirects oxygenated blood away from Broca's speech area and toward skeletal muscles, causing temporary verbal paralysis.",
+      "video_id": "geJDAc0CsxI",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-10-22T18:38:27",
+      "category": "emotions, mood and how people react when someone hurts them",
+      "format": "psychology_effect",
+      "title": "Why you still miss toxic people",
+      "fact": "The effort justification effect causes people to irrationally overvalue a relationship because of the heavy emotional labor and pain they invested in fixing it.",
+      "video_id": "8HvghHRqreI",
+      "channel": "Channel 3"
     }
   ]
 }
