@@ -101,15 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-08T07:53:53",
-      "category": "trees, plants and forests",
-      "format": "top3",
-      "title": "Duniya Ke 3 Sabse Anokhe Aur Khatarnak Ped! 🌳",
-      "fact": "Three incredible trees do impossible things: Eucalyptus absorbs gold into its leaves, Acacia trees warn each other of danger using ethylene gas, and the Manchineel tree produces smoke that can blind humans.",
-      "video_id": "2VW175jJ-4M",
-      "channel": "Channel 2"
-    },
-    {
       "date": "2026-10-08T09:20:37",
       "category": "space, planets, stars and astronauts",
       "format": "myth_vs_truth",
@@ -907,6 +898,15 @@
       "fact": "Subconscious behavioral mimicry causes people to automatically synchronize their eating pace and bite rate with their dining partners to foster social connection.",
       "video_id": "wox7TNOmpss",
       "channel": "Channel 1"
+    },
+    {
+      "date": "2026-10-23T22:05:49",
+      "category": "social psychology: crowds, conformity, persuasion, why we copy others",
+      "format": "psychology_effect",
+      "title": "Why You Slack Off in Groups 👥 #relationships",
+      "fact": "The Ringelmann effect, or social loafing, demonstrates that individuals systematically exert less effort when performing a task collectively compared to when working alone.",
+      "video_id": "LqKm7QW5FU0",
+      "channel": "Channel 2"
     }
   ]
 }
