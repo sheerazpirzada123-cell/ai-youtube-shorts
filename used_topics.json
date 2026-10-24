@@ -101,15 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-08T09:20:37",
-      "category": "space, planets, stars and astronauts",
-      "format": "myth_vs_truth",
-      "title": "Suraj ka sabse paas wala planet thanda kyun? ☀️",
-      "fact": "Venus is the hottest planet in our solar system, not Mercury, because its thick greenhouse atmosphere traps heat, whereas Mercury has no atmosphere to retain heat and experiences freezing nights with ice at its poles.",
-      "video_id": "pLFNMvLcyrg",
-      "channel": "Channel 1"
-    },
-    {
       "date": "2026-10-08T09:25:41",
       "category": "insects and tiny creatures",
       "format": "mystery_explained",
@@ -907,6 +898,15 @@
       "fact": "The Ringelmann effect, or social loafing, demonstrates that individuals systematically exert less effort when performing a task collectively compared to when working alone.",
       "video_id": "LqKm7QW5FU0",
       "channel": "Channel 2"
+    },
+    {
+      "date": "2026-10-24T17:27:45",
+      "category": "friendship, texting, jealousy and loneliness (well-established findings only)",
+      "format": "story",
+      "title": "Why You Think Friends Hate You 🤫 #relationships",
+      "fact": "The liking gap demonstrates that after conversations, people systematically underestimate how much their conversational partner liked them and enjoyed their company.",
+      "video_id": "CMXCpDFQpLA",
+      "channel": "Channel 3"
     }
   ]
 }
