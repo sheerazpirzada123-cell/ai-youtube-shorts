@@ -101,15 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-08T09:25:41",
-      "category": "insects and tiny creatures",
-      "format": "mystery_explained",
-      "title": "Paani Ke Andar Saans Lene Wali Makdi! 🕷️",
-      "fact": "The diving bell spider uses an underwater air bubble web that acts as a gill, extracting dissolved oxygen from the water so it can breathe submerged.",
-      "video_id": "1SjoTp1jzpk",
-      "channel": "Channel 2"
-    },
-    {
       "date": "2026-10-08T09:29:24",
       "category": "time, clocks and calendars",
       "format": "shocking_fact",
@@ -907,6 +898,15 @@
       "fact": "The liking gap demonstrates that after conversations, people systematically underestimate how much their conversational partner liked them and enjoyed their company.",
       "video_id": "CMXCpDFQpLA",
       "channel": "Channel 3"
+    },
+    {
+      "date": "2026-10-24T23:07:28",
+      "category": "everyday human behaviour: why people do small things with family, friends and co-workers",
+      "format": "myth_vs_truth",
+      "title": "Why You Laugh Harder When Staying Silent 🙊",
+      "fact": "When people attempt to suppress laughter, cognitive monitoring processes keep the suppressed urge highly accessible in memory, causing an ironic rebound effect that triggers unexpected emotional outbursts.",
+      "video_id": "bieEzHFfyzA",
+      "channel": "Channel 2"
     }
   ]
 }
