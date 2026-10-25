@@ -101,15 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-08T10:23:56",
-      "category": "focus, attention and why the mind wanders",
-      "format": "personal_what_if",
-      "title": "Phone dekhte hi behre kyun hote hain? 🧠",
-      "fact": "Inattentional deafness is a psychological phenomenon where focusing intensely on a visual task (like looking at a smartphone) temporarily suppresses auditory processing in the brain, making a person functionally deaf to background sounds.",
-      "video_id": "vbFZcIr5gO0",
-      "channel": "Channel 2"
-    },
-    {
       "date": "2026-10-08T10:26:09",
       "category": "social psychology: crowds, conformity, persuasion, why we copy others",
       "format": "brain_trick",
@@ -907,6 +898,15 @@
       "fact": "Open physical posture with uncrossed limbs increases perceived approachability and rapid trust formation during first social interactions.",
       "video_id": "2sqrMkcDEGM",
       "channel": "Channel 3"
+    },
+    {
+      "date": "2026-10-25T23:14:45",
+      "category": "everyday human behaviour: why people do small things with family, friends and co-workers",
+      "format": "personal_what_if",
+      "title": "Why Nobody Sees Your Secret Panic 🤫 #relationships",
+      "fact": "The illusion of transparency causes individuals to systematically overestimate how visibly their internal emotional states, like panic or nervousness, leak out to observers.",
+      "video_id": "61Cv2yW5PG0",
+      "channel": "Channel 2"
     }
   ]
 }
