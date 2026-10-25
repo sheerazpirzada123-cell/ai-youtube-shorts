@@ -101,15 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-08T09:29:24",
-      "category": "time, clocks and calendars",
-      "format": "shocking_fact",
-      "title": "aapke pair aapse zyada jawan kyun hain ⏰",
-      "fact": "A standard atomic clock placed near the floor ticks slightly slower than one on a table due to Einstein's theory of general relativity and gravity's effect on time.",
-      "video_id": "zGRyBA62zyY",
-      "channel": "Channel 3"
-    },
-    {
       "date": "2026-10-08T10:21:36",
       "category": "brain tricks: a simple trick the viewer can try on their own brain RIGHT NOW (illusion, memory, attention)",
       "format": "top3",
@@ -907,6 +898,15 @@
       "fact": "When people attempt to suppress laughter, cognitive monitoring processes keep the suppressed urge highly accessible in memory, causing an ironic rebound effect that triggers unexpected emotional outbursts.",
       "video_id": "bieEzHFfyzA",
       "channel": "Channel 2"
+    },
+    {
+      "date": "2026-10-25T01:05:07",
+      "category": "everyday human behaviour: why people do small things with family, friends and co-workers",
+      "format": "psychology_effect",
+      "title": "Why Awkward Endings Ruin Great Dates 🧠",
+      "fact": "Under the Peak-End Rule, people evaluate a past interaction primarily by its emotional peak and its ending, rather than calculating an average of the entire duration.",
+      "video_id": "0YI2nMU2d5s",
+      "channel": "Channel 1"
     }
   ]
 }
