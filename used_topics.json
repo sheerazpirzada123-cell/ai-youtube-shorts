@@ -101,24 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-08T10:26:09",
-      "category": "social psychology: crowds, conformity, persuasion, why we copy others",
-      "format": "brain_trick",
-      "title": "Bina soche sabki nakal kyun karte ho 🤯",
-      "fact": "People automatically conform to the behavior of others in a crowd due to informational social influence and mirror neurons.",
-      "video_id": "zs9hmD8e9mk",
-      "channel": "Channel 3"
-    },
-    {
-      "date": "2026-10-08T10:46:05",
-      "category": "everyday human behaviour: why people do small things in daily life (phone, friends, family, work)",
-      "format": "myth_vs_truth",
-      "title": "Adhura kaam dimaag se nikalta kyon nahi? 🤯",
-      "fact": "The Zeigarnik effect causes people to remember uncompleted tasks and cliffhangers much better than completed ones because the brain keeps active loops open until resolution.",
-      "video_id": "p-5NbFGV-Mg",
-      "channel": "Channel 1"
-    },
-    {
       "date": "2026-10-08T10:48:38",
       "category": "sleep, dreams and tiredness: what they do to mood and behaviour",
       "format": "psychology_fact",
@@ -907,6 +889,24 @@
       "fact": "The illusion of transparency causes individuals to systematically overestimate how visibly their internal emotional states, like panic or nervousness, leak out to observers.",
       "video_id": "61Cv2yW5PG0",
       "channel": "Channel 2"
+    },
+    {
+      "date": "2026-10-26T19:53:43",
+      "category": "emotions, mood and how people react when someone hurts them",
+      "format": "psychology_effect",
+      "title": "Why Using Your Name Calms Panic 🧠",
+      "fact": "Third-person self-talk activates psychological self-distancing, reducing emotional reactivity and stress during moments of hurt or conflict.",
+      "video_id": "WelckEDe7tM",
+      "channel": "Channel 2"
+    },
+    {
+      "date": "2026-10-26T20:01:41",
+      "category": "everyday human behaviour: why people do small things with family, friends and co-workers",
+      "format": "myth_vs_truth",
+      "title": "Why Cash Ruined Your Friendship #Shorts",
+      "fact": "Offering money for a favor replaces warm social norms with cold market norms, which reduces intrinsic motivation and damages personal relationships.",
+      "video_id": "Rt0siQb0X3g",
+      "channel": "Channel 3"
     }
   ]
 }
