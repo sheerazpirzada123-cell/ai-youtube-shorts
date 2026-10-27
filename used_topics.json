@@ -101,15 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-08T14:07:51",
-      "category": "psychology of first impressions, attraction and body language (only well-established findings)",
-      "format": "personal_what_if",
-      "title": "Why You Trust Strangers Instantly 🤝",
-      "fact": "People make subconscious judgments of trustworthiness based on facial appearance in under 100 milliseconds.",
-      "video_id": "7bJuG-QBdhA",
-      "channel": "Channel 1"
-    },
-    {
       "date": "2026-10-08T14:12:17",
       "category": "friendship, relationships, texting, jealousy and loneliness (well-established findings only)",
       "format": "psychology_fact",
@@ -907,6 +898,15 @@
       "fact": "Observing one broken rule or minor disorder causes people to disregard completely unrelated social norms in the immediate area.",
       "video_id": "AANwrhT9gco",
       "channel": "Channel 2"
+    },
+    {
+      "date": "2026-10-27T23:43:22",
+      "category": "friendship, texting, jealousy and loneliness (well-established findings only)",
+      "format": "myth_vs_truth",
+      "title": "Why you like people with your initials 🧲",
+      "fact": "The name-letter effect, documented in social psychology, shows that people unconsciously evaluate letters in their own name more positively, creating a subtle preference for people, brands, or items sharing their initials.",
+      "video_id": "Oz2Oxf2KrGw",
+      "channel": "Channel 1"
     }
   ]
 }
