@@ -101,24 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-08T14:45:08",
-      "category": "decision making, cognitive biases and why smart people make silly choices",
-      "format": "psychology_effect",
-      "title": "Why you always buy the medium popcorn 🍿",
-      "fact": "The decoy effect causes people to change their preference between two options when a third, inferior option is introduced, illustrating asymmetric dominance in human decision making.",
-      "video_id": "WErEGTxSRF4",
-      "channel": "Channel 2"
-    },
-    {
-      "date": "2026-10-08T14:47:17",
-      "category": "focus and attention: why the mind wanders, multitasking, distraction",
-      "format": "psychology_fact",
-      "title": "Why your best ideas happen in the shower 🚿",
-      "fact": "Unconscious thought theory shows that complex decisions are made more accurately when the conscious mind is distracted, allowing the brain to process information effectively.",
-      "video_id": "xIMK6Ws00JI",
-      "channel": "Channel 3"
-    },
-    {
       "date": "2026-10-08T14:56:33",
       "category": "emotions, mood, stress and how people react to them",
       "format": "personal_what_if",
@@ -906,6 +888,24 @@
       "title": "Why You Replay Awkward Moments #shorts #psychology",
       "fact": "When someone hurts your feelings, rumination is not holding a grudge, but a subconscious safety mechanism where the brain replays the event to predict and prevent future social threats.",
       "video_id": "XcLQtFRwdWk",
+      "channel": "Channel 3"
+    },
+    {
+      "date": "2026-10-30T19:19:26",
+      "category": "social psychology: crowds, conformity, persuasion, why we copy others",
+      "format": "personal_what_if",
+      "title": "Why Your Brain Warps Reality to Fit In 🧠",
+      "fact": "When people conform to group peer pressure, neuroimaging reveals that the brain actually alters visual and spatial perception in the occipital-parietal network rather than just triggering conscious compliance.",
+      "video_id": "u2XfJ_KAcfE",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-10-30T19:26:50",
+      "category": "psychology of first impressions, attraction and body language (well-established findings)",
+      "format": "psychology_effect",
+      "title": "Why You Secretly Hate Your Photos 📸",
+      "fact": "The mere exposure effect causes people to prefer their mirror-reversed reflection because it is familiar, while their friends prefer their direct photographic appearance, creating an illusion that photos make them look worse.",
+      "video_id": "1t57xvznDHY",
       "channel": "Channel 3"
     }
   ]
