@@ -101,15 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-08T15:01:30",
-      "category": "social psychology: crowds, conformity, persuasion, why we copy others",
-      "format": "psychology_effect",
-      "title": "Why you always agree with the wrong crowd 👥",
-      "fact": "People conform to group pressure and incorrect answers due to normative social influence, even when they know the correct answer.",
-      "video_id": "qYvXG0R4v6U",
-      "channel": "Channel 3"
-    },
-    {
       "date": "2026-10-09T02:42:12",
       "category": "shopping, money and attention psychology: why we buy, scroll and get hooked",
       "format": "personal_what_if",
@@ -907,6 +898,15 @@
       "fact": "Seeding a tip jar triggers descriptive social proof, causing customers to conform and tip significantly more because people copy prior behavior as a safety signal.",
       "video_id": "zqyf1-WdvJE",
       "channel": "Channel 2"
+    },
+    {
+      "date": "2026-10-31T22:30:17",
+      "category": "emotions, mood and how people react when someone hurts them",
+      "format": "personal_what_if",
+      "title": "Why You Cry When Someone Hurts You 🧠",
+      "fact": "Social rejection and emotional hurt activate the brain's physical pain pathways, triggering emotional tears that stimulate the parasympathetic nervous system, release endogenous opioids, and slow the heart rate to self-soothe.",
+      "video_id": "SAe-fMDEC_o",
+      "channel": "Channel 3"
     }
   ]
 }
