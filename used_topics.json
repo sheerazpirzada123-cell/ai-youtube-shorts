@@ -101,15 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-09T07:31:59",
-      "category": "childhood, learning and curiosity: how people learn and why praise/habits stick",
-      "format": "psychology_effect",
-      "title": "The Psychology Trap of Rewarding Kids 🧠",
-      "fact": "The overjustification effect causes external rewards to diminish a person's intrinsic motivation to perform an activity they naturally enjoy.",
-      "video_id": "3Rtp91TGu94",
-      "channel": "Channel 2"
-    },
-    {
       "date": "2026-10-09T07:38:21",
       "category": "psychology of first impressions, attraction and body language (only well-established findings)",
       "format": "psychology_fact",
@@ -907,6 +898,15 @@
       "fact": "An information cascade occurs when individuals make decisions sequentially based on the actions of previous people, overriding their own private information.",
       "video_id": "KRPSg9j_efM",
       "channel": "Channel 1"
+    },
+    {
+      "date": "2026-11-03T20:32:01",
+      "category": "emotions, mood and how people react when someone hurts them",
+      "format": "story",
+      "title": "Why You Want Hot Tea After A Fight",
+      "fact": "Experiencing social rejection or emotional hurt lowers physical skin temperature, driving the brain to seek out physical warmth.",
+      "video_id": "a29xThsY9dc",
+      "channel": "Channel 2"
     }
   ]
 }
