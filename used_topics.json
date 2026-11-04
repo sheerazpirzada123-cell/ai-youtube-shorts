@@ -101,24 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-09T07:38:21",
-      "category": "psychology of first impressions, attraction and body language (only well-established findings)",
-      "format": "psychology_fact",
-      "title": "The psychological trick behind group photos 👥",
-      "fact": "The Cheerleader Effect: individuals are perceived as more attractive when presented in a group because the brain averages out facial features, reducing the salience of individual asymmetries.",
-      "video_id": "93lGdDlRUww",
-      "channel": "Channel 3"
-    },
-    {
-      "date": "2026-10-09T09:20:11",
-      "category": "emotions, mood, stress and how people react to them",
-      "format": "myth_vs_truth",
-      "title": "Why your bad moods feel permanent 🧠",
-      "fact": "The durability bias causes people to overestimate the duration of their future negative emotional states, making temporary bad moods feel permanent.",
-      "video_id": "RVzNlc7bmWo",
-      "channel": "Channel 1"
-    },
-    {
       "date": "2026-10-09T09:23:35",
       "category": "sleep, dreams and tiredness: what they do to mood and behaviour",
       "format": "personal_what_if",
@@ -907,6 +889,24 @@
       "fact": "Experiencing social rejection or emotional hurt lowers physical skin temperature, driving the brain to seek out physical warmth.",
       "video_id": "a29xThsY9dc",
       "channel": "Channel 2"
+    },
+    {
+      "date": "2026-11-04T01:14:17",
+      "category": "psychology of first impressions, attraction and body language (well-established findings)",
+      "format": "personal_what_if",
+      "title": "Why they suddenly look taller to you",
+      "fact": "When you accidentally mimic someone's subtle body posture, the action perception network in your brain activates, making you unconsciously perceive them as physically larger and more dominant.",
+      "video_id": "juG97EWm8Ig",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-11-04T01:19:54",
+      "category": "social psychology: crowds, conformity, persuasion, why we copy others",
+      "format": "psychology_effect",
+      "title": "How Favors Secretly Backfire 🤝 #shorts #psychology",
+      "fact": "The Ben Franklin effect shows that people like you more after doing you a small favor because their brain rationalizes the act by assuming they like you.",
+      "video_id": "-QTgoJqxR9k",
+      "channel": "Channel 3"
     }
   ]
 }
