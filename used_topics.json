@@ -101,22 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-09T09:23:35",
-      "category": "sleep, dreams and tiredness: what they do to mood and behaviour",
-      "format": "personal_what_if",
-      "title": "Why you only remember the bad days 🧠",
-      "fact": "Sleep deprivation selectively impairs the encoding of positive and neutral memories while preserving negative ones, creating a negative memory bias."
-    },
-    {
-      "date": "2026-10-09T09:26:23",
-      "category": "social psychology: crowds, conformity, persuasion, why we copy others",
-      "format": "psychology_effect",
-      "title": "Why we ignore danger in public 🚨",
-      "fact": "Pluralistic ignorance causes people to conform to a crowd's calm behavior during potential emergencies, mistakenly assuming others know more about the situation.",
-      "video_id": "w0UMnvMW9NM",
-      "channel": "Channel 3"
-    },
-    {
       "date": "2026-10-09T09:51:33",
       "category": "memory: why we forget, false memories, why we remember some things forever",
       "format": "psychology_fact",
@@ -907,6 +891,24 @@
       "fact": "The Ben Franklin effect shows that people like you more after doing you a small favor because their brain rationalizes the act by assuming they like you.",
       "video_id": "-QTgoJqxR9k",
       "channel": "Channel 3"
+    },
+    {
+      "date": "2026-11-05T01:30:33",
+      "category": "emotions, mood and how people react when someone hurts them",
+      "format": "story",
+      "title": "Why You Smile When Someone Hurts You #Shorts",
+      "fact": "Nervous smiling or laughing after someone hurts your feelings is an involuntary appeasement reflex evolved to defuse social threat and signal non-aggression.",
+      "video_id": "izBfAhvLP8k",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-11-05T01:35:08",
+      "category": "everyday human behaviour: why people do small things with family, friends and co-workers",
+      "format": "myth_vs_truth",
+      "title": "Why You Mirror Body Language 🤝 #shorts #mindset",
+      "fact": "Social psychology demonstrates that people unconsciously mirror body language and posture to build rapid rapport and reduce social tension.",
+      "video_id": "rTHk2WrVh4g",
+      "channel": "Channel 2"
     }
   ]
 }
