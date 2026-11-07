@@ -101,33 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-09T14:11:13",
-      "category": "psychology of habits, procrastination, motivation and willpower",
-      "format": "psychology_fact",
-      "title": "Why fake progress boosts your willpower 🧠",
-      "fact": "The endowed progress effect shows that people are more motivated to finish a goal when they feel they have already started.",
-      "video_id": "H4jLU-d6NME",
-      "channel": "Channel 1"
-    },
-    {
-      "date": "2026-10-09T14:14:27",
-      "category": "everyday human behaviour: why people do small things in daily life (phone, friends, family, work)",
-      "format": "psychology_effect",
-      "title": "Why Nobody Actually Notices Your Mistakes 🤫",
-      "fact": "The spotlight effect causes people to systematically overestimate how much others notice their physical appearance or minor mistakes in public.",
-      "video_id": "ZUn_A29hvtM",
-      "channel": "Channel 2"
-    },
-    {
-      "date": "2026-10-09T14:17:52",
-      "category": "friendship, relationships, texting, jealousy and loneliness (well-established findings only)",
-      "format": "myth_vs_truth",
-      "title": "The Hidden Texting Mistake Ruining Relationships 📱",
-      "fact": "The closeness-communication bias causes people to communicate less effectively and send vaguer messages to close friends and partners than to strangers, leading to more frequent misunderstandings.",
-      "video_id": "UpONiJRIRS0",
-      "channel": "Channel 3"
-    },
-    {
       "date": "2026-10-09T17:19:34",
       "category": "shopping, money and attention psychology: why we buy, scroll and get hooked",
       "format": "top3",
@@ -908,6 +881,33 @@
       "title": "Why Slow Texts Hurt Your Brain 📱 #shorts #mindset",
       "fact": "When text response times are asymmetrical, the faster replier misinterprets the silence as a loss of social power and personal rejection.",
       "video_id": "530QyeXiJmo",
+      "channel": "Channel 3"
+    },
+    {
+      "date": "2026-11-07T01:01:28",
+      "category": "social psychology: crowds, conformity, persuasion, why we copy others",
+      "format": "personal_what_if",
+      "title": "Why You Nod When Confused 🤐 #shorts #psychology",
+      "fact": "Pluralistic ignorance occurs when group members privately lack comprehension but stay silent because they mistakenly assume everyone else's outward composure reflects genuine understanding.",
+      "video_id": "ILCk-jnvqC4",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-11-07T01:09:06",
+      "category": "everyday human behaviour: why people do small things with family, friends and co-workers",
+      "format": "psychology_effect",
+      "title": "Why You Judge Friends Worse Than Yourself 🧠",
+      "fact": "The fundamental attribution error causes people to attribute others' actions to character traits while attributing their own identical actions to situational factors.",
+      "video_id": "yq293C_dAjc",
+      "channel": "Channel 2"
+    },
+    {
+      "date": "2026-11-07T01:14:23",
+      "category": "social psychology: crowds, conformity, persuasion, why we copy others",
+      "format": "story",
+      "title": "Why Good People Ignore Strangers In Need 😳",
+      "fact": "Pluralistic ignorance and diffusion of responsibility cause individuals in crowds to look to others for cues, leading everyone to freeze and refrain from helping a stranger in need.",
+      "video_id": "rj2hdlGrlHM",
       "channel": "Channel 3"
     }
   ]
