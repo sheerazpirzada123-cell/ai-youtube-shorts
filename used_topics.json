@@ -101,24 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-09T17:23:10",
-      "category": "emotions, mood, stress and how people react to them",
-      "format": "psychology_effect",
-      "title": "Why coffee makes you panic ☕",
-      "fact": "The brain misattributes the physical symptoms of caffeine arousal (like a racing heart) to emotional anxiety, creating a state of false panic.",
-      "video_id": "QSL0n3y-VAM",
-      "channel": "Channel 2"
-    },
-    {
-      "date": "2026-10-10T02:01:14",
-      "category": "childhood, learning and curiosity: how people learn and why praise/habits stick",
-      "format": "psychology_fact",
-      "title": "Your brain hates what you rejected 🧠",
-      "fact": "When people make a choice, their brain automatically devalues the discarded option to reduce post-decision dissonance.",
-      "video_id": "W6yd-owuiNI",
-      "channel": "Channel 1"
-    },
-    {
       "date": "2026-10-10T02:04:29",
       "category": "memory: why we forget, false memories, why we remember some things forever",
       "format": "top3",
@@ -909,6 +891,24 @@
       "fact": "Social psychology research shows that getting revenge prolongs emotional distress and rumination rather than providing emotional closure.",
       "video_id": "WrFZnEaXMKY",
       "channel": "Channel 1"
+    },
+    {
+      "date": "2026-11-08T02:19:23",
+      "category": "emotions, mood and how people react when someone hurts them",
+      "format": "personal_what_if",
+      "title": "Why Giving The Silent Treatment Backfires #Shorts",
+      "fact": "Giving someone the silent treatment requires active cognitive self-control to suppress communication, depleting mental resources and increasing stress hormones in the person doing the ignoring.",
+      "video_id": "aqfKb00Y2kg",
+      "channel": "Channel 2"
+    },
+    {
+      "date": "2026-11-08T02:22:54",
+      "category": "social psychology: crowds, conformity, persuasion, why we copy others",
+      "format": "psychology_effect",
+      "title": "Why you agree with people who are wrong #shorts #facts",
+      "fact": "The Asch conformity effect demonstrates that people will publicly agree with an obviously false majority opinion to avoid social friction.",
+      "video_id": "igUJJpTT_ik",
+      "channel": "Channel 3"
     }
   ]
 }
