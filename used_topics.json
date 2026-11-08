@@ -101,24 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-10T02:07:04",
-      "category": "focus and attention: why the mind wanders, multitasking, distraction",
-      "format": "personal_what_if",
-      "title": "Your brain is lying to you 🧠",
-      "fact": "When multitasking, the brain rapidly switches between tasks rather than processing them simultaneously, creating a cognitive switching cost that increases error rates and mental fatigue.",
-      "video_id": "uc5U8JLUnfA",
-      "channel": "Channel 3"
-    },
-    {
-      "date": "2026-10-10T09:30:47",
-      "category": "decision making, cognitive biases and why smart people make silly choices",
-      "format": "myth_vs_truth",
-      "title": "Why More Choices Secretly Ruin Everything 🤯",
-      "fact": "The paradox of choice shows that having too many options increases decision fatigue, elevates unrealistic expectations, and causes post-purchase regret.",
-      "video_id": "Omr8HdDDYj0",
-      "channel": "Channel 1"
-    },
-    {
       "date": "2026-10-10T09:35:26",
       "category": "social psychology: crowds, conformity, persuasion, why we copy others",
       "format": "psychology_effect",
@@ -909,6 +891,24 @@
       "fact": "The Pratfall Effect shows that when a highly competent person makes a minor everyday blunder, their perceived likability and approachability increase because it humanizes them.",
       "video_id": "7KOE4I-5wuI",
       "channel": "Channel 3"
+    },
+    {
+      "date": "2026-11-08T22:52:37",
+      "category": "friendship, texting, jealousy and loneliness (well-established findings only)",
+      "format": "myth_vs_truth",
+      "title": "Why Texting Makes You Lonely #shorts #psychology",
+      "fact": "Social psychology experiments show people default to texting to avoid perceived awkwardness, but texting removes vocal tone and warmth, causing harmless pauses to be misinterpreted as cold rejection.",
+      "video_id": "bCxCGODG85w",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-11-08T23:01:44",
+      "category": "psychology of first impressions, attraction and body language (well-established findings)",
+      "format": "psychology_effect",
+      "title": "Why You Look Better in Groups #shorts #psychology",
+      "fact": "The cheerleader effect causes individuals to appear more attractive in a group than when viewed alone because visual perception averages individual facial features together, minimizing asymmetries and unique imperfections.",
+      "video_id": "HbqFHo7wA28",
+      "channel": "Channel 2"
     }
   ]
 }
