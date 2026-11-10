@@ -101,24 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-10T10:08:52",
-      "category": "psychology of habits, procrastination, motivation and willpower",
-      "format": "personal_what_if",
-      "title": "Why One Tiny Mistake Destroys Habits 🍪",
-      "fact": "The what-the-hell effect is a psychological trap where a minor goal violation causes distress, prompting people to completely surrender self-control.",
-      "video_id": "6WdI6BzFgeM",
-      "channel": "Channel 1"
-    },
-    {
-      "date": "2026-10-10T10:14:41",
-      "category": "everyday human behaviour: why people do small things in daily life (phone, friends, family, work)",
-      "format": "psychology_fact",
-      "title": "How Borrowing a Pen Makes People Like You 🖊️",
-      "fact": "The Ben Franklin effect shows that getting someone to do you a small favor makes them like and trust you more, as their brain resolves cognitive dissonance by assuming they must value you.",
-      "video_id": "M0HtQyNkLw4",
-      "channel": "Channel 2"
-    },
-    {
       "date": "2026-10-10T10:20:26",
       "category": "emotions, mood, stress and how people react to them",
       "format": "myth_vs_truth",
@@ -909,6 +891,24 @@
       "fact": "Milgram, Bickman, and Berkowitz (1969) demonstrated that passersby look up and copy a crowd's posture automatically, with larger initiator groups causing a significantly higher percentage of people to conform.",
       "video_id": "ZqnkvB_W1RQ",
       "channel": "Channel 3"
+    },
+    {
+      "date": "2026-11-10T20:59:48",
+      "category": "social psychology: crowds, conformity, persuasion, why we copy others",
+      "format": "myth_vs_truth",
+      "title": "Why warning labels backfire 🛑 #shorts #facts",
+      "fact": "Explicit warnings that a claim is false often fail to prevent people from remembering and believing the misinformation later because the brain stores familiar information as true while discarding the context of the warning.",
+      "video_id": "vpshFsqpuDY",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-11-10T21:16:52",
+      "category": "everyday human behaviour: why people do small things with family, friends and co-workers",
+      "format": "personal_what_if",
+      "title": "Why You Forget Names Instantly #shorts #facts",
+      "fact": "Under the next-in-line effect, people fail to recall the name of someone who just introduced themselves because cognitive resources are diverted to preparing and rehearsing their own upcoming greeting.",
+      "video_id": "EWAIiQ9YZ6w",
+      "channel": "Channel 2"
     }
   ]
 }
