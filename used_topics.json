@@ -101,33 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-11T01:27:28",
-      "category": "friendship, relationships, texting, jealousy and loneliness (well-established findings only)",
-      "format": "psychology_effect",
-      "title": "Why People Like You More Than You Think 💭",
-      "fact": "The liking gap is a psychological phenomenon where people systematically underestimate how much a conversation partner liked them and enjoyed their company.",
-      "video_id": "CA_lVfU7hhA",
-      "channel": "Channel 1"
-    },
-    {
-      "date": "2026-10-11T01:34:11",
-      "category": "shopping, money and attention psychology: why we buy, scroll and get hooked",
-      "format": "psychology_fact",
-      "title": "Why You Value Things You Built Way Too Much 🔨",
-      "fact": "The IKEA effect causes people to place an irrationally high financial and emotional value on products they personally assembled or invested labor into.",
-      "video_id": "XUPaaLM_8ao",
-      "channel": "Channel 2"
-    },
-    {
-      "date": "2026-10-11T01:40:14",
-      "category": "focus and attention: why the mind wanders, multitasking, distraction",
-      "format": "myth_vs_truth",
-      "title": "Why Doodling Actually Boosts Your Focus ✍️",
-      "fact": "Doodling stabilizes physiological arousal and prevents the brain from drifting into high-demand daydreaming, allowing people to recall significantly more verbal information.",
-      "video_id": "wXA0kL8ECJg",
-      "channel": "Channel 3"
-    },
-    {
       "date": "2026-10-11T16:35:50",
       "category": "psychology of first impressions, attraction and body language (only well-established findings)",
       "format": "psychology_effect",
@@ -908,6 +881,33 @@
       "title": "Why Dry Texts Secretly Ruin Friendships",
       "fact": "Passive-constructive responses to good news trigger genuine social rejection cues, eroding relationship security and intimacy faster than overt conflict.",
       "video_id": "xcAxTJj2BJM",
+      "channel": "Channel 3"
+    },
+    {
+      "date": "2026-11-11T21:15:41",
+      "category": "everyday human behaviour: why people do small things with family, friends and co-workers",
+      "format": "myth_vs_truth",
+      "title": "Why You Should Send That Text #shorts #mindset",
+      "fact": "People systematically overestimate how awkward a sudden check-in text will feel while underestimating how much the receiver appreciates it.",
+      "video_id": "9lngtX7K3QE",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-11-11T21:47:14",
+      "category": "emotions, mood and how people react when someone hurts them",
+      "format": "personal_what_if",
+      "title": "Why heartbreak hurts physically 💔 #Shorts",
+      "fact": "Social rejection activates the dorsal anterior cingulate cortex and anterior insula, the same neural regions that process physical pain, which is why everyday pain relievers like acetaminophen can temporarily blunt hurt feelings.",
+      "video_id": "2fe64DuoiZc",
+      "channel": "Channel 2"
+    },
+    {
+      "date": "2026-11-11T22:16:40",
+      "category": "emotions, mood and how people react when someone hurts them",
+      "format": "story",
+      "title": "Why You Clean Like Crazy When Hurt 🧼",
+      "fact": "When emotional security is threatened by hurt or rejection, compensatory control compels people to impose physical order on their environment to restore psychological agency.",
+      "video_id": "aaAMLAnlJhU",
       "channel": "Channel 3"
     }
   ]
