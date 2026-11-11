@@ -101,15 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-10T10:20:26",
-      "category": "emotions, mood, stress and how people react to them",
-      "format": "myth_vs_truth",
-      "title": "Why Venting Your Anger Actually Backfires 😡",
-      "fact": "Venting anger does not release emotional tension; instead, catharsis maintains high physiological arousal and reinforces aggressive neural associations, prolonging anger.",
-      "video_id": "OXBC3XY0VIs",
-      "channel": "Channel 3"
-    },
-    {
       "date": "2026-10-11T01:27:28",
       "category": "friendship, relationships, texting, jealousy and loneliness (well-established findings only)",
       "format": "psychology_effect",
@@ -909,6 +900,15 @@
       "fact": "Under the next-in-line effect, people fail to recall the name of someone who just introduced themselves because cognitive resources are diverted to preparing and rehearsing their own upcoming greeting.",
       "video_id": "EWAIiQ9YZ6w",
       "channel": "Channel 2"
+    },
+    {
+      "date": "2026-11-11T01:18:16",
+      "category": "friendship, texting, jealousy and loneliness (well-established findings only)",
+      "format": "story",
+      "title": "Why Dry Texts Secretly Ruin Friendships",
+      "fact": "Passive-constructive responses to good news trigger genuine social rejection cues, eroding relationship security and intimacy faster than overt conflict.",
+      "video_id": "xcAxTJj2BJM",
+      "channel": "Channel 3"
     }
   ]
 }
