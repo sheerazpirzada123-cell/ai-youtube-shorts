@@ -101,24 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-11T16:43:53",
-      "category": "childhood, learning and curiosity: how people learn and why praise/habits stick",
-      "format": "personal_what_if",
-      "title": "Why Your Highlighter Tricks Your Brain 🧠",
-      "fact": "The illusion of competence causes people to mistake familiarity from re-reading and highlighting for actual memory retrieval.",
-      "video_id": "AT-6sxITazo",
-      "channel": "Channel 2"
-    },
-    {
-      "date": "2026-10-11T16:50:18",
-      "category": "social psychology: crowds, conformity, persuasion, why we copy others",
-      "format": "psychology_fact",
-      "title": "The One Word That Forces Agreement 🧠",
-      "fact": "Using the word 'because' triggers automatic compliance in small requests, even when followed by a completely redundant justification.",
-      "video_id": "CMbk1PHhEpc",
-      "channel": "Channel 3"
-    },
-    {
       "date": "2026-10-12T01:58:02",
       "category": "sleep, dreams and tiredness: what they do to mood and behaviour",
       "format": "psychology_effect",
@@ -909,6 +891,24 @@
       "fact": "Dynamic facial expressiveness creates significantly higher attraction and likability during first impressions than maintaining a calm, static poker face.",
       "video_id": "3cIPebm7C1g",
       "channel": "Channel 3"
+    },
+    {
+      "date": "2026-11-13T02:46:33",
+      "category": "social psychology: crowds, conformity, persuasion, why we copy others",
+      "format": "psychology_effect",
+      "title": "Why You Copy Other People's Voices #shorts #facts",
+      "fact": "Under the chameleon effect, people unconsciously adopt the speech rate, rhythm, and cadence of the person they are speaking with to foster social harmony.",
+      "video_id": "m_mpNHZmp1I",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-11-13T03:02:25",
+      "category": "social psychology: crowds, conformity, persuasion, why we copy others",
+      "format": "personal_what_if",
+      "title": "Why You Slack Off in Groups 🧠 #shorts #psychology",
+      "fact": "The Ringelmann effect shows that individuals unconsciously decrease their effort when working in a group compared to working alone, even though they genuinely believe they are putting in full effort.",
+      "video_id": "fvGEXgidj7w",
+      "channel": "Channel 2"
     }
   ]
 }
