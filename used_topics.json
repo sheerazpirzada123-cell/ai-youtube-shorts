@@ -101,24 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-12T01:58:02",
-      "category": "sleep, dreams and tiredness: what they do to mood and behaviour",
-      "format": "psychology_effect",
-      "title": "Why Tiny Annoyances Ruin Your Entire Day ☕",
-      "fact": "Sleep deprivation impairs emotional regulation by increasing amygdala reactivity while disconnecting it from prefrontal control regions, making minor everyday inconveniences feel like urgent threats.",
-      "video_id": "2r03xI2tZUg",
-      "channel": "Channel 1"
-    },
-    {
-      "date": "2026-10-12T02:02:33",
-      "category": "memory: why we forget, false memories, why we remember some things forever",
-      "format": "top3",
-      "title": "Why Your Brain Rewrites Your Past Memories 🧠",
-      "fact": "Human memory rewrites and reconsolidates past events upon recall rather than playing an exact recording, making false details feel completely real over time.",
-      "video_id": "H53Yiyuuw4o",
-      "channel": "Channel 2"
-    },
-    {
       "date": "2026-10-12T02:06:00",
       "category": "everyday human behaviour: why people do small things in daily life (phone, friends, family, work)",
       "format": "myth_vs_truth",
@@ -909,6 +891,24 @@
       "fact": "The Ringelmann effect shows that individuals unconsciously decrease their effort when working in a group compared to working alone, even though they genuinely believe they are putting in full effort.",
       "video_id": "fvGEXgidj7w",
       "channel": "Channel 2"
+    },
+    {
+      "date": "2026-11-13T20:54:16",
+      "category": "everyday human behaviour: why people do small things with family, friends and co-workers",
+      "format": "myth_vs_truth",
+      "title": "Why Venting to Friends Makes You Angrier 🤬",
+      "fact": "Expressing anger or venting to friends prolongs physiological stress and rehearses aggressive feelings rather than providing catharsis or calming the brain.",
+      "video_id": "OTF9is5V_EQ",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-11-13T21:03:31",
+      "category": "psychology of first impressions, attraction and body language (well-established findings)",
+      "format": "story",
+      "title": "The Body Language Signal You Never Notice #shorts #mindset",
+      "fact": "Unconscious lower limb orientation (foot direction) reveals genuine social interest and attraction because cognitive control focuses heavily on facial expression management rather than lower body posture.",
+      "video_id": "lOBHYG9uElY",
+      "channel": "Channel 3"
     }
   ]
 }
