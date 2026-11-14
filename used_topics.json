@@ -101,15 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-12T02:06:00",
-      "category": "everyday human behaviour: why people do small things in daily life (phone, friends, family, work)",
-      "format": "myth_vs_truth",
-      "title": "Why Healthy Choices Backfire on You 🥗",
-      "fact": "Moral licensing causes people to unconsciously give themselves permission to indulge in unhealthy choices after making a small good decision.",
-      "video_id": "jjI6LiLkzIo",
-      "channel": "Channel 3"
-    },
-    {
       "date": "2026-10-12T20:10:16",
       "category": "friendship, relationships, texting, jealousy and loneliness (well-established findings only)",
       "format": "personal_what_if",
@@ -909,6 +900,15 @@
       "fact": "Unconscious lower limb orientation (foot direction) reveals genuine social interest and attraction because cognitive control focuses heavily on facial expression management rather than lower body posture.",
       "video_id": "lOBHYG9uElY",
       "channel": "Channel 3"
+    },
+    {
+      "date": "2026-11-14T01:36:57",
+      "category": "psychology of first impressions, attraction and body language (well-established findings)",
+      "format": "psychology_effect",
+      "title": "Why Your Voice Changes Around Someone You Like 🎙️",
+      "fact": "People unconsciously shift their vocal pitch to sound deeper and calmer when speaking to someone they find physically attractive.",
+      "video_id": "HEhF92wu8nA",
+      "channel": "Channel 2"
     }
   ]
 }
