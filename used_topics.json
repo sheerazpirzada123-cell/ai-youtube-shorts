@@ -101,24 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-12T20:10:16",
-      "category": "friendship, relationships, texting, jealousy and loneliness (well-established findings only)",
-      "format": "personal_what_if",
-      "title": "The Psychological Trick to Make Anyone Like You 🤝",
-      "fact": "People like someone significantly more after doing them a small favor due to the Ben Franklin effect resolving cognitive dissonance.",
-      "video_id": "fWiSRfriIZw",
-      "channel": "Channel 1"
-    },
-    {
-      "date": "2026-10-12T20:15:45",
-      "category": "psychology of habits, procrastination, motivation and willpower",
-      "format": "psychology_fact",
-      "title": "Why Sharing Goals Secretly Kills Motivation 🤫",
-      "fact": "Announcing your goals creates a premature sense of accomplishment known as social reality, which significantly reduces the motivation needed to actually complete them.",
-      "video_id": "ybmxaxrWnoo",
-      "channel": "Channel 2"
-    },
-    {
       "date": "2026-10-12T20:21:49",
       "category": "shopping, money and attention psychology: why we buy, scroll and get hooked",
       "format": "psychology_effect",
@@ -909,6 +891,24 @@
       "fact": "People unconsciously shift their vocal pitch to sound deeper and calmer when speaking to someone they find physically attractive.",
       "video_id": "HEhF92wu8nA",
       "channel": "Channel 2"
+    },
+    {
+      "date": "2026-11-14T19:09:31",
+      "category": "social psychology: crowds, conformity, persuasion, why we copy others",
+      "format": "personal_what_if",
+      "title": "How posture traps your brain 😨 #shorts #mindset",
+      "fact": "Research in embodied cognition shows that a slumped posture increases subjective stress, accessibility of negative thoughts, and self-doubt, whereas an upright posture helps maintain self-esteem and resilience during social stress.",
+      "video_id": "whzVlhXngaI",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-11-14T19:27:37",
+      "category": "friendship, texting, jealousy and loneliness (well-established findings only)",
+      "format": "myth_vs_truth",
+      "title": "Why You Always Misread Text Messages",
+      "fact": "Communication research shows people systematically overestimate how accurately friends interpret the intended tone of text messages because senders hear their own inner voice while typing.",
+      "video_id": "zIXDjMxg3AI",
+      "channel": "Channel 3"
     }
   ]
 }
