@@ -101,15 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-12T20:21:49",
-      "category": "shopping, money and attention psychology: why we buy, scroll and get hooked",
-      "format": "psychology_effect",
-      "title": "The Sneaky Movie Popcorn Trick 🍿",
-      "fact": "The decoy effect causes consumers to choose a more expensive option when an asymmetric third option makes the higher price seem like a rational bargain.",
-      "video_id": "4qgf1_L7C3k",
-      "channel": "Channel 3"
-    },
-    {
       "date": "2026-10-13T03:20:04",
       "category": "decision making, cognitive biases and why smart people make silly choices",
       "format": "personal_what_if",
@@ -909,6 +900,15 @@
       "fact": "Communication research shows people systematically overestimate how accurately friends interpret the intended tone of text messages because senders hear their own inner voice while typing.",
       "video_id": "zIXDjMxg3AI",
       "channel": "Channel 3"
+    },
+    {
+      "date": "2026-11-15T02:50:13",
+      "category": "everyday human behaviour: why people do small things with family, friends and co-workers",
+      "format": "psychology_effect",
+      "title": "Why Nobody Saw Your Mistake #attention",
+      "fact": "The spotlight effect is a verified cognitive bias where people egocentrically anchor on their own intense internal feelings of embarrassment, wrongly assuming outsiders notice their minor blunders far more than they actually do.",
+      "video_id": "TLlQtoiinWE",
+      "channel": "Channel 2"
     }
   ]
 }
