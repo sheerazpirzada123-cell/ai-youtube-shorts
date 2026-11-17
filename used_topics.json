@@ -101,33 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-13T12:30:54",
-      "category": "everyday human behaviour: why people do small things with family, friends and co-workers",
-      "format": "personal_what_if",
-      "title": "Why you always buy the medium popcorn #money",
-      "fact": "When you are offered an asymmetric decoy option, your brain shifts value judgment to make the most expensive choice feel like a logical bargain.",
-      "video_id": "AocJ9a0cvYE",
-      "channel": "Channel 1"
-    },
-    {
-      "date": "2026-10-13T12:34:46",
-      "category": "why free trials, discounts and 'limited time' actually work on the brain",
-      "format": "question_first",
-      "title": "Why buy junk just because it's on sale? #Shorts",
-      "fact": "The Scarcity Heuristic causes the brain to inflate the perceived value of items that are framed as limited in time or availability.",
-      "video_id": "ySANnVjoKTc",
-      "channel": "Channel 2"
-    },
-    {
-      "date": "2026-10-13T12:37:30",
-      "category": "childhood, learning and curiosity: how people learn and why habits stick",
-      "format": "top3",
-      "title": "Why your brain hides what you learn #shorts #mindset",
-      "fact": "The Generation Effect: information is better remembered when it is self-generated rather than passively received, and the Testing Effect proves that retrieving information from memory strengthens neural pathways better than reviewing it.",
-      "video_id": "QoDnJsViqbE",
-      "channel": "Channel 3"
-    },
-    {
       "date": "2026-10-13T16:58:33",
       "category": "friendship, texting, jealousy and loneliness (well-established findings only)",
       "format": "personal_what_if",
@@ -908,6 +881,33 @@
       "title": "Why You Snap At Innocent People #Shorts",
       "fact": "Triggered displaced aggression occurs when physiological arousal provoked by an untouchable source is redirected and unleashed disproportionately onto a harmless, accessible person.",
       "video_id": "8awxsKcFrY4",
+      "channel": "Channel 3"
+    },
+    {
+      "date": "2026-11-16T23:47:19",
+      "category": "friendship, texting, jealousy and loneliness (well-established findings only)",
+      "format": "myth_vs_truth",
+      "title": "The Real Reason You Get Friend Jealousy #Shorts",
+      "fact": "Social psychology research shows that friendship jealousy is not toxic insecurity, but an evolved friend-guarding mechanism triggered to protect valued friendships from third-party threats.",
+      "video_id": "dov2jws_JWM",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-11-16T23:58:59",
+      "category": "psychology of first impressions, attraction and body language (well-established findings)",
+      "format": "personal_what_if",
+      "title": "Why Your Eyes Betray Attraction #shorts #psychology",
+      "fact": "Pupil dilation during visual attraction is an automatic sympathetic nervous system response that observers unconsciously process to rate the person as more attractive.",
+      "video_id": "w7Q8CrgE_h8",
+      "channel": "Channel 2"
+    },
+    {
+      "date": "2026-11-17T00:22:49",
+      "category": "everyday human behaviour: why people do small things with family, friends and co-workers",
+      "format": "story",
+      "title": "Why Gossip Always Backfires On You #shorts #psychology",
+      "fact": "Spontaneous trait transference causes listeners to unconsciously associate the adjectives a speaker uses to describe others directly with the speaker themselves.",
+      "video_id": "YsC6EXaTokc",
       "channel": "Channel 3"
     }
   ]
