@@ -101,15 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-14T07:35:25",
-      "category": "emotions, mood and how people react when someone hurts them",
-      "format": "psychology_effect",
-      "title": "Why rejection makes you hate them ❄️ #relationships",
-      "fact": "When people face social rejection, they engage in defensive derogation, immediately devaluing the person or group who excluded them to protect their own self-esteem.",
-      "video_id": "m1RSj0mpmP4",
-      "channel": "Channel 2"
-    },
-    {
       "date": "2026-10-14T07:41:29",
       "category": "emotions, mood and how people react when someone hurts them",
       "format": "myth_vs_truth",
@@ -909,6 +900,15 @@
       "fact": "Informational social influence leads individuals to rely on crowd size as a heuristic for safety and quality when navigating uncertainty.",
       "video_id": "SGv1bUakfGM",
       "channel": "Channel 2"
+    },
+    {
+      "date": "2026-11-20T21:48:25",
+      "category": "social psychology: crowds, conformity, persuasion, why we copy others",
+      "format": "myth_vs_truth",
+      "title": "Why Warning Signs Secretly Cause Crime 🛑",
+      "fact": "Warning signs that highlight high rates of bad behavior inadvertently normalize it through descriptive social norms, increasing the negative behavior.",
+      "video_id": "PSdUgCYm4Uo",
+      "channel": "Channel 1"
     }
   ]
 }
