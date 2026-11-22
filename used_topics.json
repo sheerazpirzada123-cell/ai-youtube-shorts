@@ -101,15 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-16T00:20:41",
-      "category": "social psychology: crowds, conformity, persuasion, why we copy others",
-      "format": "story",
-      "title": "Why you refuse to check your bank account #Shorts",
-      "fact": "The Ostrich Effect causes people to actively avoid useful information when they fear it will confirm bad news.",
-      "video_id": "83SOe0wIhPM",
-      "channel": "Channel 1"
-    },
-    {
       "date": "2026-10-16T00:28:35",
       "category": "everyday human behaviour: why people do small things with family, friends and co-workers",
       "format": "psychology_effect",
@@ -909,6 +900,15 @@
       "fact": "Loneliness triggers subconscious social threat vigilance, causing the brain to misinterpret neutral social cues and expressions as hostile or rejecting.",
       "video_id": "paJHQ3jPLHY",
       "channel": "Channel 3"
+    },
+    {
+      "date": "2026-11-22T20:42:53",
+      "category": "emotions, mood and how people react when someone hurts them",
+      "format": "psychology_effect",
+      "title": "Why You Always Blame Yourself When Hurt 🧠",
+      "fact": "When people are hurt by others, they often engage in behavioral self-blame because attributing the cause to their own editable actions provides a sense of control and predictability over future outcomes.",
+      "video_id": "sASFo_PjMb4",
+      "channel": "Channel 2"
     }
   ]
 }
