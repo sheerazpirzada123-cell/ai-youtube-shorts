@@ -101,24 +101,6 @@
   },
   "_recent": [
     {
-      "date": "2026-10-16T00:28:35",
-      "category": "everyday human behaviour: why people do small things with family, friends and co-workers",
-      "format": "psychology_effect",
-      "title": "Why You Always Judge Others So Harshly #shorts #facts",
-      "fact": "The fundamental attribution error causes people to attribute others' mistakes to poor character while excusing their own identical mistakes with external circumstances.",
-      "video_id": "GRsEI_hL59A",
-      "channel": "Channel 3"
-    },
-    {
-      "date": "2026-10-16T18:01:19",
-      "category": "psychology of first impressions, attraction and body language (well-established findings)",
-      "format": "personal_what_if",
-      "title": "Why Eye Contact Freezes Your Brain #Shorts",
-      "fact": "Direct eye contact and verbal processing compete for the exact same cognitive resources, which is why people involuntarily look away to think clearly.",
-      "video_id": "KjBQantbhQ0",
-      "channel": "Channel 3"
-    },
-    {
       "date": "2026-10-17T17:07:49",
       "category": "friendship, texting, jealousy and loneliness (well-established findings only)",
       "format": "myth_vs_truth",
@@ -909,6 +891,24 @@
       "fact": "When people are hurt by others, they often engage in behavioral self-blame because attributing the cause to their own editable actions provides a sense of control and predictability over future outcomes.",
       "video_id": "sASFo_PjMb4",
       "channel": "Channel 2"
+    },
+    {
+      "date": "2026-11-23T02:03:21",
+      "category": "everyday human behaviour: why people do small things with family, friends and co-workers",
+      "format": "myth_vs_truth",
+      "title": "Why Asking for Favors Makes People Like You 🤝",
+      "fact": "Asking someone for a small favor causes their brain to reduce cognitive dissonance by concluding they must like you, known as the Ben Franklin effect.",
+      "video_id": "Q8hA15-BomA",
+      "channel": "Channel 1"
+    },
+    {
+      "date": "2026-11-23T02:10:31",
+      "category": "psychology of first impressions, attraction and body language (well-established findings)",
+      "format": "story",
+      "title": "Why Instant Smiles Backfire #shorts #facts",
+      "fact": "A delayed smile taking roughly 0.5 to 1 second to warm up is perceived as significantly more authentic, trustworthy, and attractive than an instant smile.",
+      "video_id": "ZdD37KTTJ4Q",
+      "channel": "Channel 3"
     }
   ]
 }
